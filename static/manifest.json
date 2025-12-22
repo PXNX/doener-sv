@@ -24,7 +24,7 @@
 	"description": "Search for Döner in Europe",
 
 	"share_target": {
-		"action": "/giftcode",
+		"action": "/add-doener",
 		"method": "GET",
 		"params": {
 			"title": "title",

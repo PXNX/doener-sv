@@ -5,10 +5,10 @@
 </script>
 
 <svelte:head>
-	<title>Train Station Search</title>
+	<title>Doener Rating</title>
 	<meta
 		name="description"
-		content="Search for train stations in Germany. Find sleeping spots, outlets, toilets & station info"
+		content="Search for Döner in Europe. Find the best döner spots near you."
 	/>
 	<meta name="view-transition" content="same-origin" />
 </svelte:head>
