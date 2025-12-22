@@ -91,11 +91,7 @@ async function findOrCreateRestaurant(
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const account = locals.account;
-
-	if (!account) {
-		throw redirect(302, '/login');
-	}
+	const account = locals.user!;
 
 	const form = await superValidate(valibot(createDoenerReviewSchema));
 
@@ -103,7 +99,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	form.data.breadHasSesame = false;
 	form.data.breadFluffyInside = false;
 	form.data.breadCrispyOutside = false;
-	form.data.hasOnions = false;
+	form.data.hasOnions = 'none';
 	form.data.hasYoghurtSauce = false;
 	form.data.hasGarlicSauce = false;
 	form.data.overallRating = 3;
@@ -113,11 +109,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		const account = locals.account;
-
-		if (!account) {
-			throw redirect(302, '/login');
-		}
+		const account = locals.user!;
 
 		const form = await superValidate(request, valibot(createDoenerReviewSchema));
 
@@ -137,7 +129,6 @@ export const actions: Actions = {
 			meatProtein,
 			meatSeasoning,
 			hasOnions,
-			spiceLevel,
 			hasYoghurtSauce,
 			hasGarlicSauce,
 			overallRating,
@@ -195,7 +186,7 @@ export const actions: Actions = {
 					meatProtein,
 					meatSeasoning,
 					hasOnions,
-					spiceLevel,
+
 					hasYoghurtSauce,
 					hasGarlicSauce,
 					overallRating,
@@ -220,7 +211,7 @@ export const actions: Actions = {
 				.where(eq(doenerRestaurants.id, restaurantId));
 
 			// Redirect to review page or restaurant page
-			throw redirect(303, `/doener/restaurant/${restaurantId}`);
+			throw redirect(303, `/doener/${restaurantId}`);
 		} catch (err) {
 			console.error('Error creating review:', err);
 			return message(form, 'Failed to submit review. Please try again.', { status: 500 });

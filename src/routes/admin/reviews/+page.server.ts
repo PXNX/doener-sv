@@ -4,35 +4,9 @@ import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { doenerReviews, doenerRestaurants, users, files } from '$lib/server/schema';
 import { eq, desc } from 'drizzle-orm';
-
-/**
- * Get signed URL for a file
- */
-async function getImageUrl(fileId: string | null): Promise<string | null> {
-	if (!fileId) return null;
-
-	const file = await db.query.files.findFirst({
-		where: eq(files.id, fileId)
-	});
-
-	if (!file) return null;
-
-	try {
-		return await getSignedDownloadUrl(file.key);
-	} catch {
-		return `/api/files/${file.key}`;
-	}
-}
+import { getImageUrl } from '$lib/server/backblaze';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) {
-		throw redirect(302, `/auth/login?next=${encodeURIComponent(url.pathname)}`);
-	}
-
-	if (!locals.user.isAdmin) {
-		throw error(403, 'Admin access required');
-	}
-
 	// Fetch all reviews with restaurant and user info
 	const allReviews = await db
 		.select({
@@ -57,7 +31,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				breadCrispyOutside: review.breadCrispyOutside,
 				meatType: review.meatType,
 				meatProtein: review.meatProtein,
-				spiceLevel: review.spiceLevel,
+
 				hasYoghurtSauce: review.hasYoghurtSauce,
 				hasGarlicSauce: review.hasGarlicSauce,
 				overallRating: review.overallRating,

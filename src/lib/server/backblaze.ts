@@ -10,6 +10,9 @@ import {
 	BACKBLAZE_REGION,
 	BACKBLAZE_ENDPOINT
 } from '$env/static/private';
+import { db } from './db';
+import { eq } from 'drizzle-orm/sql';
+import { files } from './schema';
 
 const s3Client = new S3Client({
 	endpoint: BACKBLAZE_ENDPOINT,
@@ -160,16 +163,16 @@ export async function getSignedDownloadUrl(
 }
 
 /**
- * Get signed download URL with short expiration (for sensitive content)
- * @param key - File key in B2
- * @returns Signed URL with 1 hour expiration
+ * Get signed URL for a file
  */
-export async function getSignedDownloadUrlShort(key: string): Promise<string> {
-	const command = new GetObjectCommand({
-		Bucket: BACKBLAZE_BUCKET_NAME,
-		Key: key,
-		ResponseCacheControl: 'public, max-age=3600'
+export async function getImageUrl(fileId: string | null): Promise<string | null> {
+	if (!fileId) return null;
+
+	const file = await db.query.files.findFirst({
+		where: eq(files.id, fileId)
 	});
 
-	return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+	if (!file) return null;
+
+	return await getSignedDownloadUrl(file.key);
 }

@@ -42,7 +42,7 @@
 	// Determine helpful message
 	const helpMessage = $derived.by(() => {
 		if (isStationNotFound)
-			return "The station you're looking for doesn't exist in our database yet. Try searching for it or check the station ID.";
+			return "The Doener you're looking for doesn't exist in our database yet. Try searching for it or check the station ID.";
 		if (status === 404)
 			return "The page you're looking for doesn't exist. It might have been moved or deleted.";
 		if (status === 400)

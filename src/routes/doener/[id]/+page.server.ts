@@ -4,29 +4,7 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { doenerRestaurants, doenerReviews, files, users } from '$lib/server/schema';
 import { eq, desc } from 'drizzle-orm';
-import { getSignedDownloadUrl } from '$lib/server/backblaze';
-
-/**
- * Get signed URL for a file
- */
-async function getImageUrl(fileId: string | null): Promise<string | null> {
-	if (!fileId) return null;
-
-	const file = await db.query.files.findFirst({
-		where: eq(files.id, fileId)
-	});
-
-	if (!file) return null;
-
-	// Use your getSignedDownloadUrl function
-	// Replace this with your actual implementation
-	try {
-		return await getSignedDownloadUrl(file.key);
-	} catch {
-		// Fallback
-		return `/api/files/${file.key}`;
-	}
-}
+import { getImageUrl } from '$lib/server/backblaze';
 
 /**
  * Calculate most common attributes from reviews
@@ -141,7 +119,6 @@ export const load: PageServerLoad = async ({ params }) => {
 				meatProtein: review.meatProtein,
 				meatSeasoning: review.meatSeasoning,
 				hasOnions: review.hasOnions,
-				spiceLevel: review.spiceLevel,
 				hasYoghurtSauce: review.hasYoghurtSauce,
 				hasGarlicSauce: review.hasGarlicSauce,
 				overallRating: review.overallRating,
