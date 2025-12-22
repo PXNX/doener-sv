@@ -1,15 +1,15 @@
 // src/lib/server/backblaze.ts
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import sharp from "sharp";
-import { randomUUID } from "crypto";
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import sharp from 'sharp';
+import { randomUUID } from 'crypto';
 import {
 	BACKBLAZE_KEY_ID,
 	BACKBLAZE_APPLICATION_KEY,
 	BACKBLAZE_BUCKET_NAME,
 	BACKBLAZE_REGION,
 	BACKBLAZE_ENDPOINT
-} from "$env/static/private";
+} from '$env/static/private';
 
 const s3Client = new S3Client({
 	endpoint: BACKBLAZE_ENDPOINT,
@@ -39,8 +39,8 @@ const WEBP_QUALITY = 85;
 async function processImageToWebP(buffer: Buffer): Promise<Buffer> {
 	return await sharp(buffer)
 		.resize(IMAGE_SIZE, IMAGE_SIZE, {
-			fit: "cover",
-			position: "center",
+			fit: 'cover',
+			position: 'center',
 			withoutEnlargement: false
 		})
 		.webp({ quality: WEBP_QUALITY })
@@ -65,8 +65,8 @@ export async function uploadFile(buffer: Buffer, fileName: string): Promise<Uplo
 			Bucket: BACKBLAZE_BUCKET_NAME,
 			Key: uniqueKey,
 			Body: processedBuffer,
-			ContentType: "image/webp",
-			CacheControl: "public, max-age=31536000, immutable",
+			ContentType: 'image/webp',
+			CacheControl: 'public, max-age=31536000, immutable',
 			Metadata: {
 				originalName: fileName,
 				uploadedAt: new Date().toISOString(),
@@ -81,11 +81,11 @@ export async function uploadFile(buffer: Buffer, fileName: string): Promise<Uplo
 			key: uniqueKey
 		};
 	} catch (error) {
-		console.error("Upload failed:", error);
+		console.error('Upload failed:', error);
 		return {
 			success: false,
-			key: "",
-			error: error instanceof Error ? error.message : "Unknown error"
+			key: '',
+			error: error instanceof Error ? error.message : 'Unknown error'
 		};
 	}
 }
@@ -99,8 +99,8 @@ export async function uploadFileFromForm(file: File): Promise<UploadResult> {
 	if (!file || file.size === 0) {
 		return {
 			success: false,
-			key: "",
-			error: "No file provided or file is empty"
+			key: '',
+			error: 'No file provided or file is empty'
 		};
 	}
 
@@ -109,17 +109,17 @@ export async function uploadFileFromForm(file: File): Promise<UploadResult> {
 	if (file.size > maxSize) {
 		return {
 			success: false,
-			key: "",
-			error: "File size exceeds 5MB limit"
+			key: '',
+			error: 'File size exceeds 5MB limit'
 		};
 	}
 
 	// Validate that it's an image
-	if (!file.type.startsWith("image/")) {
+	if (!file.type.startsWith('image/')) {
 		return {
 			success: false,
-			key: "",
-			error: "File must be an image"
+			key: '',
+			error: 'File must be an image'
 		};
 	}
 
@@ -133,8 +133,8 @@ export async function getPresignedUploadUrl(key: string): Promise<string> {
 	const command = new PutObjectCommand({
 		Bucket: BACKBLAZE_BUCKET_NAME,
 		Key: key,
-		ContentType: "image/webp",
-		CacheControl: "public, max-age=31536000, immutable"
+		ContentType: 'image/webp',
+		CacheControl: 'public, max-age=31536000, immutable'
 	});
 
 	return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
@@ -168,7 +168,7 @@ export async function getSignedDownloadUrlShort(key: string): Promise<string> {
 	const command = new GetObjectCommand({
 		Bucket: BACKBLAZE_BUCKET_NAME,
 		Key: key,
-		ResponseCacheControl: "public, max-age=3600"
+		ResponseCacheControl: 'public, max-age=3600'
 	});
 
 	return await getSignedUrl(s3Client, command, { expiresIn: 3600 });

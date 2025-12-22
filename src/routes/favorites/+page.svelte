@@ -91,7 +91,9 @@
 
 <header class="mb-6 text-center">
 	<div class="mb-4 flex justify-center">
-		<div class="size-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center">
+		<div
+			class="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-500 to-orange-500"
+		>
 			<FluentEmojiGlowingStar class="size-10" />
 		</div>
 	</div>
@@ -124,14 +126,19 @@
 
 <!-- Empty State -->
 {#if !isLoading && restaurants.length === 0}
-	<div class="card border border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-md">
+	<div
+		class="card border border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-md"
+	>
 		<div class="card-body items-center justify-center gap-y-4 py-20">
 			<div class="text-8xl">😢</div>
 			<h3 class="text-2xl font-bold text-white">No favorites yet</h3>
-			<p class="text-center text-lg text-orange-200/90 max-w-md">
+			<p class="max-w-md text-center text-lg text-orange-200/90">
 				Start adding döner spots to your favorites by clicking the star icon on restaurant pages.
 			</p>
-			<a href={resolve('/')} class="btn btn-lg bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 border-0 text-white mt-4">
+			<a
+				href={resolve('/')}
+				class="btn btn-lg mt-4 border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-500 hover:to-red-500"
+			>
 				<FluentFood20Filled class="size-5" />
 				Find Döner Spots
 				<FluentArrowRight24Regular class="size-5" />

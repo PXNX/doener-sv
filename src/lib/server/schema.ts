@@ -50,15 +50,15 @@ export const doenerRestaurants = pgTable(
 		name: varchar('name', { length: 200 }).notNull(),
 		city: varchar('city', { length: 100 }).notNull(),
 		country: varchar('country', { length: 2 }).notNull().default('DE'),
-		
+
 		// Location
 		latitude: doublePrecision('latitude').notNull(),
 		longitude: doublePrecision('longitude').notNull(),
-		
+
 		// Stats
 		reviewCount: integer('review_count').notNull().default(0),
 		averageRating: doublePrecision('average_rating'),
-		
+
 		// Metadata
 		addedBy: text('added_by')
 			.notNull()
@@ -73,7 +73,6 @@ export const doenerRestaurants = pgTable(
 		ratingIdx: index('doener_rating_idx').on(table.averageRating)
 	})
 );
-
 export const doenerReviews = pgTable(
 	'doener_reviews',
 	{
@@ -84,32 +83,33 @@ export const doenerReviews = pgTable(
 		userId: text('user_id')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
-		
+
 		// Image of the döner
 		doenerImage: uuid('doener_image').references(() => files.id, { onDelete: 'set null' }),
-		
+
 		// Bread criteria
+		breadShape: varchar('bread_shape', { length: 20 }).notNull(), // 'triangular', 'circular', 'long'
 		breadHasSesame: boolean('bread_has_sesame').notNull().default(false),
 		breadFluffyInside: boolean('bread_fluffy_inside').notNull().default(false),
 		breadCrispyOutside: boolean('bread_crispy_outside').notNull().default(false),
-		
+
 		// Meat criteria
 		meatType: varchar('meat_type', { length: 20 }).notNull(), // 'minced' or 'layered'
 		meatProtein: varchar('meat_protein', { length: 20 }).notNull(), // 'chicken', 'beef', 'mixed'
 		meatSeasoning: varchar('meat_seasoning', { length: 20 }).notNull(), // 'pure', 'seasoned', 'phosphate'
-		
-		// Toppings & spice
-		hasOnions: boolean('has_onions').notNull().default(false),
-		spiceLevel: varchar('spice_level', { length: 20 }).notNull(), // 'mild' or 'spicy'
-		
+
+		// Toppings
+		hasOnions: varchar('has_onions', { length: 20 }).notNull(), // 'none', 'mild', 'spicy'
+		krautLevel: varchar('kraut_level', { length: 20 }).notNull(), // 'none', 'mild', 'sour'
+
 		// Sauces
 		hasYoghurtSauce: boolean('has_yoghurt_sauce').notNull().default(false),
 		hasGarlicSauce: boolean('has_garlic_sauce').notNull().default(false),
-		
+
 		// Overall rating & notes
 		overallRating: integer('overall_rating').notNull(), // 1-5 stars
 		notes: text('notes'),
-		
+
 		// Metadata
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
@@ -150,8 +150,6 @@ export const doenerReviewsRelations = relations(doenerReviews, ({ one }) => ({
 		references: [files.id]
 	})
 }));
-
-
 
 export type DoenerRestaurant = typeof doenerRestaurants.$inferSelect;
 export type NewDoenerRestaurant = typeof doenerRestaurants.$inferInsert;
