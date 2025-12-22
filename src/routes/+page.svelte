@@ -302,7 +302,7 @@
 	</div>
 	<h1 class="text-4xl font-bold text-white">🥙 Döner Finder</h1>
 	<p class="mt-2 text-lg text-orange-200/90">
-		Discover the best döner spots near you • <a href="/about" class="hover:underline">About</a>
+		Discover the best döner spots near you • <a href="/about" class="underline">About</a>
 	</p>
 </header>
 
@@ -343,7 +343,7 @@
 				class="btn btn-sm border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-500 hover:to-red-500"
 			>
 				<FluentAdd24Regular class="size-4" />
-				Add Review
+				Add Döner
 			</a>
 
 			{#if data.session && data.user}
@@ -611,17 +611,6 @@
 						>
 							<input
 								type="checkbox"
-								name="onionsNone"
-								bind:checked={filterOnionsNone}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">No onions</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
 								name="onionsMild"
 								bind:checked={filterOnionsMild}
 								class="checkbox checkbox-warning checkbox-sm"
@@ -648,18 +637,7 @@
 						<FluentEmojiLeafyGreen class="size-4" />
 						<span>Kraut (Fermented Cabbage):</span>
 					</h4>
-					<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="krautNone"
-								bind:checked={filterKrautNone}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">No kraut</span>
-						</label>
+					<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 						<label
 							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
 						>
