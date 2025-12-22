@@ -7,9 +7,7 @@
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import FluentAdd24Regular from '~icons/fluent/add-24-regular';
 	import FluentEmojiBread from '~icons/fluent-emoji/bread';
-	import FluentEmojiMeatOnBone from '~icons/fluent-emoji/meat-on-bone';
 	import FluentEmojiPoultryLeg from '~icons/fluent-emoji/poultry-leg';
-	import FluentEmojiSaltShaker from '~icons/fluent-emoji/salt';
 	import FluentEmojiOnion from '~icons/fluent-emoji/onion';
 	import FluentEmojiLeafyGreen from '~icons/fluent-emoji/leafy-green';
 	import FluentEmojiBottleWithPoppingCork from '~icons/fluent-emoji/bottle-with-popping-cork';
@@ -121,6 +119,9 @@
 	);
 	let filterMeatBeef = $state(
 		hasUrlParams ? page.url.searchParams.get('meatBeef') === 'true' : savedFilters.meatBeef || false
+	);
+	let filterMeatLamb = $state(
+		hasUrlParams ? page.url.searchParams.get('meatLamb') === 'true' : savedFilters.meatBeef || false
 	);
 	let filterMeatMixed = $state(
 		hasUrlParams
@@ -300,9 +301,9 @@
 			<FluentFood20Filled class="size-12 text-white" />
 		</div>
 	</div>
-	<h1 class="text-4xl font-bold text-white">🥙 Döner Finder</h1>
+	<h1 class="text-4xl font-bold text-white">Döner Rating</h1>
 	<p class="mt-2 text-lg text-orange-200/90">
-		Discover the best döner spots near you • <a href="/about" class="underline">About</a>
+		Recommend the best döner spots near you • <a href="/about" class="underline">About</a>
 	</p>
 </header>
 
@@ -414,7 +415,7 @@
 				<div class="space-y-2">
 					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
 						<FluentEmojiBread class="size-4" />
-						<span>Bread:</span>
+						Bread
 					</h4>
 					<div class="space-y-2">
 						<p class="text-xs text-orange-200/70">Shape:</p>
@@ -495,222 +496,216 @@
 				<!-- Meat Type -->
 				<div class="space-y-2">
 					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-						<FluentEmojiMeatOnBone class="size-4" />
-						<span>Meat Type:</span>
-					</h4>
-					<div class="grid grid-cols-2 gap-2">
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="meatMinced"
-								bind:checked={filterMeatMinced}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Minced</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="meatLayered"
-								bind:checked={filterMeatLayered}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Layered</span>
-						</label>
-					</div>
-				</div>
-
-				<!-- Meat Protein -->
-				<div class="space-y-2">
-					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
 						<FluentEmojiPoultryLeg class="size-4" />
-						<span>Protein:</span>
+						Meat
 					</h4>
-					<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="meatChicken"
-								bind:checked={filterMeatChicken}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Chicken</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="meatBeef"
-								bind:checked={filterMeatBeef}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Beef</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="meatMixed"
-								bind:checked={filterMeatMixed}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Mixed</span>
-						</label>
+
+					<div class="space-y-2">
+						<p class="text-xs text-orange-200/70">Consistency:</p>
+
+						<div class="grid grid-cols-2 gap-2">
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="meatMinced"
+									bind:checked={filterMeatMinced}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Minced</span>
+							</label>
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="meatLayered"
+									bind:checked={filterMeatLayered}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Layered</span>
+							</label>
+						</div>
+
+						<p class="pt-2 text-xs text-orange-200/70">Animal:</p>
+						<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="meatChicken"
+									bind:checked={filterMeatChicken}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Chicken</span>
+							</label>
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="meatBeef"
+									bind:checked={filterMeatBeef}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Cow</span>
+							</label>
+
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="meatLamb"
+									bind:checked={filterMeatLamb}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Lamb</span>
+							</label>
+						</div>
+
+						<p class="pt-2 text-xs text-orange-200/70">Seasoning:</p>
+						<div class="grid grid-cols-2 gap-2">
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="seasoningPure"
+									bind:checked={filterSeasoningPure}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Pure</span>
+							</label>
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="seasoningSeasoned"
+									bind:checked={filterSeasoningSeasoned}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Heavily seasoned</span>
+							</label>
+						</div>
+					</div>
+
+					<!-- Onions -->
+					<div class="space-y-2">
+						<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
+							<FluentEmojiOnion class="size-4" />
+							<span>Onions</span>
+						</h4>
+						<div class="grid grid-cols-2 gap-2">
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="onionsMild"
+									bind:checked={filterOnionsMild}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Mild</span>
+							</label>
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="onionsSpicy"
+									bind:checked={filterOnionsSpicy}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Spicy</span>
+							</label>
+						</div>
+					</div>
+
+					<!-- Kraut -->
+					<div class="space-y-2">
+						<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
+							<FluentEmojiLeafyGreen class="size-4" />
+							<span>Red Cabbage</span>
+						</h4>
+						<div class="grid grid-cols-2 gap-2">
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="krautMild"
+									bind:checked={filterKrautMild}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Mild</span>
+							</label>
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="krautSour"
+									bind:checked={filterKrautSour}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Sour</span>
+							</label>
+						</div>
+					</div>
+
+					<!-- Sauces -->
+					<div class="space-y-2">
+						<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
+							<FluentEmojiBottleWithPoppingCork class="size-4" />
+							<span>Sauces</span>
+						</h4>
+						<div class="grid grid-cols-2 gap-2">
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="yoghurtSauce"
+									bind:checked={filterYoghurtSauce}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Yoghurt</span>
+							</label>
+							<label
+								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+							>
+								<input
+									type="checkbox"
+									name="garlicSauce"
+									bind:checked={filterGarlicSauce}
+									class="checkbox checkbox-warning checkbox-sm"
+								/>
+								<span class="text-sm text-white">Garlic</span>
+							</label>
+						</div>
 					</div>
 				</div>
 
-				<!-- Seasoning -->
-				<div class="space-y-2">
-					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-						<FluentEmojiSaltShaker class="size-4" />
-						<span>Seasoning:</span>
-					</h4>
-					<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="seasoningPure"
-								bind:checked={filterSeasoningPure}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Pure</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="seasoningSeasoned"
-								bind:checked={filterSeasoningSeasoned}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Heavily seasoned</span>
-						</label>
-					</div>
+				<!-- Submit button -->
+				<div class="flex flex-col gap-3 sm:flex-row">
+					<button
+						type="submit"
+						class="btn btn-lg flex-1 border-0 bg-gradient-to-r from-orange-600 to-red-600 text-lg text-white hover:from-orange-500 hover:to-red-500"
+						disabled={loading || searchTerm.length < 2}
+					>
+						{#if loading}
+							<span class="loading loading-spinner loading-md"></span>
+						{:else}
+							<FluentFood20Filled class="size-6" />
+						{/if}
+						<span>Find Döners</span>
+						<FluentArrowRight24Regular class="size-6" />
+					</button>
 				</div>
-
-				<!-- Onions -->
-				<div class="space-y-2">
-					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-						<FluentEmojiOnion class="size-4" />
-						<span>Onions:</span>
-					</h4>
-					<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="onionsMild"
-								bind:checked={filterOnionsMild}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Mild onions</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="onionsSpicy"
-								bind:checked={filterOnionsSpicy}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Spicy onions</span>
-						</label>
-					</div>
-				</div>
-
-				<!-- Kraut -->
-				<div class="space-y-2">
-					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-						<FluentEmojiLeafyGreen class="size-4" />
-						<span>Kraut (Fermented Cabbage):</span>
-					</h4>
-					<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="krautMild"
-								bind:checked={filterKrautMild}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Mild kraut</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="krautSour"
-								bind:checked={filterKrautSour}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Sour kraut</span>
-						</label>
-					</div>
-				</div>
-
-				<!-- Sauces -->
-				<div class="space-y-2">
-					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-						<FluentEmojiBottleWithPoppingCork class="size-4" />
-						<span>Sauces:</span>
-					</h4>
-					<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="yoghurtSauce"
-								bind:checked={filterYoghurtSauce}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Yoghurt sauce</span>
-						</label>
-						<label
-							class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-						>
-							<input
-								type="checkbox"
-								name="garlicSauce"
-								bind:checked={filterGarlicSauce}
-								class="checkbox checkbox-warning checkbox-sm"
-							/>
-							<span class="text-sm text-white">Garlic sauce</span>
-						</label>
-					</div>
-				</div>
-			</div>
-
-			<!-- Submit button -->
-			<div class="flex flex-col gap-3 sm:flex-row">
-				<button
-					type="submit"
-					class="btn btn-lg flex-1 border-0 bg-gradient-to-r from-orange-600 to-red-600 text-lg text-white hover:from-orange-500 hover:to-red-500"
-					disabled={loading || searchTerm.length < 2}
-				>
-					{#if loading}
-						<span class="loading loading-spinner loading-md"></span>
-					{:else}
-						<FluentFood20Filled class="size-6" />
-					{/if}
-					<span>Find Döner Spots</span>
-					<FluentArrowRight24Regular class="size-6" />
-				</button>
 			</div>
 		</form>
 	</div>
@@ -730,7 +725,7 @@
 			Found <span class="text-xl text-white">{searchResults.length}</span> döner spot{searchResults.length !==
 			1
 				? 's'
-				: ''}, sorted by rating ⭐
+				: ''}
 		</p>
 	</div>
 {/if}
@@ -756,13 +751,6 @@
 				Try adjusting your search location or filters. Or be the first to review a döner spot in
 				your area!
 			</p>
-			<a
-				href="/doener/create"
-				class="btn btn-lg mt-4 border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-500 hover:to-red-500"
-			>
-				<FluentAdd24Regular class="size-5" />
-				Add First Review
-			</a>
 		</div>
 	</div>
 {/if}
