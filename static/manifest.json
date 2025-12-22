@@ -1,0 +1,35 @@
+{
+	"theme_color": "#8936FF",
+	"background_color": "#000000",
+	"icons": [
+		{
+			"purpose": "maskable",
+			"sizes": "512x512",
+			"src": "icon-512.png",
+			"type": "image/png"
+		},
+		{
+			"purpose": "any",
+			"sizes": "512x512",
+			"src": "icon-512.png",
+			"type": "image/png"
+		}
+	],
+	"orientation": "portrait",
+	"display": "standalone",
+	"dir": "ltr",
+	"lang": "en",
+	"name": "Döner Rating",
+	"short_name": "Döner Rating",
+	"description": "Search for Döner in Europe",
+
+	"share_target": {
+		"action": "/giftcode",
+		"method": "GET",
+		"params": {
+			"title": "title",
+			"text": "text",
+			"url": "url"
+		}
+	}
+}
