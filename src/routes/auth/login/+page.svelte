@@ -16,7 +16,7 @@
 	<div class="mb-4 flex justify-center">
 		<FluentEmojiStation class="h-16 w-16" />
 	</div>
-	<h1 class="text-3xl font-bold text-white">Train Station Search</h1>
+	<h1 class="text-3xl font-bold text-white">Doener Ratings</h1>
 	<p class="mt-2 text-lg text-white/70">Sign in to continue</p>
 </header>
 

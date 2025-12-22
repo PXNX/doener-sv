@@ -4,23 +4,7 @@ import { db } from '$lib/server/db';
 import { doenerRestaurants, doenerReviews, files } from '$lib/server/schema';
 import { eq, and, or, sql, desc, gte } from 'drizzle-orm';
 import type { DoenerRestaurantResult } from '$lib/types';
-
-/**
- * Get signed URL for a file
- */
-async function getImageUrl(fileId: string | null): Promise<string | null> {
-	if (!fileId) return null;
-
-	const file = await db.query.files.findFirst({
-		where: eq(files.id, fileId)
-	});
-
-	if (!file) return null;
-
-	// Assuming you have a getSignedDownloadUrl function
-	// If not, you can return the key directly or use your file serving method
-	return await getSignedDownloadUrl(file.key);
-}
+import { getImageUrl } from '$lib/server/backblaze';
 
 /**
  * Calculate most common attributes from reviews for a restaurant
@@ -71,14 +55,6 @@ async function aggregateRestaurantData(restaurantId: string) {
 	const meatSeasoningCount = reviews.reduce(
 		(acc, r) => {
 			acc[r.meatSeasoning] = (acc[r.meatSeasoning] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
-	const spiceLevelCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.spiceLevel] = (acc[r.spiceLevel] || 0) + 1;
 			return acc;
 		},
 		{} as Record<string, number>

@@ -2,7 +2,6 @@
 <script lang="ts">
 	import BackButton from '$lib/components/BackButton.svelte';
 	import FluentFood20Filled from '~icons/fluent/food-20-filled';
-	import FluentEmojiInformationSource from '~icons/fluent-emoji/information';
 	import FluentBranchFork24Regular from '~icons/fluent/branch-fork-24-regular';
 	import FluentOpenRegular from '~icons/fluent/open-24-regular';
 	import FluentIcons24Regular from '~icons/fluent/icons-24-regular';
@@ -112,7 +111,7 @@
 
 				<p>
 					<strong class="text-orange-200">4.</strong> Sauce balance matters. Yoghurt + garlic is classic.
-					Too much of either kills it.
+					Don't have it too garlicy, don't have the yoghurt be too liquid.
 				</p>
 
 				<p>
@@ -143,16 +142,6 @@
 				<p>
 					<strong class="text-orange-200">10.</strong> If they're trying too hard with "premium" ingredients
 					and fancy presentation, it's not real döner anymore.
-				</p>
-
-				<p>
-					<strong class="text-orange-200">11.</strong> Rate honestly. Help people find real spots, not
-					Instagram-worthy garbage.
-				</p>
-
-				<p>
-					<strong class="text-orange-200">12.</strong> Take a photo of your döner before you eat it. Document
-					the experience. Share the knowledge.
 				</p>
 			</div>
 		</div>

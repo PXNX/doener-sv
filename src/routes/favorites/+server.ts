@@ -4,22 +4,7 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { doenerRestaurants, doenerReviews, files } from '$lib/server/schema';
 import { inArray, eq, desc } from 'drizzle-orm';
-import { getSignedDownloadUrl } from '$lib/server/backblaze';
-
-/**
- * Get signed URL for a file
- */
-async function getImageUrl(fileId: string | null): Promise<string | null> {
-	if (!fileId) return null;
-
-	const file = await db.query.files.findFirst({
-		where: eq(files.id, fileId)
-	});
-
-	if (!file) return null;
-
-	return await getSignedDownloadUrl(file.key);
-}
+import { getImageUrl } from '$lib/server/backblaze';
 
 async function aggregateRestaurantData(restaurantId: string) {
 	const reviews = await db.query.doenerReviews.findMany({
@@ -71,14 +56,6 @@ async function aggregateRestaurantData(restaurantId: string) {
 		{} as Record<string, number>
 	);
 
-	const spiceLevelCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.spiceLevel] = (acc[r.spiceLevel] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
 	const yoghurtSauceCount = reviews.filter((r) => r.hasYoghurtSauce).length;
 	const garlicSauceCount = reviews.filter((r) => r.hasGarlicSauce).length;
 
@@ -103,7 +80,6 @@ async function aggregateRestaurantData(restaurantId: string) {
 		mostCommonMeatType: getMostCommon(meatTypeCount),
 		mostCommonMeatProtein: getMostCommon(meatProteinCount),
 		mostCommonMeatSeasoning: getMostCommon(meatSeasoningCount),
-		mostCommonSpiceLevel: getMostCommon(spiceLevelCount),
 		mostCommonYoghurtSauce: yoghurtSauceCount > reviews.length / 2,
 		mostCommonGarlicSauce: garlicSauceCount > reviews.length / 2,
 		latestReviewImage: latestImageUrl,

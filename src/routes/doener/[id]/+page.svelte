@@ -210,7 +210,7 @@
 
 				<!-- Action Button -->
 				<a
-					href="/doener/create?restaurant={data.restaurant.id}"
+					href={resolve('/doener/create')}
 					class="btn border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-500 hover:to-red-500"
 				>
 					<FluentAdd24Regular class="size-5" />
@@ -317,15 +317,6 @@
 											>🧅 Onions</span
 										>
 									{/if}
-									<span
-										class="badge badge-xs bg-{review.spiceLevel === 'spicy'
-											? 'red'
-											: 'green'}-500/20 border-{review.spiceLevel === 'spicy'
-											? 'red'
-											: 'green'}-400/40 text-{review.spiceLevel === 'spicy' ? 'red' : 'green'}-200"
-									>
-										{review.spiceLevel === 'spicy' ? '🌶️ Spicy' : '🌿 Mild'}
-									</span>
 
 									<!-- Sauces -->
 									{#if review.hasYoghurtSauce}
