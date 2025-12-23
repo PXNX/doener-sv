@@ -4,8 +4,8 @@
 	import FluentFood20Filled from '~icons/fluent/food-20-filled';
 	import FluentStar20Filled from '~icons/fluent/star-20-filled';
 	import FluentLocation20Filled from '~icons/fluent/location-20-filled';
-	import FluentAdd24Regular from '~icons/fluent/add-24-regular';
 	import type { PageData } from './$types';
+	import { formatDate } from '$lib/utils/format';
 
 	interface Props {
 		data: PageData;
@@ -13,16 +13,14 @@
 
 	let { data }: Props = $props();
 
-	function formatDate(dateString: string) {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
-	}
+	const getCategoryLabel = (rating: number) => {
+		const labels = ['Sub Average', 'Average', 'Good', 'Excellent'];
+		return labels[rating - 1] || 'N/A';
+	};
 
-	const renderStars = (rating: number) => {
-		return '⭐'.repeat(rating);
+	const getCategoryEmoji = (rating: number) => {
+		const emojis = ['😕', '😐', '😊', '🤩'];
+		return emojis[rating - 1] || '❓';
 	};
 </script>
 
@@ -74,11 +72,11 @@
 			>
 				<div class="card-body p-0">
 					<div class="flex flex-col items-start gap-4 p-4 sm:flex-row">
-						<!-- Restaurant Image (from döner listing) -->
+						<!-- Review Image -->
 						<div class="w-full shrink-0 sm:w-32">
-							{#if review.restaurant.imageUrl}
+							{#if review.imageUrl}
 								<img
-									src={review.restaurant.imageUrl}
+									src={review.imageUrl}
 									alt={review.restaurant.name}
 									class="h-32 w-full rounded-lg border-2 border-orange-500/30 object-cover sm:w-32"
 								/>
@@ -111,7 +109,7 @@
 									</p>
 								</div>
 
-								<!-- Rating -->
+								<!-- Overall Rating -->
 								<div class="flex shrink-0 items-center gap-2">
 									<div
 										class="flex items-center gap-1 rounded-lg border border-yellow-400/40 bg-yellow-400/20 px-3 py-1.5"
@@ -124,31 +122,63 @@
 								</div>
 							</div>
 
-							<!-- Döner Characteristics (from restaurant listing) -->
+							<!-- Category Ratings -->
+							<div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+								<div class="rounded-lg border border-red-400/30 bg-red-500/10 px-2 py-1.5">
+									<div class="text-xs text-red-200/70">Meat</div>
+									<div class="flex items-center gap-1 text-sm font-semibold text-red-200">
+										<span>{getCategoryEmoji(review.meatRating)}</span>
+										<span>{getCategoryLabel(review.meatRating)}</span>
+									</div>
+								</div>
+								<div class="rounded-lg border border-amber-400/30 bg-amber-500/10 px-2 py-1.5">
+									<div class="text-xs text-amber-200/70">Bread</div>
+									<div class="flex items-center gap-1 text-sm font-semibold text-amber-200">
+										<span>{getCategoryEmoji(review.breadRating)}</span>
+										<span>{getCategoryLabel(review.breadRating)}</span>
+									</div>
+								</div>
+								<div class="rounded-lg border border-green-400/30 bg-green-500/10 px-2 py-1.5">
+									<div class="text-xs text-green-200/70">Veggies</div>
+									<div class="flex items-center gap-1 text-sm font-semibold text-green-200">
+										<span>{getCategoryEmoji(review.veggiesRating)}</span>
+										<span>{getCategoryLabel(review.veggiesRating)}</span>
+									</div>
+								</div>
+								<div class="rounded-lg border border-blue-400/30 bg-blue-500/10 px-2 py-1.5">
+									<div class="text-xs text-blue-200/70">Sauce</div>
+									<div class="flex items-center gap-1 text-sm font-semibold text-blue-200">
+										<span>{getCategoryEmoji(review.sauceRating)}</span>
+										<span>{getCategoryLabel(review.sauceRating)}</span>
+									</div>
+								</div>
+							</div>
+
+							<!-- Döner Characteristics (from this specific review) -->
 							<div class="mt-3 flex flex-wrap gap-2">
 								<!-- Bread Shape -->
 								<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">
-									🥖 {review.restaurant.breadShape === 'triangular'
+									🥖 {review.breadShape === 'triangular'
 										? 'Triangular'
-										: review.restaurant.breadShape === 'circular'
+										: review.breadShape === 'circular'
 											? 'Circular'
 											: 'Long'}
 								</span>
 
 								<!-- Bread Properties -->
-								{#if review.restaurant.breadHasSesame}
+								{#if review.breadHasSesame}
 									<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">
 										🌰 Sesame
 									</span>
 								{/if}
-								{#if review.restaurant.breadFluffyInside}
+								{#if review.breadFluffyInside}
 									<span
 										class="badge badge-sm border-yellow-400/40 bg-yellow-500/20 text-yellow-200"
 									>
 										☁️ Fluffy
 									</span>
 								{/if}
-								{#if review.restaurant.breadCrispyOutside}
+								{#if review.breadCrispyOutside}
 									<span
 										class="badge badge-sm border-orange-400/40 bg-orange-500/20 text-orange-200"
 									>
@@ -158,35 +188,34 @@
 
 								<!-- Meat -->
 								<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
-									🥩 {review.restaurant.meatType === 'minced' ? 'Minced' : 'Layered'}
+									🥩 {review.meatType === 'minced' ? 'Minced' : 'Layered'}
 								</span>
 								<span class="badge badge-sm border-orange-500/40 bg-orange-600/20 text-orange-200">
-									{#if review.restaurant.meatProtein === 'chicken'}🐔{:else if review.restaurant.meatProtein === 'beef'}🐄{:else if review.restaurant.meatProtein === 'lamb'}🐑{:else}🍖{/if}
-									{review.restaurant.meatProtein.charAt(0).toUpperCase() +
-										review.restaurant.meatProtein.slice(1)}
+									{#if review.meatProtein === 'chicken'}🐔{:else if review.meatProtein === 'beef'}🐄{:else if review.meatProtein === 'lamb'}🐑{:else}🍖{/if}
+									{review.meatProtein.charAt(0).toUpperCase() + review.meatProtein.slice(1)}
 								</span>
 
 								<!-- Onions & Kraut -->
-								{#if review.restaurant.onionLevel}
+								{#if review.onionLevel}
 									<span
 										class="badge badge-sm border-purple-400/40 bg-purple-500/20 text-purple-200"
 									>
-										🧅 {review.restaurant.onionLevel === 'mild' ? 'Mild' : 'Spicy'} onions
+										🧅 {review.onionLevel === 'mild' ? 'Mild' : 'Spicy'} onions
 									</span>
 								{/if}
-								{#if review.restaurant.krautLevel}
+								{#if review.krautLevel}
 									<span class="badge badge-sm border-green-400/40 bg-green-500/20 text-green-200">
-										🥬 {review.restaurant.krautLevel === 'mild' ? 'Mild' : 'Sour'} kraut
+										🥬 {review.krautLevel === 'mild' ? 'Mild' : 'Sour'} kraut
 									</span>
 								{/if}
 
 								<!-- Sauces -->
-								{#if review.restaurant.hasYoghurtSauce}
+								{#if review.hasYoghurtSauce}
 									<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">
 										🥛 Yoghurt
 									</span>
 								{/if}
-								{#if review.restaurant.hasGarlicSauce}
+								{#if review.hasGarlicSauce}
 									<span
 										class="badge badge-sm border-purple-300/40 bg-purple-400/20 text-purple-200"
 									>

@@ -12,7 +12,7 @@
 	import FluentEmojiOnion from '~icons/fluent-emoji/onion';
 	import FluentEmojiLeafyGreen from '~icons/fluent-emoji/leafy-green';
 	import FluentEmojiBottleWithPoppingCork from '~icons/fluent-emoji/bottle-with-popping-cork';
-	import BackButton from '$lib/components/BackButton.svelte';../../../doener/create/$types.js
+	import BackButton from '$lib/components/BackButton.svelte';
 
 	let { data } = $props();
 

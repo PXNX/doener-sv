@@ -20,7 +20,7 @@
 
 	const FAVORITES_KEY = 'doener_favorites';
 
-	let favorites = $state<string[]>([]);
+	let favorites = $state<number[]>([]);
 	let isLoading = $state(true);
 	let restaurants: DoenerRestaurantResult[] = $state(data.restaurants || []);
 
@@ -45,7 +45,7 @@
 		}
 	}
 
-	async function fetchFavoriteRestaurants(favoriteIds: string[]) {
+	async function fetchFavoriteRestaurants(favoriteIds: number[]) {
 		if (favoriteIds.length === 0) {
 			isLoading = false;
 			restaurants = [];

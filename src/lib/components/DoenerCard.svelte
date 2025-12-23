@@ -29,7 +29,7 @@
 </script>
 
 <a
-	href="/doener/restaurant/{restaurant.id}"
+	href="/doener/{restaurant.id}"
 	class="card group overflow-hidden border border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-600/20"
 	style="view-transition-name: restaurant-{restaurant.id}"
 >
@@ -37,9 +37,9 @@
 		<div class="flex flex-col items-start gap-4 p-4 sm:flex-row">
 			<!-- Restaurant Image -->
 			<div class="w-full shrink-0 sm:w-32" style="view-transition-name: image-{restaurant.id}">
-				{#if restaurant.latestReviewImage}
+				{#if restaurant.doenerImage}
 					<img
-						src={restaurant.latestReviewImage}
+						src={restaurant.doenerImage}
 						alt={restaurant.name}
 						class="h-32 w-full rounded-lg border-2 border-orange-500/30 object-cover shadow-lg transition-all group-hover:border-orange-500/60 sm:w-32"
 					/>
@@ -84,79 +84,63 @@
 				<!-- Criteria Tags - Most Common -->
 				<div class="mt-3 flex flex-wrap gap-2">
 					<!-- Bread Tags -->
-					{#if restaurant.mostCommonBreadSesame}
+					{#if restaurant.breadHasSesame}
 						<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">
 							🌰 Sesame
 						</span>
 					{/if}
-					{#if restaurant.mostCommonBreadFluffy}
+					{#if restaurant.breadFluffyInside}
 						<span class="badge badge-sm border-yellow-400/40 bg-yellow-500/20 text-yellow-200">
 							☁️ Fluffy
 						</span>
 					{/if}
-					{#if restaurant.mostCommonBreadCrispy}
+					{#if restaurant.breadCrispyOutside}
 						<span class="badge badge-sm border-orange-400/40 bg-orange-500/20 text-orange-200">
 							🔥 Crispy
 						</span>
 					{/if}
 
 					<!-- Meat Tags -->
-					{#if restaurant.mostCommonMeatType === 'minced'}
+					{#if restaurant.meatType === 'minced'}
 						<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
 							🥩 Minced
 						</span>
-					{:else if restaurant.mostCommonMeatType === 'layered'}
+					{:else if restaurant.meatType === 'layered'}
 						<span class="badge badge-sm border-red-500/40 bg-red-600/20 text-red-200">
 							🥓 Layered
 						</span>
 					{/if}
 
-					{#if restaurant.mostCommonMeatProtein === 'chicken'}
+					{#if restaurant.meatProtein === 'chicken'}
 						<span class="badge badge-sm border-orange-500/40 bg-orange-600/20 text-orange-200">
 							🐔 Chicken
 						</span>
-					{:else if restaurant.mostCommonMeatProtein === 'beef'}
+					{:else if restaurant.meatProtein === 'beef'}
 						<span class="badge badge-sm border-red-600/40 bg-red-700/20 text-red-200">
 							🐄 Beef
 						</span>
-					{:else if restaurant.mostCommonMeatProtein === 'mixed'}
+					{:else if restaurant.meatProtein === 'lamb'}
+						<span class="badge badge-sm border-purple-500/40 bg-purple-600/20 text-purple-200">
+							🐑 Lamb
+						</span>
+					{:else if restaurant.meatProtein === 'mixed'}
 						<span class="badge badge-sm border-pink-400/40 bg-pink-500/20 text-pink-200">
 							🍖 Mixed
 						</span>
 					{/if}
 
-					<!-- Spice -->
-					{#if restaurant.mostCommonSpiceLevel === 'spicy'}
-						<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
-							🌶️ Spicy
-						</span>
-					{:else if restaurant.mostCommonSpiceLevel === 'mild'}
-						<span class="badge badge-sm border-green-400/40 bg-green-500/20 text-green-200">
-							🌿 Mild
-						</span>
-					{/if}
-
 					<!-- Sauces -->
-					{#if restaurant.mostCommonYoghurtSauce}
+					{#if restaurant.hasYoghurtSauce}
 						<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">
 							🥛 Yoghurt
 						</span>
 					{/if}
-					{#if restaurant.mostCommonGarlicSauce}
+					{#if restaurant.hasGarlicSauce}
 						<span class="badge badge-sm border-purple-300/40 bg-purple-400/20 text-purple-200">
 							🧄 Garlic
 						</span>
 					{/if}
 				</div>
-
-				<!-- Preview of latest review -->
-				{#if restaurant.latestReviewNotes}
-					<div class="mt-3 rounded-lg border border-orange-500/20 bg-slate-800/40 p-2">
-						<p class="line-clamp-2 text-sm text-orange-100/80 italic">
-							"{restaurant.latestReviewNotes}"
-						</p>
-					</div>
-				{/if}
 			</div>
 
 			<!-- Arrow -->

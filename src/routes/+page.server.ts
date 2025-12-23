@@ -9,7 +9,7 @@ import { getImageUrl } from '$lib/server/backblaze';
 /**
  * Calculate most common attributes from reviews for a restaurant
  */
-async function aggregateRestaurantData(restaurantId: string) {
+async function aggregateRestaurantData(restaurantId: number) {
 	const reviews = await db.query.doenerReviews.findMany({
 		where: eq(doenerReviews.restaurantId, restaurantId),
 		orderBy: desc(doenerReviews.createdAt)
@@ -86,7 +86,6 @@ async function aggregateRestaurantData(restaurantId: string) {
 		mostCommonMeatType: getMostCommon(meatTypeCount),
 		mostCommonMeatProtein: getMostCommon(meatProteinCount),
 		mostCommonMeatSeasoning: getMostCommon(meatSeasoningCount),
-		mostCommonSpiceLevel: getMostCommon(spiceLevelCount),
 		mostCommonYoghurtSauce: yoghurtSauceCount > reviews.length / 2,
 		mostCommonGarlicSauce: garlicSauceCount > reviews.length / 2,
 		latestReviewImage: latestImageUrl,
@@ -148,7 +147,7 @@ async function searchRestaurants(
 				latitude: doenerRestaurants.latitude,
 				longitude: doenerRestaurants.longitude,
 				reviewCount: doenerRestaurants.reviewCount,
-				averageRating: doenerRestaurants.averageRating,
+				//		averageRating: doenerRestaurants.averageRating,
 				createdAt: doenerRestaurants.createdAt
 			})
 			.from(doenerRestaurants)
@@ -156,7 +155,8 @@ async function searchRestaurants(
 
 		// Apply sorting
 		if (sortBy === 'rating') {
-			query = query.orderBy(desc(doenerRestaurants.averageRating));
+			// TODO: calculat actual average rating from reviews
+			//	query = query.orderBy(desc(doenerRestaurants.averageRating));
 		} else {
 			query = query.orderBy(desc(doenerRestaurants.reviewCount));
 		}
@@ -226,14 +226,6 @@ async function searchRestaurants(
 					if (!seasoningMatch) matches = false;
 				}
 
-				// Spice filters (OR logic)
-				if (filters.spicy || filters.mild) {
-					const spiceMatch =
-						(filters.spicy && aggregated.mostCommonSpiceLevel === 'spicy') ||
-						(filters.mild && aggregated.mostCommonSpiceLevel === 'mild');
-					if (!spiceMatch) matches = false;
-				}
-
 				// Sauce filters (must have if selected)
 				if (filters.yoghurtSauce && !aggregated.mostCommonYoghurtSauce) matches = false;
 				if (filters.garlicSauce && !aggregated.mostCommonGarlicSauce) matches = false;
@@ -249,7 +241,7 @@ async function searchRestaurants(
 				latitude: restaurant.latitude,
 				longitude: restaurant.longitude,
 				reviewCount: restaurant.reviewCount,
-				averageRating: restaurant.averageRating || 0,
+				averageRating: 0, // restaurant.averageRating || 0,
 				...aggregated
 			});
 		}
