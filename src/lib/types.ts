@@ -1,7 +1,7 @@
 // src/lib/types.ts
 
 export interface DoenerRestaurantResult {
-	id: string;
+	id: number;
 	name: string;
 	city: string;
 	country: string;
@@ -26,7 +26,7 @@ export interface DoenerRestaurantResult {
 }
 
 export interface DoenerReviewData {
-	id: string;
+	id: number;
 	restaurantId: string;
 	userId: string;
 	rating: number;
