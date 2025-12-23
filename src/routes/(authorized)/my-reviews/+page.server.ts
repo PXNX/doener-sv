@@ -2,27 +2,9 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { doenerReviews, doenerRestaurants, files } from '$lib/server/schema';
+import { doenerReviews, doenerRestaurants } from '$lib/server/schema';
 import { eq, desc } from 'drizzle-orm';
-
-/**
- * Get signed URL for a file
- */
-async function getImageUrl(fileId: string | null): Promise<string | null> {
-	if (!fileId) return null;
-
-	const file = await db.query.files.findFirst({
-		where: eq(files.id, fileId)
-	});
-
-	if (!file) return null;
-
-	try {
-		return await getSignedDownloadUrl(file.key);
-	} catch {
-		return `/api/files/${file.key}`;
-	}
-}
+import { getImageUrl } from '$lib/server/backblaze';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
@@ -42,30 +24,33 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const reviews = await Promise.all(
 		userReviews.map(async ({ review, restaurant }) => {
-			const imageUrl = await getImageUrl(review.doenerImage);
+			// Get image from restaurant (not review)
+			const imageUrl = await getImageUrl(restaurant.doenerImage);
 
 			return {
 				id: review.id,
 				restaurantId: review.restaurantId,
-				breadHasSesame: review.breadHasSesame,
-				breadFluffyInside: review.breadFluffyInside,
-				breadCrispyOutside: review.breadCrispyOutside,
-				meatType: review.meatType,
-				meatProtein: review.meatProtein,
-				meatSeasoning: review.meatSeasoning,
-				hasOnions: review.hasOnions,
-				spiceLevel: review.spiceLevel,
-				hasYoghurtSauce: review.hasYoghurtSauce,
-				hasGarlicSauce: review.hasGarlicSauce,
-				overallRating: review.overallRating,
-				notes: review.notes,
+				rating: review.rating,
+				description: review.description,
 				createdAt: review.createdAt.toISOString(),
-				imageUrl,
 				restaurant: {
 					id: restaurant.id,
 					name: restaurant.name,
 					city: restaurant.city,
-					country: restaurant.country
+					country: restaurant.country,
+					// Include döner characteristics from restaurant
+					breadShape: restaurant.breadShape,
+					breadHasSesame: restaurant.breadHasSesame,
+					breadFluffyInside: restaurant.breadFluffyInside,
+					breadCrispyOutside: restaurant.breadCrispyOutside,
+					meatType: restaurant.meatType,
+					meatProtein: restaurant.meatProtein,
+					meatSeasoning: restaurant.meatSeasoning,
+					onionLevel: restaurant.onionLevel,
+					krautLevel: restaurant.krautLevel,
+					hasYoghurtSauce: restaurant.hasYoghurtSauce,
+					hasGarlicSauce: restaurant.hasGarlicSauce,
+					imageUrl
 				}
 			};
 		})

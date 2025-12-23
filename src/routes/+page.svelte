@@ -3,7 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { browser } from '$app/environment';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
-	import FluentFood20Filled from '~icons/fluent/food-20-filled';
+	import FluentEmojiStuffedFlatbread from '~icons/fluent-emoji/stuffed-flatbread';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import FluentAdd24Regular from '~icons/fluent/add-24-regular';
 	import FluentEmojiBread from '~icons/fluent-emoji/bread';
@@ -298,12 +298,12 @@
 		<div
 			class="flex size-20 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-600 to-red-600"
 		>
-			<FluentFood20Filled class="size-12 text-white" />
+			<FluentEmojiStuffedFlatbread class="size-12 text-white" />
 		</div>
 	</div>
 	<h1 class="text-4xl font-bold text-white">Döner Rating</h1>
 	<p class="mt-2 text-lg text-orange-200/90">
-		Recommend the best döner spots near you • <a href="/about" class="underline">About</a>
+		Recommend the best Döners • <a href="/about" class="underline">About</a>
 	</p>
 </header>
 
@@ -700,7 +700,7 @@
 						{#if loading}
 							<span class="loading loading-spinner loading-md"></span>
 						{:else}
-							<FluentFood20Filled class="size-6" />
+							<FluentEmojiStuffedFlatbread class="size-6" />
 						{/if}
 						<span>Find Döners</span>
 						<FluentArrowRight24Regular class="size-6" />

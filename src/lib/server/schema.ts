@@ -8,10 +8,9 @@ import {
 	doublePrecision,
 	timestamp,
 	serial,
-	index,
-	uuid
+	index
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+
 import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
@@ -31,61 +30,19 @@ export const sessions = pgTable('sessions', {
 	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
 });
 
-export const files = pgTable('files', {
-	id: uuid('id').primaryKey(),
-	key: text('key').notNull(),
-	fileName: text('file_name').notNull(),
-	contentType: text('content_type').notNull(),
-	sizeBytes: integer('size_bytes').notNull(),
-	uploadedBy: text('uploaded_by')
-		.notNull()
-		.references(() => users.id, { onDelete: 'cascade' }),
-	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
-});
-
 export const doenerRestaurants = pgTable(
 	'doener_restaurants',
 	{
-		id: uuid('id').primaryKey(),
-		name: varchar('name', { length: 200 }).notNull(),
+		id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
+		name: varchar('name', { length: 50 }).notNull(),
 		city: varchar('city', { length: 100 }).notNull(),
 		country: varchar('country', { length: 2 }).notNull().default('DE'),
-
-		// Location
 		latitude: doublePrecision('latitude').notNull(),
 		longitude: doublePrecision('longitude').notNull(),
 
-		// Stats
-		reviewCount: integer('review_count').notNull().default(0),
-		averageRating: doublePrecision('average_rating'),
-
-		// Metadata
-		addedBy: text('added_by')
-			.notNull()
-			.references(() => users.id, { onDelete: 'cascade' }),
-		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
-	},
-	(table) => ({
-		nameIdx: index('doener_name_idx').on(table.name),
-		cityIdx: index('doener_city_idx').on(table.city),
-		locationIdx: index('doener_location_idx').on(table.latitude, table.longitude),
-		ratingIdx: index('doener_rating_idx').on(table.averageRating)
-	})
-);
-export const doenerReviews = pgTable(
-	'doener_reviews',
-	{
-		id: uuid('id').primaryKey(),
-		restaurantId: uuid('restaurant_id')
-			.notNull()
-			.references(() => doenerRestaurants.id, { onDelete: 'cascade' }),
-		userId: text('user_id')
-			.notNull()
-			.references(() => users.id, { onDelete: 'cascade' }),
-
-		// Image of the döner
-		doenerImage: uuid('doener_image').references(() => files.id, { onDelete: 'set null' }),
+		// Döner characteristics (set when creating the döner listing)
+		// Image
+		doenerImage: text('doener_image').references(() => files.id, { onDelete: 'set null' }),
 
 		// Bread criteria
 		breadShape: varchar('bread_shape', { length: 20 }).notNull(), // 'triangular', 'circular', 'long'
@@ -94,33 +51,89 @@ export const doenerReviews = pgTable(
 		breadCrispyOutside: boolean('bread_crispy_outside').notNull().default(false),
 
 		// Meat criteria
-		meatType: varchar('meat_type', { length: 20 }).notNull(), // 'minced' or 'layered'
-		meatProtein: varchar('meat_protein', { length: 20 }).notNull(), // 'chicken', 'beef', 'mixed'
+		meatType: varchar('meat_type', { length: 20 }).notNull(), // 'minced', 'layered'
+		meatProtein: varchar('meat_protein', { length: 20 }).notNull(), // 'chicken', 'beef', 'lamb', 'mixed'
 		meatSeasoning: varchar('meat_seasoning', { length: 20 }).notNull(), // 'pure', 'seasoned', 'phosphate'
 
 		// Toppings
-		hasOnions: varchar('has_onions', { length: 20 }).notNull(), // 'none', 'mild', 'spicy'
-		krautLevel: varchar('kraut_level', { length: 20 }).notNull(), // 'none', 'mild', 'sour'
+		onionLevel: varchar('onion_level', { length: 20 }), // 'mild', 'spicy' (nullable - can be null if no onions)
+		krautLevel: varchar('kraut_level', { length: 20 }), // 'mild', 'sour' (nullable - can be null if no kraut)
 
 		// Sauces
 		hasYoghurtSauce: boolean('has_yoghurt_sauce').notNull().default(false),
 		hasGarlicSauce: boolean('has_garlic_sauce').notNull().default(false),
 
-		// Overall rating & notes
-		overallRating: integer('overall_rating').notNull(), // 1-5 stars
-		notes: text('notes'),
+		addedBy: text('added_by')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+		reviewCount: integer('review_count').notNull().default(0),
 
-		// Metadata
+		// Average ratings for each category
+		averageMeatRating: doublePrecision('average_meat_rating'),
+		averageBreadRating: doublePrecision('average_bread_rating'),
+		averageVeggiesRating: doublePrecision('average_veggies_rating'),
+		averageSauceRating: doublePrecision('average_sauce_rating'),
+		averageOverallRating: doublePrecision('average_overall_rating'),
+
 		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 	},
 	(table) => ({
-		restaurantIdx: index('review_restaurant_idx').on(table.restaurantId),
-		userIdx: index('review_user_idx').on(table.userId),
-		ratingIdx: index('review_rating_idx').on(table.overallRating),
-		createdAtIdx: index('review_created_at_idx').on(table.createdAt)
+		cityIdx: index('doener_restaurants_city_idx').on(table.city),
+		countryIdx: index('doener_restaurants_country_idx').on(table.country),
+		overallRatingIdx: index('doener_restaurants_overall_rating_idx').on(table.averageOverallRating),
+		nameIdx: index('doener_restaurants_name_idx').on(table.name)
 	})
 );
+
+export const doenerReviews = pgTable(
+	'doener_reviews',
+	{
+		id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
+		restaurantId: integer('restaurant_id')
+			.notNull()
+			.references(() => doenerRestaurants.id, { onDelete: 'cascade' }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => users.id, { onDelete: 'cascade' }),
+
+		// Category ratings (1-4: sub average, average, good, excellent)
+		meatRating: integer('meat_rating').notNull(),
+		breadRating: integer('bread_rating').notNull(),
+		veggiesRating: integer('veggies_rating').notNull(),
+		sauceRating: integer('sauce_rating').notNull(),
+
+		// Short description (max 200 characters)
+		description: varchar('description', { length: 200 }).notNull(),
+
+		createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+		updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+	},
+	(table) => ({
+		restaurantIdx: index('doener_reviews_restaurant_idx').on(table.restaurantId),
+		userIdx: index('doener_reviews_user_idx').on(table.userId),
+		// Prevent duplicate reviews from same user for same restaurant
+		userRestaurantIdx: index('doener_reviews_user_restaurant_idx').on(
+			table.userId,
+			table.restaurantId
+		)
+	})
+);
+
+export const files = pgTable('files', {
+	id: text('id').primaryKey(),
+	key: text('key').notNull().unique(),
+	fileName: varchar('file_name', { length: 255 }).notNull(),
+	contentType: varchar('content_type', { length: 100 }).notNull(),
+	sizeBytes: integer('size_bytes').notNull(),
+	uploadedBy: text('uploaded_by')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+});
+
+export type File = typeof files.$inferSelect;
+export type NewFile = typeof files.$inferInsert;
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -144,10 +157,6 @@ export const doenerReviewsRelations = relations(doenerReviews, ({ one }) => ({
 	user: one(users, {
 		fields: [doenerReviews.userId],
 		references: [users.id]
-	}),
-	image: one(files, {
-		fields: [doenerReviews.doenerImage],
-		references: [files.id]
 	})
 }));
 

@@ -55,12 +55,12 @@
 			>
 				<div class="card-body p-4">
 					<div class="flex flex-col gap-4 sm:flex-row">
-						<!-- Image -->
+						<!-- Image from restaurant -->
 						<div class="w-full shrink-0 sm:w-24">
 							{#if review.imageUrl}
 								<img
 									src={review.imageUrl}
-									alt="Döner"
+									alt={review.restaurant.name}
 									class="h-24 w-full rounded-lg border-2 border-orange-500/30 object-cover sm:w-24"
 								/>
 							{:else}
@@ -81,7 +81,9 @@
 									</h3>
 									<div class="flex items-center gap-2 text-sm text-orange-300/90">
 										<FluentLocation20Filled class="size-4 shrink-0" />
-										<span class="truncate">{review.restaurant.city}</span>
+										<span class="truncate"
+											>{review.restaurant.city}, {review.restaurant.country}</span
+										>
 									</div>
 								</div>
 
@@ -91,7 +93,7 @@
 									>
 										<FluentStar20Filled class="size-4 text-yellow-400" />
 										<span class="text-sm font-bold text-yellow-400">
-											{review.overallRating}
+											{review.rating}
 										</span>
 									</div>
 								</div>
@@ -103,29 +105,42 @@
 								)}
 							</div>
 
-							<!-- Criteria -->
+							<!-- Döner Characteristics from restaurant -->
 							<div class="mb-2 flex flex-wrap gap-1">
-								{#if review.breadHasSesame}<span
+								<span class="badge badge-xs bg-amber-500/20 text-amber-200"
+									>{review.restaurant.breadShape}</span
+								>
+								{#if review.restaurant.breadHasSesame}<span
 										class="badge badge-xs bg-amber-500/20 text-amber-200">Sesame</span
 									>{/if}
-								{#if review.breadFluffyInside}<span
+								{#if review.restaurant.breadFluffyInside}<span
 										class="badge badge-xs bg-yellow-500/20 text-yellow-200">Fluffy</span
 									>{/if}
-								{#if review.breadCrispyOutside}<span
+								{#if review.restaurant.breadCrispyOutside}<span
 										class="badge badge-xs bg-orange-500/20 text-orange-200">Crispy</span
 									>{/if}
-								<span class="badge badge-xs bg-red-500/20 text-red-200">{review.meatType}</span>
-								<span class="badge badge-xs bg-orange-600/20 text-orange-200"
-									>{review.meatProtein}</span
+								<span class="badge badge-xs bg-red-500/20 text-red-200"
+									>{review.restaurant.meatType}</span
 								>
-								<span class="badge badge-xs bg-red-500/20 text-red-200">{review.spiceLevel}</span>
+								<span class="badge badge-xs bg-orange-600/20 text-orange-200"
+									>{review.restaurant.meatProtein}</span
+								>
+								{#if review.restaurant.onionLevel}<span
+										class="badge badge-xs bg-purple-500/20 text-purple-200"
+										>{review.restaurant.onionLevel} onions</span
+									>{/if}
+								{#if review.restaurant.krautLevel}<span
+										class="badge badge-xs bg-green-500/20 text-green-200"
+										>{review.restaurant.krautLevel} kraut</span
+									>{/if}
 							</div>
 
-							{#if review.notes}
+							<!-- Review Description -->
+							{#if review.description}
 								<p
-									class="line-clamp-2 rounded border border-orange-500/20 bg-slate-800/40 p-2 text-sm text-orange-100/80 italic"
+									class="line-clamp-2 rounded border border-orange-500/20 bg-slate-800/40 p-2 text-sm text-orange-100/80"
 								>
-									"{review.notes}"
+									"{review.description}"
 								</p>
 							{/if}
 						</div>
@@ -133,7 +148,7 @@
 						<!-- Actions -->
 						<div class="flex shrink-0 gap-2 sm:flex-col">
 							<a
-								href="/doener/restaurant/{review.restaurant.id}"
+								href="/doener/{review.restaurant.id}"
 								class="btn btn-sm btn-ghost text-orange-300 hover:text-white"
 							>
 								View

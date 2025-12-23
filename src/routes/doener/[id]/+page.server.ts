@@ -2,90 +2,17 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { doenerRestaurants, doenerReviews, files, users } from '$lib/server/schema';
-import { eq, desc } from 'drizzle-orm';
+import { doenerRestaurants, doenerReviews, users } from '$lib/server/schema';
+import { eq, desc, and } from 'drizzle-orm';
 import { getImageUrl } from '$lib/server/backblaze';
 
-/**
- * Calculate most common attributes from reviews
- */
-function calculateMostCommon(reviews: any[]) {
-	if (reviews.length === 0) {
-		return {
-			mostCommonBreadSesame: false,
-			mostCommonBreadFluffy: false,
-			mostCommonBreadCrispy: false,
-			mostCommonMeatType: null,
-			mostCommonMeatProtein: null,
-			mostCommonMeatSeasoning: null,
-			mostCommonSpiceLevel: null,
-			mostCommonYoghurtSauce: false,
-			mostCommonGarlicSauce: false
-		};
+export const load: PageServerLoad = async ({ params, locals }) => {
+	const restaurantId = parseInt(params.id);
+
+	if (isNaN(restaurantId)) {
+		throw error(400, 'Invalid restaurant ID');
 	}
 
-	const breadSesameCount = reviews.filter((r) => r.breadHasSesame).length;
-	const breadFluffyCount = reviews.filter((r) => r.breadFluffyInside).length;
-	const breadCrispyCount = reviews.filter((r) => r.breadCrispyOutside).length;
-
-	const meatTypeCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.meatType] = (acc[r.meatType] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
-	const meatProteinCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.meatProtein] = (acc[r.meatProtein] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
-	const meatSeasoningCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.meatSeasoning] = (acc[r.meatSeasoning] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
-	const spiceLevelCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.spiceLevel] = (acc[r.spiceLevel] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
-	const yoghurtSauceCount = reviews.filter((r) => r.hasYoghurtSauce).length;
-	const garlicSauceCount = reviews.filter((r) => r.hasGarlicSauce).length;
-
-	const getMostCommon = (counts: Record<string, number>) => {
-		const entries = Object.entries(counts);
-		if (entries.length === 0) return null;
-		return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
-	};
-
-	return {
-		mostCommonBreadSesame: breadSesameCount > reviews.length / 2,
-		mostCommonBreadFluffy: breadFluffyCount > reviews.length / 2,
-		mostCommonBreadCrispy: breadCrispyCount > reviews.length / 2,
-		mostCommonMeatType: getMostCommon(meatTypeCount),
-		mostCommonMeatProtein: getMostCommon(meatProteinCount),
-		mostCommonMeatSeasoning: getMostCommon(meatSeasoningCount),
-		mostCommonSpiceLevel: getMostCommon(spiceLevelCount),
-		mostCommonYoghurtSauce: yoghurtSauceCount > reviews.length / 2,
-		mostCommonGarlicSauce: garlicSauceCount > reviews.length / 2
-	};
-}
-
-export const load: PageServerLoad = async ({ params }) => {
-	const restaurantId = params.id;
-
-	// Fetch restaurant
 	const restaurant = await db.query.doenerRestaurants.findFirst({
 		where: eq(doenerRestaurants.id, restaurantId)
 	});
@@ -105,40 +32,39 @@ export const load: PageServerLoad = async ({ params }) => {
 		.where(eq(doenerReviews.restaurantId, restaurantId))
 		.orderBy(desc(doenerReviews.createdAt));
 
-	// Process reviews and get image URLs
-	const reviews = await Promise.all(
-		reviewsData.map(async ({ review, user }) => {
-			const imageUrl = await getImageUrl(review.doenerImage);
+	const reviews = reviewsData.map(({ review, user }) => ({
+		id: review.id,
+		restaurantId: review.restaurantId,
+		userId: review.userId,
+		meatRating: review.meatRating,
+		breadRating: review.breadRating,
+		veggiesRating: review.veggiesRating,
+		sauceRating: review.sauceRating,
+		overallRating:
+			(review.meatRating + review.breadRating + review.veggiesRating + review.sauceRating) / 4,
+		description: review.description,
+		createdAt: review.createdAt.toISOString(),
+		user: {
+			id: user.id,
+			name: user.name,
+			email: user.email
+		}
+	}));
 
-			return {
-				id: review.id,
-				breadHasSesame: review.breadHasSesame,
-				breadFluffyInside: review.breadFluffyInside,
-				breadCrispyOutside: review.breadCrispyOutside,
-				meatType: review.meatType,
-				meatProtein: review.meatProtein,
-				meatSeasoning: review.meatSeasoning,
-				hasOnions: review.hasOnions,
-				hasYoghurtSauce: review.hasYoghurtSauce,
-				hasGarlicSauce: review.hasGarlicSauce,
-				overallRating: review.overallRating,
-				notes: review.notes,
-				createdAt: review.createdAt.toISOString(),
-				imageUrl,
-				user: {
-					id: user.id,
-					name: user.name,
-					email: user.email
-				}
-			};
-		})
-	);
+	// Check if current user has already reviewed this restaurant
+	let userHasReviewed = false;
+	if (locals.user) {
+		const existingReview = await db.query.doenerReviews.findFirst({
+			where: and(
+				eq(doenerReviews.restaurantId, restaurantId),
+				eq(doenerReviews.userId, locals.user.id)
+			)
+		});
+		userHasReviewed = !!existingReview;
+	}
 
-	// Get latest review image for header
-	const latestReviewWithImage = reviews.find((r) => r.imageUrl);
-
-	// Calculate most common criteria
-	const criteria = calculateMostCommon(reviewsData.map((r) => r.review));
+	// Get image URL
+	const imageUrl = await getImageUrl(restaurant.doenerImage);
 
 	return {
 		restaurant: {
@@ -149,10 +75,27 @@ export const load: PageServerLoad = async ({ params }) => {
 			latitude: restaurant.latitude,
 			longitude: restaurant.longitude,
 			reviewCount: restaurant.reviewCount,
-			averageRating: restaurant.averageRating || 0
+			averageMeatRating: restaurant.averageMeatRating || 0,
+			averageBreadRating: restaurant.averageBreadRating || 0,
+			averageVeggiesRating: restaurant.averageVeggiesRating || 0,
+			averageSauceRating: restaurant.averageSauceRating || 0,
+			averageOverallRating: restaurant.averageOverallRating || 0,
+			breadShape: restaurant.breadShape,
+			breadHasSesame: restaurant.breadHasSesame,
+			breadFluffyInside: restaurant.breadFluffyInside,
+			breadCrispyOutside: restaurant.breadCrispyOutside,
+			meatType: restaurant.meatType,
+			meatProtein: restaurant.meatProtein,
+			meatSeasoning: restaurant.meatSeasoning,
+			onionLevel: restaurant.onionLevel,
+			krautLevel: restaurant.krautLevel,
+			hasYoghurtSauce: restaurant.hasYoghurtSauce,
+			hasGarlicSauce: restaurant.hasGarlicSauce,
+			doenerImage: imageUrl
 		},
 		reviews,
-		latestReviewImage: latestReviewWithImage?.imageUrl || null,
-		criteria
+		userHasReviewed,
+		user: locals.user,
+		session: locals.session
 	};
 };
