@@ -54,14 +54,14 @@
 			<div class="text-8xl">🥙</div>
 			<h3 class="text-2xl font-bold text-white">No reviews yet</h3>
 			<p class="max-w-md text-center text-lg text-orange-200/90">
-				Start contributing to the community by reviewing your favorite döner spots!
+				Start contributing to the community by reviewing döner spots!
 			</p>
 			<a
-				href="/doener/create"
+				href="/"
 				class="btn btn-lg mt-4 border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-500 hover:to-red-500"
 			>
-				<FluentAdd24Regular class="size-5" />
-				Add Your First Review
+				<FluentFood20Filled class="size-5" />
+				Find Döner Spots
 			</a>
 		</div>
 	</div>
@@ -69,17 +69,17 @@
 	<div class="space-y-4">
 		{#each data.reviews as review}
 			<a
-				href="/doener/restaurant/{review.restaurant.id}"
+				href="/doener/{review.restaurant.id}"
 				class="card group border border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-md transition-all duration-300 hover:scale-[1.01] hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-600/20"
 			>
 				<div class="card-body p-0">
 					<div class="flex flex-col items-start gap-4 p-4 sm:flex-row">
-						<!-- Review Image -->
+						<!-- Restaurant Image (from döner listing) -->
 						<div class="w-full shrink-0 sm:w-32">
-							{#if review.imageUrl}
+							{#if review.restaurant.imageUrl}
 								<img
-									src={review.imageUrl}
-									alt="Döner"
+									src={review.restaurant.imageUrl}
+									alt={review.restaurant.name}
 									class="h-32 w-full rounded-lg border-2 border-orange-500/30 object-cover sm:w-32"
 								/>
 							{:else}
@@ -118,28 +118,37 @@
 									>
 										<FluentStar20Filled class="size-5 text-yellow-400" />
 										<span class="text-lg font-bold text-yellow-400">
-											{review.overallRating}
+											{review.rating}
 										</span>
 									</div>
 								</div>
 							</div>
 
-							<!-- Criteria Tags -->
+							<!-- Döner Characteristics (from restaurant listing) -->
 							<div class="mt-3 flex flex-wrap gap-2">
-								<!-- Bread -->
-								{#if review.breadHasSesame}
+								<!-- Bread Shape -->
+								<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">
+									🥖 {review.restaurant.breadShape === 'triangular'
+										? 'Triangular'
+										: review.restaurant.breadShape === 'circular'
+											? 'Circular'
+											: 'Long'}
+								</span>
+
+								<!-- Bread Properties -->
+								{#if review.restaurant.breadHasSesame}
 									<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">
 										🌰 Sesame
 									</span>
 								{/if}
-								{#if review.breadFluffyInside}
+								{#if review.restaurant.breadFluffyInside}
 									<span
 										class="badge badge-sm border-yellow-400/40 bg-yellow-500/20 text-yellow-200"
 									>
 										☁️ Fluffy
 									</span>
 								{/if}
-								{#if review.breadCrispyOutside}
+								{#if review.restaurant.breadCrispyOutside}
 									<span
 										class="badge badge-sm border-orange-400/40 bg-orange-500/20 text-orange-200"
 									>
@@ -149,30 +158,35 @@
 
 								<!-- Meat -->
 								<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
-									🥩 {review.meatType === 'minced' ? 'Minced' : 'Layered'}
+									🥩 {review.restaurant.meatType === 'minced' ? 'Minced' : 'Layered'}
 								</span>
 								<span class="badge badge-sm border-orange-500/40 bg-orange-600/20 text-orange-200">
-									{#if review.meatProtein === 'chicken'}🐔{:else if review.meatProtein === 'beef'}🐄{:else}🍖{/if}
-									{review.meatProtein.charAt(0).toUpperCase() + review.meatProtein.slice(1)}
+									{#if review.restaurant.meatProtein === 'chicken'}🐔{:else if review.restaurant.meatProtein === 'beef'}🐄{:else if review.restaurant.meatProtein === 'lamb'}🐑{:else}🍖{/if}
+									{review.restaurant.meatProtein.charAt(0).toUpperCase() +
+										review.restaurant.meatProtein.slice(1)}
 								</span>
 
-								<!-- Spice & Sauces -->
-								{#if review.spiceLevel === 'spicy'}
-									<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
-										🌶️ Spicy
+								<!-- Onions & Kraut -->
+								{#if review.restaurant.onionLevel}
+									<span
+										class="badge badge-sm border-purple-400/40 bg-purple-500/20 text-purple-200"
+									>
+										🧅 {review.restaurant.onionLevel === 'mild' ? 'Mild' : 'Spicy'} onions
 									</span>
-								{:else}
+								{/if}
+								{#if review.restaurant.krautLevel}
 									<span class="badge badge-sm border-green-400/40 bg-green-500/20 text-green-200">
-										🌿 Mild
+										🥬 {review.restaurant.krautLevel === 'mild' ? 'Mild' : 'Sour'} kraut
 									</span>
 								{/if}
 
-								{#if review.hasYoghurtSauce}
+								<!-- Sauces -->
+								{#if review.restaurant.hasYoghurtSauce}
 									<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">
 										🥛 Yoghurt
 									</span>
 								{/if}
-								{#if review.hasGarlicSauce}
+								{#if review.restaurant.hasGarlicSauce}
 									<span
 										class="badge badge-sm border-purple-300/40 bg-purple-400/20 text-purple-200"
 									>
@@ -181,11 +195,11 @@
 								{/if}
 							</div>
 
-							<!-- Notes -->
-							{#if review.notes}
+							<!-- Review Description -->
+							{#if review.description}
 								<div class="mt-3 rounded-lg border border-orange-500/20 bg-slate-800/40 p-2">
-									<p class="line-clamp-2 text-sm text-orange-100/80 italic">
-										"{review.notes}"
+									<p class="text-sm leading-relaxed text-orange-100/90">
+										"{review.description}"
 									</p>
 								</div>
 							{/if}

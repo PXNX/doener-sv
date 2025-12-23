@@ -1,12 +1,17 @@
 // src/routes/doener/[id]/edit/schema.ts
+// Schema for creating a new döner listing
 import * as v from 'valibot';
 
-export const createDoenerReviewSchema = v.object({
+// Regex patterns
+const alphanumericSentencePattern = /^[a-zA-Z0-9\s.,!?;:()\-'"äöüÄÖÜß]+$/;
+
+export const createDoenerSchema = v.object({
 	// Restaurant info
 	restaurantName: v.pipe(
 		v.string('Restaurant name is required'),
 		v.minLength(2, 'Restaurant name must be at least 2 characters'),
-		v.maxLength(200, 'Restaurant name must be at most 200 characters')
+		v.maxLength(50, 'Restaurant name must be at most 50 characters'),
+		v.regex(alphanumericSentencePattern, 'Only alphanumeric and sentence characters allowed')
 	),
 	latitude: v.pipe(
 		v.number('Latitude is required'),
@@ -47,42 +52,49 @@ export const createDoenerReviewSchema = v.object({
 	),
 	meatProtein: v.pipe(
 		v.string('Meat protein is required'),
-		v.picklist(['chicken', 'beef', 'mixed'], 'Please select a valid protein type')
+		v.picklist(['chicken', 'beef', 'lamb', 'mixed'], 'Please select a valid protein type')
 	),
 	meatSeasoning: v.pipe(
 		v.string('Meat seasoning is required'),
 		v.picklist(['pure', 'seasoned', 'phosphate'], 'Please select seasoning level')
 	),
 
-	// Toppings
-	hasOnions: v.pipe(
-		v.string('Onion preference is required'),
-		v.picklist(['none', 'mild', 'spicy'], 'Please select onion preference')
+	// Toppings - nullable means "none"
+	onionLevel: v.nullable(
+		v.pipe(v.string(), v.picklist(['mild', 'spicy'], 'Please select valid onion level'))
 	),
 
-	// Kraut (sauerkraut/fermented cabbage)
-	krautLevel: v.pipe(
-		v.string('Kraut preference is required'),
-		v.picklist(['none', 'mild', 'sour'], 'Please select kraut preference')
+	// Kraut - nullable means "none"
+	krautLevel: v.nullable(
+		v.pipe(v.string(), v.picklist(['mild', 'sour'], 'Please select valid kraut level'))
 	),
 
 	// Sauces
 	hasYoghurtSauce: v.boolean(),
-	hasGarlicSauce: v.boolean(),
+	hasGarlicSauce: v.boolean()
+});
 
-	// Overall rating
-	overallRating: v.pipe(
+// Schema for adding a review to an existing döner
+export const createReviewSchema = v.object({
+	// Rating (1-5)
+	rating: v.pipe(
 		v.number('Rating is required'),
 		v.integer('Rating must be a whole number'),
 		v.minValue(1, 'Rating must be at least 1'),
 		v.maxValue(5, 'Rating must be at most 5')
 	),
 
-	// Notes
-	notes: v.optional(
-		v.pipe(v.string(), v.maxLength(1000, 'Notes must be at most 1000 characters')),
-		''
+	// Description (max 200 characters, alphanumeric + sentence chars + spaces)
+	description: v.pipe(
+		v.string('Description is required'),
+		v.minLength(1, 'Description is required'),
+		v.maxLength(200, 'Description must be at most 200 characters'),
+		v.regex(
+			alphanumericSentencePattern,
+			'Only alphanumeric, sentence characters, and spaces allowed'
+		)
 	)
 });
 
-export type CreateDoenerReviewSchema = typeof createDoenerReviewSchema;
+export type CreateDoenerSchema = typeof createDoenerSchema;
+export type CreateReviewSchema = typeof createReviewSchema;

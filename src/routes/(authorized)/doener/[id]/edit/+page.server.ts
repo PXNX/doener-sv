@@ -1,12 +1,13 @@
 // src/routes/doener/[id]/edit/+page.server.ts
+// This is for editing a döner LISTING (not a review)
 import { error, redirect, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { doenerRestaurants, doenerReviews, files } from '$lib/server/schema';
-import { eq, and } from 'drizzle-orm';
+import { doenerRestaurants, files } from '$lib/server/schema';
+import { eq } from 'drizzle-orm';
 import { superValidate, message } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
-import { createDoenerReviewSchema } from '../../../../doener/create/schema';
+import { createDoenerSchema } from './schema';
 import { getSignedDownloadUrl, uploadFileFromForm } from '$lib/server/backblaze';
 import { randomUUID } from 'crypto';
 
@@ -15,58 +16,52 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 		throw redirect(302, `/auth/login?next=${encodeURIComponent(url.pathname)}`);
 	}
 
-	const reviewId = params.id;
+	const restaurantId = params.id;
 
-	// Get the review
-	const review = await db.query.doenerReviews.findFirst({
-		where: eq(doenerReviews.id, reviewId),
+	const restaurant = await db.query.doenerRestaurants.findFirst({
+		where: eq(doenerRestaurants.id, restaurantId),
 		with: {
-			restaurant: true,
 			image: true
 		}
 	});
 
-	if (!review) {
-		throw error(404, 'Review not found');
+	if (!restaurant) {
+		throw error(404, 'Restaurant not found');
 	}
 
-	// Check if user owns this review or is admin
-	if (review.userId !== locals.user.id && !locals.user.isAdmin) {
-		throw error(403, 'You do not have permission to edit this review');
+	// Only the creator or admin can edit
+	if (restaurant.addedBy !== locals.user.id && !locals.user.isAdmin) {
+		throw error(403, 'You do not have permission to edit this döner listing');
 	}
 
-	// Convert review to form data
 	const form = await superValidate(
 		{
-			restaurantName: review.restaurant.name,
-			latitude: review.restaurant.latitude,
-			longitude: review.restaurant.longitude,
-			breadShape: review.breadShape,
-			breadHasSesame: review.breadHasSesame,
-			breadFluffyInside: review.breadFluffyInside,
-			breadCrispyOutside: review.breadCrispyOutside,
-			meatType: review.meatType,
-			meatProtein: review.meatProtein,
-			meatSeasoning: review.meatSeasoning,
-			hasOnions: review.hasOnions,
-			krautLevel: review.krautLevel,
-			hasYoghurtSauce: review.hasYoghurtSauce,
-			hasGarlicSauce: review.hasGarlicSauce,
-			overallRating: review.overallRating,
-			notes: review.notes || ''
+			restaurantName: restaurant.name,
+			latitude: restaurant.latitude,
+			longitude: restaurant.longitude,
+			breadShape: restaurant.breadShape,
+			breadHasSesame: restaurant.breadHasSesame,
+			breadFluffyInside: restaurant.breadFluffyInside,
+			breadCrispyOutside: restaurant.breadCrispyOutside,
+			meatType: restaurant.meatType,
+			meatProtein: restaurant.meatProtein,
+			meatSeasoning: restaurant.meatSeasoning,
+			onionLevel: restaurant.onionLevel || null,
+			krautLevel: restaurant.krautLevel || null,
+			hasYoghurtSauce: restaurant.hasYoghurtSauce,
+			hasGarlicSauce: restaurant.hasGarlicSauce
 		},
-		valibot(createDoenerReviewSchema)
+		valibot(createDoenerSchema)
 	);
 
 	return {
 		form,
-		review: {
-			id: review.id,
-			restaurantId: review.restaurantId,
-			restaurantName: review.restaurant.name,
-			city: review.restaurant.city,
-			country: review.restaurant.country,
-			currentImageUrl: review.image ? await getSignedDownloadUrl(review.image.key) : null
+		restaurant: {
+			id: restaurant.id,
+			name: restaurant.name,
+			city: restaurant.city,
+			country: restaurant.country,
+			currentImageUrl: restaurant.image ? await getSignedDownloadUrl(restaurant.image.key) : null
 		},
 		isAdmin: locals.user.isAdmin
 	};
@@ -78,29 +73,28 @@ export const actions: Actions = {
 			throw redirect(302, '/auth/login');
 		}
 
-		const reviewId = params.id;
+		const restaurantId = params.id;
 
-		// Get the review
-		const review = await db.query.doenerReviews.findFirst({
-			where: eq(doenerReviews.id, reviewId)
+		const restaurant = await db.query.doenerRestaurants.findFirst({
+			where: eq(doenerRestaurants.id, restaurantId)
 		});
 
-		if (!review) {
-			return fail(404, { error: 'Review not found' });
+		if (!restaurant) {
+			return fail(404, { error: 'Restaurant not found' });
 		}
 
-		// Check permissions
-		if (review.userId !== locals.user.id && !locals.user.isAdmin) {
-			return fail(403, { error: 'You do not have permission to edit this review' });
+		if (restaurant.addedBy !== locals.user.id && !locals.user.isAdmin) {
+			return fail(403, { error: 'You do not have permission to edit this döner listing' });
 		}
 
-		const form = await superValidate(request, valibot(createDoenerReviewSchema));
+		const form = await superValidate(request, valibot(createDoenerSchema));
 
 		if (!form.valid) {
 			return message(form, 'Please fix the validation errors', { status: 400 });
 		}
 
 		const {
+			restaurantName,
 			doenerImage,
 			breadShape,
 			breadHasSesame,
@@ -109,17 +103,14 @@ export const actions: Actions = {
 			meatType,
 			meatProtein,
 			meatSeasoning,
-			hasOnions,
+			onionLevel,
 			krautLevel,
 			hasYoghurtSauce,
-			hasGarlicSauce,
-			overallRating,
-			notes
+			hasGarlicSauce
 		} = form.data;
 
 		try {
-			// Handle image upload if new image provided
-			let imageFileId = review.doenerImage;
+			let imageFileId = restaurant.doenerImage;
 			if (doenerImage) {
 				const uploadResult = await uploadFileFromForm(doenerImage);
 
@@ -127,7 +118,6 @@ export const actions: Actions = {
 					return message(form, 'Failed to upload image', { status: 500 });
 				}
 
-				// Create file record in database
 				const fileId = randomUUID();
 				await db.insert(files).values({
 					id: fileId,
@@ -138,18 +128,17 @@ export const actions: Actions = {
 					uploadedBy: locals.user.id
 				});
 
-				// Delete old image file if exists
-				if (review.doenerImage) {
-					await db.delete(files).where(eq(files.id, review.doenerImage));
+				if (restaurant.doenerImage) {
+					await db.delete(files).where(eq(files.id, restaurant.doenerImage));
 				}
 
 				imageFileId = fileId;
 			}
 
-			// Update review
 			await db
-				.update(doenerReviews)
+				.update(doenerRestaurants)
 				.set({
+					name: restaurantName,
 					doenerImage: imageFileId,
 					breadShape,
 					breadHasSesame,
@@ -158,38 +147,19 @@ export const actions: Actions = {
 					meatType,
 					meatProtein,
 					meatSeasoning,
-					hasOnions,
-					krautLevel,
+					onionLevel: onionLevel || null,
+					krautLevel: krautLevel || null,
 					hasYoghurtSauce,
 					hasGarlicSauce,
-					overallRating,
-					notes: notes || null,
 					updatedAt: new Date()
 				})
-				.where(eq(doenerReviews.id, reviewId));
+				.where(eq(doenerRestaurants.id, restaurantId));
 
-			// Recalculate restaurant stats
-			const reviews = await db.query.doenerReviews.findMany({
-				where: eq(doenerReviews.restaurantId, review.restaurantId)
-			});
-
-			const avgRating = reviews.reduce((sum, r) => sum + r.overallRating, 0) / reviews.length;
-
-			await db
-				.update(doenerRestaurants)
-				.set({
-					reviewCount: reviews.length,
-					averageRating: avgRating,
-					updatedAt: new Date()
-				})
-				.where(eq(doenerRestaurants.id, review.restaurantId));
-
-			// Redirect to restaurant page
-			throw redirect(303, `/doener/${review.restaurantId}`);
+			throw redirect(303, `/doener/${restaurantId}`);
 		} catch (err) {
 			if (err instanceof Response) throw err;
-			console.error('Error updating review:', err);
-			return message(form, 'Failed to update review. Please try again.', { status: 500 });
+			console.error('Error updating döner listing:', err);
+			return message(form, 'Failed to update döner listing. Please try again.', { status: 500 });
 		}
 	}
 };
