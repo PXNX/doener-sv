@@ -183,7 +183,7 @@
 						id="restaurantName"
 						name="restaurantName"
 						bind:value={$form.restaurantName}
-						placeholder="e.g., Mustafa's Gemüse Kebap"
+						placeholder="e.g., Mustafa's Gemüse Döner"
 						maxlength="50"
 						class="input w-full rounded-xl border-2 border-orange-500/40 bg-slate-900/50 text-white placeholder-orange-300/50 backdrop-blur-sm transition-all duration-200 focus:border-orange-500 focus:bg-slate-900/70 focus:ring-2 focus:ring-orange-500/50"
 						class:input-error={$errors.restaurantName}

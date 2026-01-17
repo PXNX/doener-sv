@@ -2,7 +2,7 @@
 <script lang="ts">
 	import { superForm } from 'sveltekit-superforms';
 	import { valibotClient } from 'sveltekit-superforms/adapters';
-	import { createDoenerReviewSchema } from './schema';
+	import { createReviewSchema } from './schema';
 	import { goto } from '$app/navigation';
 	import { beforeNavigate } from '$app/navigation';
 	import FluentArrowLeft24Regular from '~icons/fluent/arrow-left-24-regular';
@@ -22,7 +22,7 @@
 	let { data } = $props();
 
 	const { form, errors, message, enhance, submitting, delayed } = superForm(data.form, {
-		validators: valibotClient(createDoenerReviewSchema),
+		validators: valibotClient(createReviewSchema),
 		multipleSubmits: 'prevent',
 		clearOnSubmit: 'none',
 		taintedMessage: null
