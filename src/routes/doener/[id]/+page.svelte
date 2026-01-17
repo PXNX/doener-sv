@@ -12,7 +12,7 @@
 	import NotoMeatOnBone from '~icons/fluent-emoji/meat-on-bone';
 	import NotoBread from '~icons/fluent-emoji/bread';
 	import NotoLeafyGreen from '~icons/fluent-emoji/leafy-green';
-	import NotoSaltShaker from '~icons/fluent-emoji/salt';
+	import FluentEmojiSalt from '~icons/fluent-emoji/salt';
 	import type { PageData } from './$types';
 
 	let { data }: Props = $props();
@@ -218,7 +218,7 @@
 
 					<div class="rounded-lg border border-white/10 bg-slate-800/50 p-3">
 						<div class="mb-1 flex items-center gap-2">
-							<NotoSaltShaker class="size-5" />
+							<FluentEmojiSalt class="size-5" />
 							<span class="text-xs font-medium text-gray-300">Sauce</span>
 						</div>
 						<div class="flex items-center gap-1">
@@ -394,7 +394,7 @@
 											{review.veggiesRating}
 										</span>
 										<span class="badge badge-xs {getRatingBg(review.sauceRating)}">
-											<NotoSaltShaker class="size-3" />
+											<FluentEmojiSalt class="size-3" />
 											{review.sauceRating}
 										</span>
 									</div>

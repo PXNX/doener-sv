@@ -14,7 +14,7 @@
 	import FluentEmojiBread from '~icons/fluent-emoji/bread';
 	import FluentEmojiMeatOnBone from '~icons/fluent-emoji/meat-on-bone';
 	import FluentEmojiPoultryLeg from '~icons/fluent-emoji/poultry-leg';
-	import FluentEmojiSaltShaker from '~icons/fluent-emoji/salt';
+	import FluentEmojiSalt from '~icons/fluent-emoji/salt';
 	import FluentEmojiOnion from '~icons/fluent-emoji/onion';
 	import FluentEmojiLeafyGreen from '~icons/fluent-emoji/leafy-green';
 	import FluentEmojiBottleWithPoppingCork from '~icons/fluent-emoji/bottle-with-popping-cork';
@@ -458,7 +458,7 @@
 						for="meatSeasoning"
 						class="mb-2 flex items-center gap-1 text-sm font-medium text-orange-300"
 					>
-						<FluentEmojiSaltShaker class="size-4" />
+						<FluentEmojiSalt class="size-4" />
 						Seasoning <span class="text-red-400">*</span>
 					</label>
 					<select
