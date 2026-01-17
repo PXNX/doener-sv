@@ -10,8 +10,7 @@
 	import NotoMeatOnBone from '~icons/fluent-emoji/meat-on-bone';
 	import NotoBread from '~icons/fluent-emoji/bread';
 	import NotoLeafyGreen from '~icons/fluent-emoji/leafy-green';
-	import NotoSaltShaker from '~icons/fluent-emoji/salt-shaker';
-
+	import FluentEmojiSalt from '~icons/fluent-emoji/salt';
 	let { data } = $props();
 
 	const { form, errors, message, enhance, submitting, delayed } = superForm(data.form, {
@@ -185,7 +184,7 @@
 		<!-- Sauce Rating -->
 		<div class="space-y-4 rounded-xl border border-white/5 bg-slate-800/50 p-5">
 			<div class="flex items-center gap-3">
-				<NotoSaltShaker class="size-7" />
+				<FluentEmojiSalt class="size-7" />
 				<h2 class="text-lg font-semibold text-white">Sauce Quality</h2>
 			</div>
 
