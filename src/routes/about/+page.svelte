@@ -65,7 +65,7 @@
 					Let's be clear: Döner is NOT to be confused with Persian Kebap.
 				</p>
 				<p>
-					Persian Kebap is superior to döner anyway. It's a different league. Proper charcoal
+					Persian Kebap is superior to Döner anyway. It's a different league. Proper charcoal
 					grilling, better spices, real technique. If you want the best, go Persian. But we're not
 					here for that.
 				</p>
@@ -90,58 +90,59 @@
 		<div class="card-body p-6">
 			<div class="mb-4 flex items-center gap-3">
 				<span class="text-6xl">📜</span>
-				<h2 class="text-2xl font-bold text-white">The Rules of Good Döner</h2>
+				<h2 class="text-2xl font-bold text-white">Rules for Döner adventures</h2>
 			</div>
 
 			<div class="space-y-2 leading-relaxed text-orange-100/90">
 				<p>
-					<strong class="text-orange-200">1.</strong> The bread must be fresh. Sesame optional but appreciated.
-					Fluffy inside, crispy outside is the goal.
+					<strong class="text-orange-200">1.</strong> The bread must be fresh. Sesame seeds are a must.
+					Fluffy on the inside, crispy on the outside, and stable despite the sauce and fat. And please,
+					in a shape that isn't annoying when eating.
 				</p>
 
 				<p>
-					<strong class="text-orange-200">2.</strong> Layered meat > minced meat, but both have their
-					place. No discussion about that phosphate wet mouth shit though.
+					<strong class="text-orange-200">2.</strong> Layered meat is better than minced meat. As long
+					as it's not a phosphate bomb, either is fine.
 				</p>
 
 				<p>
-					<strong class="text-orange-200">3.</strong> Mixed meat (chicken + beef) is valid. Pure chicken
-					is valid. Pure beef is valid. Pick your fighter.
+					<strong class="text-orange-200">3.</strong> Mixed meat (chicken + beef) is fine. Pure chicken
+					is fine. Pure beef is fine. Preferably grilled until very crispy.
 				</p>
 
 				<p>
-					<strong class="text-orange-200">4.</strong> Sauce balance matters. Yoghurt + garlic is classic.
-					Don't have it too garlicy, don't have the yoghurt be too liquid.
+					<strong class="text-orange-200">4.</strong> The balance of sauces is important. Yogurt + garlic
+					is classic. Not too garlicky, not too runny. Cocktail sauce is rubbish.
 				</p>
 
 				<p>
-					<strong class="text-orange-200">5.</strong> Onions belong in döner. If you disagree, that's
-					your problem.
+					<strong class="text-orange-200">5.</strong> Onions and red cabbage belong in a Döner, but not
+					too pungent in taste.
 				</p>
 
 				<p>
-					<strong class="text-orange-200">6.</strong> Spicy or mild is personal. Both are valid. Order
-					what you want.
+					<strong class="text-orange-200">6.</strong> Spicy or mild is a matter of taste. Both are fine.
+					Order what you want.
 				</p>
 
 				<p>
-					<strong class="text-orange-200">7.</strong> Price matters. If you're paying €10+ for a döner,
-					it better be exceptional. €7-8 is the sweet spot. I know that hurts.
+					<strong class="text-orange-200">7.</strong> Price is important. If you pay more than €10 for
+					a Döner, it had better be exceptional. €7-8 is the sweet spot. I know, it hurts.
 				</p>
 
 				<p>
-					<strong class="text-orange-200">8.</strong> Don't trust train station döner. Rule #10 from the
-					old station guide still applies: "Don't buy Döner at the station, just expensive and often garbage."
+					<strong class="text-orange-200">8.</strong> Don't trust Döner at train stations. Rule 10
+					of <a class="link" href="https://station-sv.vercel.app">rail adventures</a> also applies here:
+					“Don't buy a kebab at the train station; it's expensive and often inedible.”
 				</p>
 
 				<p>
-					<strong class="text-orange-200">9.</strong> The best döner spots are often the least fancy looking.
-					Trust the locals.
+					<strong class="text-orange-200">9.</strong> The best Döner stands often don't look fancy.
 				</p>
 
 				<p>
-					<strong class="text-orange-200">10.</strong> If they're trying too hard with "premium" ingredients
-					and fancy presentation, it's not real döner anymore.
+					<strong class="text-orange-200">10.</strong> If stands go overboard with “premium” ingredients
+					and fancy presentation, it's no longer a real puristic Döner.
 				</p>
 			</div>
 		</div>
