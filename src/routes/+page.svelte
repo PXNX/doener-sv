@@ -734,6 +734,7 @@
 {#if searchResults.length > 0}
 	<div class="space-y-4">
 		{#each searchResults as restaurant (restaurant.id)}
+			{console.log(restaurant)}
 			<DoenerCard {restaurant} />
 		{/each}
 	</div>

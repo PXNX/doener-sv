@@ -31,8 +31,8 @@ export interface UploadResult {
 }
 
 // Fixed image dimensions - all images converted to 96x96 WebP
-const IMAGE_SIZE = 96;
-const WEBP_QUALITY = 85;
+const IMAGE_SIZE = 256;
+const WEBP_QUALITY = 95;
 
 /**
  * Convert image to 96x96 WebP format

@@ -4,6 +4,7 @@
 	import FluentStar20Filled from '~icons/fluent/star-20-filled';
 	import FluentLocation20Filled from '~icons/fluent/location-20-filled';
 	import type { DoenerRestaurantResult } from '$lib/types';
+	import PreviewImage from './PreviewImage.svelte';
 
 	interface Props {
 		restaurant: DoenerRestaurantResult;
@@ -35,22 +36,7 @@
 >
 	<div class="card-body p-0">
 		<div class="flex flex-col items-start gap-4 p-4 sm:flex-row">
-			<!-- Restaurant Image -->
-			<div class="w-full shrink-0 sm:w-32" style="view-transition-name: image-{restaurant.id}">
-				{#if restaurant.doenerImage}
-					<img
-						src={restaurant.doenerImage}
-						alt={restaurant.name}
-						class="h-32 w-full rounded-lg border-2 border-orange-500/30 object-cover shadow-lg transition-all group-hover:border-orange-500/60 sm:w-32"
-					/>
-				{:else}
-					<div
-						class="flex h-32 w-full items-center justify-center rounded-lg border-2 border-orange-500/30 bg-gradient-to-br from-orange-600/40 to-red-600/40 sm:w-32"
-					>
-						<span class="text-6xl">🥙</span>
-					</div>
-				{/if}
-			</div>
+			<PreviewImage src={restaurant.doenerImage} alt={restaurant.name} class="size-32" />
 
 			<!-- Restaurant Info -->
 			<div class="min-w-0 flex-1">

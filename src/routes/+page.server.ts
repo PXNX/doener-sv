@@ -142,6 +142,7 @@ async function searchRestaurants(
 			.select({
 				id: doenerRestaurants.id,
 				name: doenerRestaurants.name,
+				doenerImage: doenerRestaurants.doenerImage,
 				city: doenerRestaurants.city,
 				country: doenerRestaurants.country,
 				latitude: doenerRestaurants.latitude,
@@ -233,9 +234,12 @@ async function searchRestaurants(
 				if (!matches) continue;
 			}
 
+			const doenerImage = await getImageUrl(restaurant.doenerImage);
+
 			results.push({
 				id: restaurant.id,
 				name: restaurant.name,
+				doenerImage: doenerImage,
 				city: restaurant.city,
 				country: restaurant.country,
 				latitude: restaurant.latitude,

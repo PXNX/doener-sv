@@ -2,19 +2,19 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import FluentEmojiStation from '~icons/fluent-emoji/station';
+	import FluentFood20Filled from '~icons/fluent/food-20-filled';
 	import LogosGoogleIcon from '~icons/logos/google-icon';
 </script>
 
 <svelte:head>
-	<title>Login - Train Station Search</title>
-	<meta name="description" content="Login to access Train Station Search features" />
+	<title>Login - Doener Ratings</title>
+	<meta name="description" content="Login to review your Doener" />
 </svelte:head>
 
 <!-- Header -->
 <header class="mb-10 text-center">
 	<div class="mb-4 flex justify-center">
-		<FluentEmojiStation class="h-16 w-16" />
+		<FluentFood20Filled class="size-16" />
 	</div>
 	<h1 class="text-3xl font-bold text-white">Doener Ratings</h1>
 	<p class="mt-2 text-lg text-white/70">Sign in to continue</p>
