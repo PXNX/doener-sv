@@ -13,6 +13,7 @@
 	import FluentEmojiLeafyGreen from '~icons/fluent-emoji/leafy-green';
 	import FluentEmojiBottleWithPoppingCork from '~icons/fluent-emoji/bottle-with-popping-cork';
 	import BackButton from '$lib/components/BackButton.svelte';
+	import LocationPicker from '$lib/components/maps/LocationPicker.svelte';
 
 	let { data } = $props();
 
@@ -26,14 +27,28 @@
 	let previewUrl = $state<string | null>(null);
 	let dragActive = $state(false);
 	let fileInput: HTMLInputElement;
-	let isGettingLocation = $state(false);
+
+	function handleLocationChange(lat: number, lon: number, address?: string) {
+		$form.latitude = lat;
+		$form.longitude = lon;
+	}
+
+	// Cropper states
+	let showCropModal = $state(false);
+	let cropperImage = $state<string | null>(null);
+	let cropCanvas: HTMLCanvasElement;
+	let cropContext: CanvasRenderingContext2D | null = null;
+	let img: HTMLImageElement | null = null;
+	let isDragging = $state(false);
+	let dragStart = $state({ x: 0, y: 0 });
+	let cropArea = $state({ x: 0, y: 0, size: 0 });
+	let scale = $state(1);
 
 	function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (file) {
-			$form.doenerImage = file;
-			updatePreview(file);
+			openCropper(file);
 		}
 	}
 
@@ -42,8 +57,7 @@
 		dragActive = false;
 		const file = event.dataTransfer?.files[0];
 		if (file) {
-			$form.doenerImage = file;
-			updatePreview(file);
+			openCropper(file);
 		}
 	}
 
@@ -54,6 +68,236 @@
 
 	function handleDragLeave() {
 		dragActive = false;
+	}
+
+	function openCropper(file: File) {
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			cropperImage = e.target?.result as string;
+			showCropModal = true;
+			// Wait for DOM to update before initializing
+			setTimeout(initializeCropper, 50);
+		};
+		reader.readAsDataURL(file);
+	}
+
+	function initializeCropper() {
+		if (!cropCanvas || !cropperImage) return;
+
+		cropContext = cropCanvas.getContext('2d');
+		if (!cropContext) return;
+
+		img = new Image();
+		img.onload = () => {
+			if (!img || !cropCanvas) return;
+
+			// Set canvas size to contain the image
+			const maxSize = 600;
+			const aspectRatio = img.width / img.height;
+
+			if (img.width > img.height) {
+				cropCanvas.width = maxSize;
+				cropCanvas.height = maxSize / aspectRatio;
+			} else {
+				cropCanvas.height = maxSize;
+				cropCanvas.width = maxSize * aspectRatio;
+			}
+
+			// Initialize crop area (square in center)
+			const minDimension = Math.min(cropCanvas.width, cropCanvas.height);
+			cropArea = {
+				x: (cropCanvas.width - minDimension) / 2,
+				y: (cropCanvas.height - minDimension) / 2,
+				size: minDimension
+			};
+
+			scale = cropCanvas.width / img.width;
+			drawCropper();
+		};
+		img.src = cropperImage;
+	}
+
+	function drawCropper() {
+		if (!cropContext || !img || !cropCanvas) return;
+
+		// Clear canvas
+		cropContext.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+
+		// Draw image
+		cropContext.drawImage(img, 0, 0, cropCanvas.width, cropCanvas.height);
+
+		// Draw overlay (darken everything outside crop area)
+		cropContext.fillStyle = 'rgba(0, 0, 0, 0.5)';
+		cropContext.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+
+		// Clear the crop area (make it bright)
+		cropContext.clearRect(cropArea.x, cropArea.y, cropArea.size, cropArea.size);
+		cropContext.drawImage(
+			img,
+			cropArea.x / scale,
+			cropArea.y / scale,
+			cropArea.size / scale,
+			cropArea.size / scale,
+			cropArea.x,
+			cropArea.y,
+			cropArea.size,
+			cropArea.size
+		);
+
+		// Draw crop border
+		cropContext.strokeStyle = '#fb923c';
+		cropContext.lineWidth = 3;
+		cropContext.strokeRect(cropArea.x, cropArea.y, cropArea.size, cropArea.size);
+
+		// Draw corner handles
+		const handleSize = 20;
+		cropContext.fillStyle = '#fb923c';
+		const corners = [
+			{ x: cropArea.x, y: cropArea.y },
+			{ x: cropArea.x + cropArea.size, y: cropArea.y },
+			{ x: cropArea.x, y: cropArea.y + cropArea.size },
+			{ x: cropArea.x + cropArea.size, y: cropArea.y + cropArea.size }
+		];
+
+		corners.forEach((corner) => {
+			cropContext!.fillRect(
+				corner.x - handleSize / 2,
+				corner.y - handleSize / 2,
+				handleSize,
+				handleSize
+			);
+		});
+
+		// Draw center handle
+		cropContext.fillStyle = '#fb923c';
+		cropContext.fillRect(
+			cropArea.x + cropArea.size / 2 - handleSize / 2,
+			cropArea.y + cropArea.size / 2 - handleSize / 2,
+			handleSize,
+			handleSize
+		);
+	}
+
+	function handleMouseDown(event: MouseEvent) {
+		if (!cropCanvas) return;
+
+		const rect = cropCanvas.getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+
+		// Check if clicking inside crop area for dragging
+		if (
+			x >= cropArea.x &&
+			x <= cropArea.x + cropArea.size &&
+			y >= cropArea.y &&
+			y <= cropArea.y + cropArea.size
+		) {
+			isDragging = true;
+			dragStart = { x: x - cropArea.x, y: y - cropArea.y };
+		}
+	}
+
+	function handleMouseMove(event: MouseEvent) {
+		if (!isDragging || !cropCanvas) return;
+
+		const rect = cropCanvas.getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+
+		// Calculate new position
+		let newX = x - dragStart.x;
+		let newY = y - dragStart.y;
+
+		// Constrain to canvas bounds
+		newX = Math.max(0, Math.min(newX, cropCanvas.width - cropArea.size));
+		newY = Math.max(0, Math.min(newY, cropCanvas.height - cropArea.size));
+
+		cropArea = { ...cropArea, x: newX, y: newY };
+		drawCropper();
+	}
+
+	function handleMouseUp() {
+		isDragging = false;
+	}
+
+	function handleWheel(event: WheelEvent) {
+		event.preventDefault();
+		if (!cropCanvas) return;
+
+		const delta = event.deltaY > 0 ? -10 : 10;
+		const newSize = Math.max(
+			50,
+			Math.min(cropArea.size + delta, Math.min(cropCanvas.width, cropCanvas.height))
+		);
+
+		// Adjust position to keep center stable
+		const centerX = cropArea.x + cropArea.size / 2;
+		const centerY = cropArea.y + cropArea.size / 2;
+
+		let newX = centerX - newSize / 2;
+		let newY = centerY - newSize / 2;
+
+		// Constrain to canvas bounds
+		newX = Math.max(0, Math.min(newX, cropCanvas.width - newSize));
+		newY = Math.max(0, Math.min(newY, cropCanvas.height - newSize));
+
+		cropArea = { x: newX, y: newY, size: newSize };
+		drawCropper();
+	}
+
+	async function applyCrop() {
+		if (!img || !cropCanvas) return;
+
+		// Create a new canvas for the cropped image
+		const outputCanvas = document.createElement('canvas');
+		const outputSize = 800; // Output square size
+		outputCanvas.width = outputSize;
+		outputCanvas.height = outputSize;
+		const outputContext = outputCanvas.getContext('2d');
+
+		if (!outputContext) return;
+
+		// Calculate source rectangle in original image coordinates
+		const sourceX = cropArea.x / scale;
+		const sourceY = cropArea.y / scale;
+		const sourceSize = cropArea.size / scale;
+
+		// Draw cropped portion to output canvas
+		outputContext.drawImage(
+			img,
+			sourceX,
+			sourceY,
+			sourceSize,
+			sourceSize,
+			0,
+			0,
+			outputSize,
+			outputSize
+		);
+
+		// Convert to blob and create file
+		outputCanvas.toBlob(
+			(blob) => {
+				if (!blob) return;
+
+				const file = new File([blob], 'cropped-doener.jpg', { type: 'image/jpeg' });
+				$form.doenerImage = file;
+				updatePreview(file);
+				closeCropper();
+			},
+			'image/jpeg',
+			0.9
+		);
+	}
+
+	function closeCropper() {
+		showCropModal = false;
+		cropperImage = null;
+		img = null;
+		isDragging = false;
+		if (fileInput) {
+			fileInput.value = '';
+		}
 	}
 
 	function updatePreview(file: File) {
@@ -75,35 +319,14 @@
 		}
 	}
 
-	async function getCurrentLocation() {
-		if (!navigator.geolocation) {
-			alert('Geolocation is not supported by your browser');
-			return;
-		}
-
-		isGettingLocation = true;
-		try {
-			const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-				navigator.geolocation.getCurrentPosition(resolve, reject, {
-					enableHighAccuracy: true,
-					timeout: 10000
-				});
-			});
-
-			$form.latitude = position.coords.latitude;
-			$form.longitude = position.coords.longitude;
-		} catch (error) {
-			alert('Unable to get your location. Please enter coordinates manually.');
-		} finally {
-			isGettingLocation = false;
-		}
-	}
-
 	// Cleanup on unmount
 	$effect(() => {
 		return () => {
 			if (previewUrl) {
 				URL.revokeObjectURL(previewUrl);
+			}
+			if (cropperImage) {
+				cropperImage = null;
 			}
 		};
 	});
@@ -136,6 +359,46 @@
 </svelte:head>
 
 <BackButton href="/" />
+
+<!-- Image Cropper Modal -->
+{#if showCropModal}
+	<div class="modal modal-open">
+		<div class="modal-box max-w-2xl bg-black">
+			<h3 class="mb-2 text-xl font-bold text-orange-300">Crop Your Döner Photo</h3>
+
+			<div class="flex justify-center">
+				<canvas
+					bind:this={cropCanvas}
+					onmousedown={handleMouseDown}
+					onmousemove={handleMouseMove}
+					onmouseup={handleMouseUp}
+					onmouseleave={handleMouseUp}
+					onwheel={handleWheel}
+					class="cursor-move rounded-lg border-2 border-orange-500/40"
+					style="max-width: 100%; height: auto; touch-action: none;"
+				></canvas>
+			</div>
+
+			<div class="modal-action mt-2">
+				<button
+					type="button"
+					onclick={closeCropper}
+					class="btn rounded-xl border-2 border-slate-600/30 bg-slate-700/50 text-gray-300 hover:bg-slate-600/50"
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					onclick={applyCrop}
+					class="btn rounded-xl border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-500 hover:to-red-500"
+				>
+					<FluentCheckmark20Filled class="size-5" />
+					Apply Crop
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <div class="mx-auto max-w-3xl space-y-6 px-4 py-6">
 	<!-- Header -->
@@ -194,62 +457,21 @@
 					{/if}
 				</div>
 
-				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					<div>
-						<label for="latitude" class="mb-2 block text-sm font-medium text-orange-200/90">
-							Latitude <span class="text-red-400">*</span>
-						</label>
-						<input
-							type="number"
-							id="latitude"
-							name="latitude"
-							step="any"
-							bind:value={$form.latitude}
-							placeholder="52.5200"
-							class="input w-full rounded-xl border-2 border-orange-500/40 bg-slate-900/50 text-white placeholder-orange-300/50 backdrop-blur-sm transition-all duration-200 focus:border-orange-500 focus:bg-slate-900/70 focus:ring-2 focus:ring-orange-500/50"
-							class:input-error={$errors.latitude}
-							disabled={$submitting}
-						/>
-						{#if $errors.latitude}
-							<p class="mt-1 text-xs text-red-400">{$errors.latitude}</p>
-						{/if}
-					</div>
-
-					<div>
-						<label for="longitude" class="mb-2 block text-sm font-medium text-orange-200/90">
-							Longitude <span class="text-red-400">*</span>
-						</label>
-						<input
-							type="number"
-							id="longitude"
-							name="longitude"
-							step="any"
-							bind:value={$form.longitude}
-							placeholder="13.4050"
-							class="input w-full rounded-xl border-2 border-orange-500/40 bg-slate-900/50 text-white placeholder-orange-300/50 backdrop-blur-sm transition-all duration-200 focus:border-orange-500 focus:bg-slate-900/70 focus:ring-2 focus:ring-orange-500/50"
-							class:input-error={$errors.longitude}
-							disabled={$submitting}
-						/>
-						{#if $errors.longitude}
-							<p class="mt-1 text-xs text-red-400">{$errors.longitude}</p>
-						{/if}
-					</div>
-				</div>
-
-				<button
-					type="button"
-					onclick={getCurrentLocation}
-					disabled={$submitting || isGettingLocation}
-					class="btn btn-sm rounded-lg border-2 border-blue-500/40 bg-blue-600/20 text-blue-300 transition-all hover:bg-blue-600/30"
-				>
-					{#if isGettingLocation}
-						<span class="loading loading-spinner loading-xs"></span>
-						Getting location...
-					{:else}
-						<FluentLocation20Filled class="size-4" />
-						Use My Current Location
+				<div>
+					<label class="mb-2 block text-sm font-medium text-orange-200/90">
+						Location <span class="text-red-400">*</span>
+					</label>
+					<LocationPicker
+						bind:latitude={$form.latitude}
+						bind:longitude={$form.longitude}
+						onLocationChange={handleLocationChange}
+					/>
+					{#if $errors.latitude || $errors.longitude}
+						<p class="mt-2 text-xs text-red-400">
+							{$errors.latitude || $errors.longitude}
+						</p>
 					{/if}
-				</button>
+				</div>
 			</div>
 		</div>
 
@@ -313,7 +535,9 @@
 										{/if}
 									</p>
 									{#if !$submitting}
-										<p class="mt-1 text-sm text-orange-200/70">Images only • 10MB max</p>
+										<p class="mt-1 text-sm text-orange-200/70">
+											Images only • 10MB max • Will be cropped to square
+										</p>
 									{/if}
 								</div>
 							</div>

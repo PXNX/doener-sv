@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>MN Map | Privacy Policy</title>
+	<title>Doener Rating | Privacy Policy</title>
 </svelte:head>
 
 <div class="prose lg:prose-xl bg-base-100 mx-auto rounded-2xl p-6 shadow-md">

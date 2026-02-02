@@ -1,6 +1,6 @@
 <!-- src/lib/components/PreviewImage.svelte -->
 <script lang="ts">
-	import FluentEmojiStation from '~icons/fluent-emoji/station';
+	import FluentEmojiStuffedFlatbread from '~icons/fluent-emoji/stuffed-flatbread';
 	import FluentImage24Regular from '~icons/fluent/image-24-regular';
 
 	interface Props {
@@ -48,16 +48,21 @@
 		/>
 		{#if !loaded}
 			<div
-				class="absolute inset-0 flex items-center justify-center bg-linear-to-br from-blue-500/20 to-teal-500/20 backdrop-blur-sm"
+				class="absolute inset-0 flex items-center justify-center bg-linear-to-br from-orange-500/20 to-red-500/20 backdrop-blur-sm"
 			>
 				<FluentImage24Regular class="size-12 animate-pulse" />
 			</div>
 		{/if}
 	{:else}
 		<div
-			class="flex size-full items-center justify-center bg-linear-to-br from-blue-400 to-teal-500"
+			class="flex size-full items-center justify-center bg-linear-to-br
+			
+		 from-orange-400 to-red-500
+			
+			
+			"
 		>
-			<FluentEmojiStation class="size-10" />
+			<FluentEmojiStuffedFlatbread class="size-10" />
 		</div>
 	{/if}
 </div>
