@@ -29,14 +29,6 @@
 	const BERLIN_LAT = 52.52;
 	const BERLIN_LON = 13.405;
 
-	// Initialize coordinates to Berlin if not provided
-	$effect(() => {
-		if (latitude === undefined || longitude === undefined) {
-			latitude = BERLIN_LAT;
-			longitude = BERLIN_LON;
-		}
-	});
-
 	async function reverseGeocode(lat: number, lon: number) {
 		try {
 			const response = await fetch(
@@ -248,8 +240,8 @@
 				</div>
 			{:then { default: InteractiveMap }}
 				<InteractiveMap
-					{latitude}
-					{longitude}
+					latitude={latitude ?? BERLIN_LAT}
+					longitude={longitude ?? BERLIN_LON}
 					onLocationChange={async (lat, lon) => {
 						latitude = lat;
 						longitude = lon;
