@@ -243,7 +243,7 @@
 	<div class="overflow-hidden rounded-xl border-2 border-orange-500/40 bg-slate-900/50 shadow-xl">
 		<div class="h-[400px] w-full">
 			{#if browser && latitude !== undefined && longitude !== undefined}
-				{#await import('$lib/components/maps/InteractiveMap.svelte')}
+				{#await import('./InteractiveMap.svelte')}
 					<div class="flex h-full items-center justify-center">
 						<FluentMap24Regular class="size-12 animate-pulse text-orange-400/50" />
 					</div>
