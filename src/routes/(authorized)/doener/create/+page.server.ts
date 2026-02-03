@@ -47,10 +47,38 @@ async function getCityFromCoordinates(
 	}
 }
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const account = locals.user!;
 
 	const form = await superValidate(valibot(createDoenerSchema));
+
+	// Check for prefilled data from query parameters (from share target)
+	const lat = url.searchParams.get('lat');
+	const lon = url.searchParams.get('lon');
+	const name = url.searchParams.get('name');
+
+	// Prefill form data if available
+	if (lat && lon) {
+		const latitude = parseFloat(lat);
+		const longitude = parseFloat(lon);
+
+		// Validate coordinates
+		if (
+			!isNaN(latitude) &&
+			!isNaN(longitude) &&
+			latitude >= -90 &&
+			latitude <= 90 &&
+			longitude >= -180 &&
+			longitude <= 180
+		) {
+			form.data.latitude = latitude;
+			form.data.longitude = longitude;
+		}
+	}
+
+	if (name) {
+		form.data.restaurantName = name;
+	}
 
 	return { form };
 };
