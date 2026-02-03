@@ -10,9 +10,7 @@ import { valibot } from 'sveltekit-superforms/adapters';
 import { createReviewSchema } from './schema';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	if (!locals.user) {
-		throw redirect(303, '/auth/login');
-	}
+	const account = locals.user!;
 
 	const restaurantId = parseInt(params.id);
 
@@ -30,10 +28,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	// Check if user has already reviewed
 	const existingReview = await db.query.doenerReviews.findFirst({
-		where: and(
-			eq(doenerReviews.restaurantId, restaurantId),
-			eq(doenerReviews.userId, locals.user.id)
-		)
+		where: and(eq(doenerReviews.restaurantId, restaurantId), eq(doenerReviews.userId, account.id))
 	});
 
 	if (existingReview) {
@@ -59,9 +54,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
 	default: async ({ request, params, locals }) => {
-		if (!locals.user) {
-			return fail(401, { error: 'You must be logged in to add a review' });
-		}
+		const account = locals.user!;
 
 		const restaurantId = parseInt(params.id);
 
@@ -80,10 +73,7 @@ export const actions: Actions = {
 
 		// Check if user has already reviewed
 		const existingReview = await db.query.doenerReviews.findFirst({
-			where: and(
-				eq(doenerReviews.restaurantId, restaurantId),
-				eq(doenerReviews.userId, locals.user.id)
-			)
+			where: and(eq(doenerReviews.restaurantId, restaurantId), eq(doenerReviews.userId, account.id))
 		});
 
 		if (existingReview) {
@@ -98,48 +88,41 @@ export const actions: Actions = {
 
 		const { meatRating, breadRating, veggiesRating, sauceRating, description } = form.data;
 
-		try {
-			// Create review
-			await db.insert(doenerReviews).values({
-				restaurantId,
-				userId: locals.user.id,
-				meatRating,
-				breadRating,
-				veggiesRating,
-				sauceRating,
-				description
-			});
+		// Create review
+		await db.insert(doenerReviews).values({
+			restaurantId,
+			userId: account.id,
+			meatRating,
+			breadRating,
+			veggiesRating,
+			sauceRating,
+			description
+		});
 
-			// Update restaurant stats
-			const allReviews = await db.query.doenerReviews.findMany({
-				where: eq(doenerReviews.restaurantId, restaurantId)
-			});
+		// Update restaurant stats
+		const allReviews = await db.query.doenerReviews.findMany({
+			where: eq(doenerReviews.restaurantId, restaurantId)
+		});
 
-			const avgMeat = allReviews.reduce((sum, r) => sum + r.meatRating, 0) / allReviews.length;
-			const avgBread = allReviews.reduce((sum, r) => sum + r.breadRating, 0) / allReviews.length;
-			const avgVeggies =
-				allReviews.reduce((sum, r) => sum + r.veggiesRating, 0) / allReviews.length;
-			const avgSauce = allReviews.reduce((sum, r) => sum + r.sauceRating, 0) / allReviews.length;
-			const avgOverall = (avgMeat + avgBread + avgVeggies + avgSauce) / 4;
+		const avgMeat = allReviews.reduce((sum, r) => sum + r.meatRating, 0) / allReviews.length;
+		const avgBread = allReviews.reduce((sum, r) => sum + r.breadRating, 0) / allReviews.length;
+		const avgVeggies = allReviews.reduce((sum, r) => sum + r.veggiesRating, 0) / allReviews.length;
+		const avgSauce = allReviews.reduce((sum, r) => sum + r.sauceRating, 0) / allReviews.length;
+		const avgOverall = (avgMeat + avgBread + avgVeggies + avgSauce) / 4;
 
-			await db
-				.update(doenerRestaurants)
-				.set({
-					reviewCount: allReviews.length,
-					averageMeatRating: avgMeat,
-					averageBreadRating: avgBread,
-					averageVeggiesRating: avgVeggies,
-					averageSauceRating: avgSauce,
-					averageOverallRating: avgOverall,
-					updatedAt: new Date()
-				})
-				.where(eq(doenerRestaurants.id, restaurantId));
+		await db
+			.update(doenerRestaurants)
+			.set({
+				reviewCount: allReviews.length,
+				averageMeatRating: avgMeat,
+				averageBreadRating: avgBread,
+				averageVeggiesRating: avgVeggies,
+				averageSauceRating: avgSauce,
+				averageOverallRating: avgOverall,
+				updatedAt: new Date()
+			})
+			.where(eq(doenerRestaurants.id, restaurantId));
 
-			throw redirect(303, `/doener/${restaurantId}`);
-		} catch (err) {
-			if (err instanceof Response) throw err;
-			console.error('Error adding review:', err);
-			return message(form, 'Failed to add review. Please try again.', { status: 500 });
-		}
+		redirect(303, `/doener/${restaurantId}`);
 	}
 };

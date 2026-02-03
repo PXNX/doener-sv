@@ -63,6 +63,12 @@
 	);
 	let loading = $state(false);
 
+	// GPS location state
+	let userLatitude = $state<number | null>(null);
+	let userLongitude = $state<number | null>(null);
+	let gettingLocation = $state(false);
+	let locationError = $state<string | null>(null);
+
 	// Favorites count
 	let favoritesCount = $state(0);
 
@@ -187,6 +193,56 @@
 			: savedFilters.garlicSauce || false
 	);
 
+	// Get user's current location
+	async function getUserLocation() {
+		if (!browser) return;
+
+		gettingLocation = true;
+		locationError = null;
+
+		try {
+			const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+				navigator.geolocation.getCurrentPosition(resolve, reject, {
+					enableHighAccuracy: true,
+					timeout: 10000,
+					maximumAge: 0
+				});
+			});
+
+			userLatitude = position.coords.latitude;
+			userLongitude = position.coords.longitude;
+
+			// Optionally, reverse geocode to get city name
+			try {
+				const response = await fetch(
+					`https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLatitude}&lon=${userLongitude}`
+				);
+				const data = await response.json();
+
+				// Update search term with city/town name
+				if (data.address) {
+					searchTerm = data.address.city || data.address.town || data.address.village || '';
+				}
+			} catch (geocodeError) {
+				console.error('Reverse geocoding failed:', geocodeError);
+				// Continue with coordinates even if reverse geocoding fails
+			}
+		} catch (error: any) {
+			console.error('Location error:', error);
+			if (error.code === 1) {
+				locationError = 'Location access denied. Please enable location permissions.';
+			} else if (error.code === 2) {
+				locationError = 'Location unavailable. Please try again.';
+			} else if (error.code === 3) {
+				locationError = 'Location request timed out. Please try again.';
+			} else {
+				locationError = 'Unable to get your location.';
+			}
+		} finally {
+			gettingLocation = false;
+		}
+	}
+
 	// Update favorites count
 	function updateFavoritesCount() {
 		const favorites = getFromStorage<string[]>(STORAGE_KEYS.favorites, []);
@@ -263,7 +319,11 @@
 		};
 	}
 
-	const showEmptyState = $derived(!loading && searchResults.length === 0 && searchTerm.length >= 2);
+	const showEmptyState = $derived(
+		!loading &&
+			searchResults.length === 0 &&
+			(searchTerm.length >= 2 || (userLatitude !== null && userLongitude !== null))
+	);
 
 	const activeFilterCount = $derived(
 		[
@@ -382,20 +442,53 @@
 			class="space-y-4 md:space-y-6"
 		>
 			<!-- Location Input -->
-			<div class="relative">
-				<div class="pointer-events-none absolute inset-y-0 left-4 flex items-center">
-					<FluentLocation24Regular class="size-5 text-orange-400" />
+			<div class="space-y-2">
+				<div class="relative">
+					<div class="pointer-events-none absolute inset-y-0 left-4 flex items-center">
+						<FluentLocation24Regular class="size-5 text-orange-400" />
+					</div>
+					<input
+						id="location"
+						type="text"
+						name="location"
+						placeholder="Search by city or location (e.g., Berlin, München, Kreuzberg)..."
+						class="input w-full rounded-xl border-2 border-orange-500/40 bg-slate-900/50 py-4 pr-4 pl-12 text-lg text-white placeholder-orange-300/50 backdrop-blur-sm transition-all duration-200 focus:border-orange-500 focus:bg-slate-900/70 focus:ring-2 focus:ring-orange-500/50"
+						bind:value={searchTerm}
+						disabled={loading}
+						autocomplete="off"
+					/>
 				</div>
-				<input
-					id="location"
-					type="text"
-					name="location"
-					placeholder="Search by city or location (e.g., Berlin, München, Kreuzberg)..."
-					class="input w-full rounded-xl border-2 border-orange-500/40 bg-slate-900/50 py-4 pr-4 pl-12 text-lg text-white placeholder-orange-300/50 backdrop-blur-sm transition-all duration-200 focus:border-orange-500 focus:bg-slate-900/70 focus:ring-2 focus:ring-orange-500/50"
-					bind:value={searchTerm}
-					disabled={loading}
-					autocomplete="off"
-				/>
+
+				<!-- GPS Location Button and Status -->
+				<div class="flex items-center gap-2">
+					<button
+						type="button"
+						onclick={getUserLocation}
+						disabled={gettingLocation || loading}
+						class="btn btn-sm border-0 bg-orange-600/30 text-orange-100 hover:bg-orange-600/50"
+					>
+						{#if gettingLocation}
+							<span class="loading loading-spinner loading-sm"></span>
+							Getting location...
+						{:else}
+							📍 Use my location
+						{/if}
+					</button>
+
+					{#if userLatitude !== null && userLongitude !== null}
+						<span class="text-sm text-green-400"> ✓ Using GPS coordinates </span>
+					{/if}
+
+					{#if locationError}
+						<span class="text-sm text-red-400">{locationError}</span>
+					{/if}
+				</div>
+
+				<!-- Hidden inputs for GPS coordinates -->
+				{#if userLatitude !== null && userLongitude !== null}
+					<input type="hidden" name="latitude" value={userLatitude} />
+					<input type="hidden" name="longitude" value={userLongitude} />
+				{/if}
 			</div>
 
 			<!-- Filters -->
@@ -695,7 +788,7 @@
 					<button
 						type="submit"
 						class="btn btn-lg flex-1 border-0 bg-gradient-to-r from-orange-600 to-red-600 text-lg text-white hover:from-orange-500 hover:to-red-500"
-						disabled={loading || searchTerm.length < 2}
+						disabled={loading || (searchTerm.length < 2 && userLatitude === null)}
 					>
 						{#if loading}
 							<span class="loading loading-spinner loading-md"></span>

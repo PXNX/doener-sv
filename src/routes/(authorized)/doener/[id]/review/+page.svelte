@@ -17,7 +17,8 @@
 		validators: valibotClient(createReviewSchema),
 		multipleSubmits: 'prevent',
 		clearOnSubmit: 'none',
-		taintedMessage: null
+		taintedMessage: null,
+		dataType: 'json'
 	});
 
 	const ratingLabels = ['Sub Average', 'Average', 'Good', 'Excellent'];
@@ -81,7 +82,7 @@
 			</div>
 
 			<div class="grid grid-cols-4 gap-2">
-				{#each [1, 2, 3, 4] as rating}
+				{#each [1, 2, 3, 4] as rating (rating)}
 					<button
 						type="button"
 						onclick={() => ($form.meatRating = rating)}
@@ -117,7 +118,7 @@
 			</div>
 
 			<div class="grid grid-cols-4 gap-2">
-				{#each [1, 2, 3, 4] as rating}
+				{#each [1, 2, 3, 4] as rating (rating)}
 					<button
 						type="button"
 						onclick={() => ($form.breadRating = rating)}
@@ -153,7 +154,7 @@
 			</div>
 
 			<div class="grid grid-cols-4 gap-2">
-				{#each [1, 2, 3, 4] as rating}
+				{#each [1, 2, 3, 4] as rating (rating)}
 					<button
 						type="button"
 						onclick={() => ($form.veggiesRating = rating)}
@@ -189,7 +190,7 @@
 			</div>
 
 			<div class="grid grid-cols-4 gap-2">
-				{#each [1, 2, 3, 4] as rating}
+				{#each [1, 2, 3, 4] as rating (rating)}
 					<button
 						type="button"
 						onclick={() => ($form.sauceRating = rating)}

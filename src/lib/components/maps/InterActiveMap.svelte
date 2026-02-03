@@ -44,7 +44,7 @@
 			zoomControl: true
 		}}
 		class="h-full w-full"
-		on:click={handleMapClick}
+		onclick={handleMapClick}
 	>
 		<TileLayer
 			url={'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'}
@@ -60,7 +60,7 @@
 			height={40}
 			html={customMarkerHtml}
 			options={{ draggable: true }}
-			on:dragend={handleMarkerDragEnd}
+			ondragend={handleMarkerDragEnd}
 		/>
 	</Map>
 {/if}

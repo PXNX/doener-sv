@@ -1,28 +1,30 @@
 // src/lib/types.ts
 
+// src/lib/types.ts
+// Add distance field to DoenerRestaurantResult type
+
 export interface DoenerRestaurantResult {
 	id: number;
 	name: string;
+	doenerImage: string | null;
 	city: string;
 	country: string;
 	latitude: number;
 	longitude: number;
 	reviewCount: number;
 	averageRating: number;
-
-	// Döner characteristics (from restaurant record itself)
-	breadShape: string;
-	breadHasSesame: boolean;
-	breadFluffyInside: boolean;
-	breadCrispyOutside: boolean;
-	meatType: string;
-	meatProtein: string;
-	meatSeasoning: string;
-	onionLevel: string | null;
-	krautLevel: string | null;
-	hasYoghurtSauce: boolean;
-	hasGarlicSauce: boolean;
-	doenerImage: string | null;
+	distance?: number;
+	mostCommonBreadSesame: boolean;
+	mostCommonBreadFluffy: boolean;
+	mostCommonBreadCrispy: boolean;
+	mostCommonMeatType: string | null;
+	mostCommonMeatProtein: string | null;
+	mostCommonMeatSeasoning: string | null;
+	mostCommonSpiceLevel: string | null;
+	mostCommonYoghurtSauce: boolean;
+	mostCommonGarlicSauce: boolean;
+	latestReviewImage: string | null;
+	latestReviewNotes: string | null;
 }
 
 export interface DoenerReviewData {

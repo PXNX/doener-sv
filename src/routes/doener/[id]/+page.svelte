@@ -9,6 +9,7 @@
 	import FluentHeart20Regular from '~icons/fluent/heart-20-regular';
 	import FluentChevronDown20Regular from '~icons/fluent/chevron-down-20-regular';
 	import FluentChevronUp20Regular from '~icons/fluent/chevron-up-20-regular';
+	import FluentChevronRight20Regular from '~icons/fluent/chevron-right-20-regular';
 	import NotoMeatOnBone from '~icons/fluent-emoji/meat-on-bone';
 	import NotoBread from '~icons/fluent-emoji/bread';
 	import NotoLeafyGreen from '~icons/fluent-emoji/leafy-green';
@@ -100,6 +101,11 @@
 
 	const overallRatingColor = $derived(getRatingColor(data.restaurant.averageOverallRating));
 	const overallRatingBg = $derived(getRatingBg(data.restaurant.averageOverallRating));
+
+	// Generate Google Maps link
+	const googleMapsUrl = $derived(
+		`https://www.google.com/maps/search/?api=1&query=${data.restaurant.latitude},${data.restaurant.longitude}`
+	);
 </script>
 
 <svelte:head>
@@ -136,10 +142,16 @@
 				<div class="mb-4 flex items-start justify-between gap-4">
 					<div class="flex-1">
 						<h1 class="mb-2 text-3xl font-bold text-white">{data.restaurant.name}</h1>
-						<div class="mb-3 flex items-center gap-2 text-orange-300/90">
+						<a
+							href={googleMapsUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="mb-3 flex w-fit items-center gap-2 text-orange-300/90 transition-colors hover:text-orange-200"
+						>
 							<FluentLocation20Filled class="size-5" />
 							<span class="text-lg">{data.restaurant.city}, {data.restaurant.country}</span>
-						</div>
+							<FluentChevronRight20Regular class="size-4" />
+						</a>
 					</div>
 
 					<button
@@ -175,59 +187,20 @@
 
 				<!-- Category Ratings -->
 				<div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-					<div class="rounded-lg border border-white/10 bg-slate-800/50 p-3">
-						<div class="mb-1 flex items-center gap-2">
-							<NotoMeatOnBone class="size-5" />
-							<span class="text-xs font-medium text-gray-300">Meat</span>
+					{#each [{ icon: NotoMeatOnBone, label: 'Meat', rating: data.restaurant.averageMeatRating }, { icon: NotoBread, label: 'Bread', rating: data.restaurant.averageBreadRating }, { icon: NotoLeafyGreen, label: 'Veggies', rating: data.restaurant.averageVeggiesRating }, { icon: FluentEmojiSalt, label: 'Sauce', rating: data.restaurant.averageSauceRating }] as category (category.label)}
+						<div class="rounded-lg border border-white/10 bg-slate-800/50 p-3">
+							<div class="mb-1 flex items-center gap-2">
+								<category.icon class="size-5" />
+								<span class="text-xs font-medium text-gray-300">{category.label}</span>
+							</div>
+							<div class="flex items-center gap-1">
+								<span class="text-lg font-bold {getRatingColor(category.rating)}">
+									{category.rating?.toFixed(1) || 'N/A'}
+								</span>
+								<span class="text-xs text-gray-400">/4</span>
+							</div>
 						</div>
-						<div class="flex items-center gap-1">
-							<span class="text-lg font-bold {getRatingColor(data.restaurant.averageMeatRating)}">
-								{data.restaurant.averageMeatRating?.toFixed(1) || 'N/A'}
-							</span>
-							<span class="text-xs text-gray-400">/4</span>
-						</div>
-					</div>
-
-					<div class="rounded-lg border border-white/10 bg-slate-800/50 p-3">
-						<div class="mb-1 flex items-center gap-2">
-							<NotoBread class="size-5" />
-							<span class="text-xs font-medium text-gray-300">Bread</span>
-						</div>
-						<div class="flex items-center gap-1">
-							<span class="text-lg font-bold {getRatingColor(data.restaurant.averageBreadRating)}">
-								{data.restaurant.averageBreadRating?.toFixed(1) || 'N/A'}
-							</span>
-							<span class="text-xs text-gray-400">/4</span>
-						</div>
-					</div>
-
-					<div class="rounded-lg border border-white/10 bg-slate-800/50 p-3">
-						<div class="mb-1 flex items-center gap-2">
-							<NotoLeafyGreen class="size-5" />
-							<span class="text-xs font-medium text-gray-300">Veggies</span>
-						</div>
-						<div class="flex items-center gap-1">
-							<span
-								class="text-lg font-bold {getRatingColor(data.restaurant.averageVeggiesRating)}"
-							>
-								{data.restaurant.averageVeggiesRating?.toFixed(1) || 'N/A'}
-							</span>
-							<span class="text-xs text-gray-400">/4</span>
-						</div>
-					</div>
-
-					<div class="rounded-lg border border-white/10 bg-slate-800/50 p-3">
-						<div class="mb-1 flex items-center gap-2">
-							<FluentEmojiSalt class="size-5" />
-							<span class="text-xs font-medium text-gray-300">Sauce</span>
-						</div>
-						<div class="flex items-center gap-1">
-							<span class="text-lg font-bold {getRatingColor(data.restaurant.averageSauceRating)}">
-								{data.restaurant.averageSauceRating?.toFixed(1) || 'N/A'}
-							</span>
-							<span class="text-xs text-gray-400">/4</span>
-						</div>
-					</div>
+					{/each}
 				</div>
 
 				<!-- Döner Characteristics -->
@@ -351,7 +324,7 @@
 
 			<!-- Reviews List -->
 			<div class="space-y-4">
-				{#each sortedReviews() as review}
+				{#each sortedReviews() as review (review.id)}
 					<div
 						class="card border border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-md"
 					>
@@ -381,22 +354,12 @@
 
 									<!-- Category Ratings -->
 									<div class="mb-3 flex flex-wrap gap-2">
-										<span class="badge badge-xs {getRatingBg(review.meatRating)}">
-											<NotoMeatOnBone class="size-3" />
-											{review.meatRating}
-										</span>
-										<span class="badge badge-xs {getRatingBg(review.breadRating)}">
-											<NotoBread class="size-3" />
-											{review.breadRating}
-										</span>
-										<span class="badge badge-xs {getRatingBg(review.veggiesRating)}">
-											<NotoLeafyGreen class="size-3" />
-											{review.veggiesRating}
-										</span>
-										<span class="badge badge-xs {getRatingBg(review.sauceRating)}">
-											<FluentEmojiSalt class="size-3" />
-											{review.sauceRating}
-										</span>
+										{#each [{ icon: NotoMeatOnBone, rating: review.meatRating, key: 'meat' }, { icon: NotoBread, rating: review.breadRating, key: 'bread' }, { icon: NotoLeafyGreen, rating: review.veggiesRating, key: 'veggies' }, { icon: FluentEmojiSalt, rating: review.sauceRating, key: 'sauce' }] as category (category.key)}
+											<span class="badge badge-xs {getRatingBg(category.rating)}">
+												<svelte:component this={category.icon} class="size-3" />
+												{category.rating}
+											</span>
+										{/each}
 									</div>
 
 									<!-- Review Description -->
