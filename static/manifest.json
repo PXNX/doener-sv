@@ -22,10 +22,11 @@
 	"name": "Döner Rating",
 	"short_name": "Döner Rating",
 	"description": "Search for Döner in Europe",
-
+	"start_url": "/",
 	"share_target": {
 		"action": "/add-doener",
 		"method": "GET",
+		"enctype": "application/x-www-form-urlencoded",
 		"params": {
 			"title": "title",
 			"text": "text",
