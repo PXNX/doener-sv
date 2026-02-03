@@ -1,6 +1,5 @@
 <!-- src/lib/components/maps/LocationPicker.svelte -->
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import FluentLocation20Filled from '~icons/fluent/location-20-filled';
 	import FluentSearch20Regular from '~icons/fluent/search-20-regular';
 	import FluentDismiss20Regular from '~icons/fluent/dismiss-20-regular';
