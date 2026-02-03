@@ -10,8 +10,6 @@
 	import FluentEmojiBread from '~icons/fluent-emoji/bread';
 	import FluentEmojiPoultryLeg from '~icons/fluent-emoji/poultry-leg';
 	import FluentEmojiOnion from '~icons/fluent-emoji/onion';
-	import FluentEmojiLeafyGreen from '~icons/fluent-emoji/leafy-green';
-	import FluentEmojiBottleWithPoppingCork from '~icons/fluent-emoji/bottle-with-popping-cork';
 	import BackButton from '$lib/components/BackButton.svelte';
 	import LocationPicker from '$lib/components/maps/LocationPicker.svelte';
 
