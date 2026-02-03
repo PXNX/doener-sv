@@ -7,6 +7,24 @@ import type { DoenerRestaurantResult } from '$lib/types';
 import { getImageUrl } from '$lib/server/backblaze';
 
 /**
+ * Calculate distance between two coordinates using Haversine formula
+ * Returns distance in kilometers
+ */
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+	const R = 6371; // Earth's radius in km
+	const dLat = ((lat2 - lat1) * Math.PI) / 180;
+	const dLon = ((lon2 - lon1) * Math.PI) / 180;
+	const a =
+		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+		Math.cos((lat1 * Math.PI) / 180) *
+			Math.cos((lat2 * Math.PI) / 180) *
+			Math.sin(dLon / 2) *
+			Math.sin(dLon / 2);
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	return R * c;
+}
+
+/**
  * Calculate most common attributes from reviews for a restaurant
  */
 async function aggregateRestaurantData(restaurantId: number) {
@@ -79,6 +97,12 @@ async function aggregateRestaurantData(restaurantId: number) {
 		latestImageUrl = await getImageUrl(latestReviewWithImage.doenerImage);
 	}
 
+	const averageRating =
+		reviews.reduce(
+			(sum, r) => sum + (r.breadRating + r.meatRating + r.veggiesRating + r.sauceRating) / 4,
+			0
+		) / reviews.length;
+
 	return {
 		mostCommonBreadSesame: breadSesameCount > reviews.length / 2,
 		mostCommonBreadFluffy: breadFluffyCount > reviews.length / 2,
@@ -89,6 +113,7 @@ async function aggregateRestaurantData(restaurantId: number) {
 		mostCommonYoghurtSauce: yoghurtSauceCount > reviews.length / 2,
 		mostCommonGarlicSauce: garlicSauceCount > reviews.length / 2,
 		latestReviewImage: latestImageUrl,
+		averageRating: averageRating > 0 ? averageRating : null,
 		latestReviewNotes: latestReview?.notes || null
 	};
 }
@@ -98,6 +123,9 @@ async function aggregateRestaurantData(restaurantId: number) {
  */
 async function searchRestaurants(
 	location?: string,
+	userLat?: number,
+	userLon?: number,
+	maxDistanceKm: number = 50,
 	filters?: {
 		minRating?: number;
 		breadSesame?: boolean;
@@ -116,12 +144,12 @@ async function searchRestaurants(
 		yoghurtSauce?: boolean;
 		garlicSauce?: boolean;
 	},
-	sortBy: 'rating' | 'reviews' = 'rating'
+	sortBy: 'rating' | 'reviews' | 'distance' = 'rating'
 ) {
 	try {
 		const conditions = [];
 
-		// Location search
+		// Location search by name (city/restaurant name)
 		if (location && location.length >= 2) {
 			const searchLower = location.toLowerCase();
 			conditions.push(
@@ -148,21 +176,39 @@ async function searchRestaurants(
 				latitude: doenerRestaurants.latitude,
 				longitude: doenerRestaurants.longitude,
 				reviewCount: doenerRestaurants.reviewCount,
-				//		averageRating: doenerRestaurants.averageRating,
 				createdAt: doenerRestaurants.createdAt
 			})
 			.from(doenerRestaurants)
 			.where(conditions.length > 0 ? and(...conditions) : undefined);
 
-		// Apply sorting
+		// Apply sorting (except distance which is done after fetching)
 		if (sortBy === 'rating') {
-			// TODO: calculat actual average rating from reviews
-			//	query = query.orderBy(desc(doenerRestaurants.averageRating));
-		} else {
+			// TODO: calculate actual average rating from reviews
+			// query = query.orderBy(desc(doenerRestaurants.averageRating));
+		} else if (sortBy === 'reviews') {
 			query = query.orderBy(desc(doenerRestaurants.reviewCount));
 		}
 
-		const restaurants = await query.limit(50);
+		let restaurants = await query.limit(200); // Fetch more for GPS filtering
+
+		// Filter by GPS distance if coordinates provided
+		if (userLat !== undefined && userLon !== undefined) {
+			restaurants = restaurants
+				.map((r) => ({
+					...r,
+					distance: calculateDistance(userLat, userLon, r.latitude, r.longitude)
+				}))
+				.filter((r) => r.distance <= maxDistanceKm)
+				.sort((a, b) => {
+					if (sortBy === 'distance') {
+						return a.distance - b.distance;
+					}
+					return 0; // Keep existing order for other sorts
+				})
+				.slice(0, 50); // Limit to 50 results
+		} else {
+			restaurants = restaurants.slice(0, 50);
+		}
 
 		// If we have review-based filters, we need to check each restaurant's reviews
 		const hasReviewFilters =
@@ -246,6 +292,7 @@ async function searchRestaurants(
 				longitude: restaurant.longitude,
 				reviewCount: restaurant.reviewCount,
 				averageRating: 0, // restaurant.averageRating || 0,
+				distance: 'distance' in restaurant ? restaurant.distance : undefined,
 				...aggregated
 			});
 		}
@@ -259,8 +306,14 @@ async function searchRestaurants(
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const location = url.searchParams.get('location');
-	const sortBy = (url.searchParams.get('sortBy') || 'rating') as 'rating' | 'reviews';
+	const latitude = url.searchParams.get('latitude');
+	const longitude = url.searchParams.get('longitude');
+	const sortBy = (url.searchParams.get('sortBy') || 'rating') as 'rating' | 'reviews' | 'distance';
 	const minRating = parseInt(url.searchParams.get('minRating') || '0');
+
+	// Parse GPS coordinates
+	const userLat = latitude ? parseFloat(latitude) : undefined;
+	const userLon = longitude ? parseFloat(longitude) : undefined;
 
 	// Bread filters
 	const breadSesame = url.searchParams.get('breadSesame') === 'true';
@@ -287,7 +340,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const yoghurtSauce = url.searchParams.get('yoghurtSauce') === 'true';
 	const garlicSauce = url.searchParams.get('garlicSauce') === 'true';
 
-	if (!location || location.length < 2) {
+	// Require either location text or GPS coordinates
+	if ((!location || location.length < 2) && (userLat === undefined || userLon === undefined)) {
 		return {
 			restaurants: [],
 			user: locals.user,
@@ -297,6 +351,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 
 	const restaurants = await searchRestaurants(
 		location,
+		userLat,
+		userLon,
+		50, // 50km max distance
 		{
 			minRating: minRating > 0 ? minRating : undefined,
 			breadSesame,
@@ -329,8 +386,17 @@ export const actions: Actions = {
 	search: async ({ request }) => {
 		const formData = await request.formData();
 		const location = formData.get('location')?.toString() || '';
-		const sortBy = (formData.get('sortBy')?.toString() || 'rating') as 'rating' | 'reviews';
+		const latitude = formData.get('latitude')?.toString();
+		const longitude = formData.get('longitude')?.toString();
+		const sortBy = (formData.get('sortBy')?.toString() || 'rating') as
+			| 'rating'
+			| 'reviews'
+			| 'distance';
 		const minRating = parseInt(formData.get('minRating')?.toString() || '0');
+
+		// Parse GPS coordinates
+		const userLat = latitude ? parseFloat(latitude) : undefined;
+		const userLon = longitude ? parseFloat(longitude) : undefined;
 
 		// Bread filters
 		const breadSesame = formData.get('breadSesame') === 'on';
@@ -357,15 +423,19 @@ export const actions: Actions = {
 		const yoghurtSauce = formData.get('yoghurtSauce') === 'on';
 		const garlicSauce = formData.get('garlicSauce') === 'on';
 
-		if (!location || location.length < 2) {
+		// Require either location text or GPS coordinates
+		if ((!location || location.length < 2) && (userLat === undefined || userLon === undefined)) {
 			return {
 				restaurants: [],
-				error: 'Please enter at least 2 characters'
+				error: 'Please enter a location or use your current location'
 			};
 		}
 
 		const restaurants = await searchRestaurants(
 			location,
+			userLat,
+			userLon,
+			50, // 50km max distance
 			{
 				minRating: minRating > 0 ? minRating : undefined,
 				breadSesame,
