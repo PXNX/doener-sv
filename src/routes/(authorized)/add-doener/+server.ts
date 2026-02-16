@@ -9,6 +9,36 @@ import type { RequestHandler } from './$types';
  * - google.com/maps/place links
  * - google.com/maps/@lat,lng links
  */
+async function geocodeByName(
+	name: string
+): Promise<{ latitude: number; longitude: number } | null> {
+	try {
+		const response = await fetch(
+			`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`,
+			{
+				headers: {
+					'User-Agent': 'DoenerReviewApp/1.0'
+				}
+			}
+		);
+
+		if (!response.ok) return null;
+
+		const data = await response.json();
+		if (!data || data.length === 0) return null;
+
+		const latitude = parseFloat(data[0].lat);
+		const longitude = parseFloat(data[0].lon);
+
+		if (isNaN(latitude) || isNaN(longitude)) return null;
+
+		return { latitude, longitude };
+	} catch (error) {
+		console.error('Nominatim geocoding error:', error);
+		return null;
+	}
+}
+
 async function extractPlaceInfo(url: string): Promise<{
 	name: string | null;
 	latitude: number | null;
@@ -26,9 +56,8 @@ async function extractPlaceInfo(url: string): Promise<{
 			url = response.url;
 		}
 
-		console.log("Place info: ", url);
+		console.log('Place info: ', url);
 
-		const parsedUrl = new URL(url);
 		let name: string | null = null;
 		let latitude: number | null = null;
 		let longitude: number | null = null;
@@ -37,11 +66,17 @@ async function extractPlaceInfo(url: string): Promise<{
 		if (url.includes('/place/')) {
 			const placeMatch = url.match(/\/place\/([^/]+)/);
 			if (placeMatch) {
-				name = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
+				const candidate = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
+				// Discard if it looks like raw coordinates (e.g. "47.563917,10.859574")
+				const looksLikeCoords = /^-?\d+\.?\d*,-?\d+\.?\d*$/.test(candidate);
+				if (!looksLikeCoords) {
+					name = candidate;
+				}
 			}
 		}
 
 		// Extract coordinates from various formats
+
 		// Format 1: /@lat,lng,zoom
 		const coordMatch1 = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
 		if (coordMatch1) {
@@ -51,14 +86,14 @@ async function extractPlaceInfo(url: string): Promise<{
 
 		// Format 2: ?q=lat,lng
 		const coordMatch2 = url.match(/[?&]q=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
-		if (coordMatch2) {
+		if (!latitude && coordMatch2) {
 			latitude = parseFloat(coordMatch2[1]);
 			longitude = parseFloat(coordMatch2[2]);
 		}
 
 		// Format 3: /data=...!3d(lat)!4d(lng)
 		const dataMatch = url.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/);
-		if (dataMatch) {
+		if (!latitude && dataMatch) {
 			latitude = parseFloat(dataMatch[1]);
 			longitude = parseFloat(dataMatch[2]);
 		}
@@ -66,7 +101,19 @@ async function extractPlaceInfo(url: string): Promise<{
 		// Validate coordinates
 		if (latitude !== null && longitude !== null) {
 			if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-				return null;
+				latitude = null;
+				longitude = null;
+			}
+		}
+
+		// If we have a name but no coordinates, try geocoding by name
+		if ((latitude === null || longitude === null) && name) {
+			console.log('No coordinates found in URL, attempting Nominatim geocode for:', name);
+			const geocoded = await geocodeByName(name);
+			if (geocoded) {
+				latitude = geocoded.latitude;
+				longitude = geocoded.longitude;
+				console.log('Nominatim resolved coordinates:', latitude, longitude);
 			}
 		}
 
