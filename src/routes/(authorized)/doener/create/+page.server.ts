@@ -47,6 +47,15 @@ async function getCityFromCoordinates(
 	}
 }
 
+/**
+ * Google Maps place names often include the full address:
+ * "Aeschacher Bistro, Wackerstraße 7, 88131 Lindau"
+ * Strip everything after the first comma to get just the restaurant name.
+ */
+function cleanRestaurantName(name: string): string {
+	return name.split(',')[0].trim();
+}
+
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const account = locals.user!;
 
@@ -77,7 +86,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	}
 
 	if (name) {
-		form.data.restaurantName = name;
+		form.data.restaurantName = cleanRestaurantName(name);
 	}
 
 	return { form };
