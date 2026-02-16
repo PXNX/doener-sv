@@ -26,6 +26,8 @@ async function extractPlaceInfo(url: string): Promise<{
 			url = response.url;
 		}
 
+		console.log("Place info: ", url);
+
 		const parsedUrl = new URL(url);
 		let name: string | null = null;
 		let latitude: number | null = null;
