@@ -4,8 +4,8 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev --host",
-		"build": "vite build",
+		"dev": "bunx --bun vite dev --host",
+		"build": "bun --bun vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -17,14 +17,20 @@
 		"test:e2e": "playwright test"
 	},
 	"devDependencies": {
+<<<<<<< HEAD
 		"@aws-sdk/client-s3": "3.1047.0",
 		"@aws-sdk/s3-request-presigner": "3.1047.0",
+=======
+		"@aws-sdk/client-s3": "3.1045.0",
+		"@aws-sdk/s3-request-presigner": "3.1045.0",
+>>>>>>> fbdbad719a14f8c96acec771d046f4f4574ee3bd
 		"@eslint/compat": "2.1.0",
 		"@eslint/js": "10.0.1",
 		"@iconify-json/fluent": "1.2.47",
 		"@iconify-json/fluent-emoji": "1.2.7",
 		"@iconify-json/heroicons": "1.2.3",
 		"@iconify-json/logos": "1.2.11",
+<<<<<<< HEAD
 		"@iconify-json/material-symbols": "1.2.72",
 		"@sveltejs/adapter-vercel": "6.3.3",
 		"@sveltejs/kit": "2.60.0",
@@ -54,9 +60,20 @@
 		"oslo": "1.2.1",
 		"sharp": "0.34.5",
 		"postgres": "3.4.9",
+=======
+		"@iconify-json/material-symbols": "1.2.71",
+>>>>>>> fbdbad719a14f8c96acec771d046f4f4574ee3bd
 		"@oslojs/crypto": "1.0.1",
+		"@sveltejs/adapter-vercel": "^6.3.3",
+		"@sveltejs/kit": "2.59.1",
+		"@sveltejs/vite-plugin-svelte": "7.1.2",
 		"@tailwindcss/typography": "0.5.19",
+		"@tailwindcss/vite": "4.3.0",
+		"@types/bun": "1.3.13",
+		"@types/pg": "8.20.0",
+		"@vite-pwa/sveltekit": "1.1.0",
 		"arctic": "3.7.0",
+<<<<<<< HEAD
 		"valibot": "1.4.0",
 		"sveltekit-superforms": "2.30.1",
 		"sveaflet": "0.1.4",
@@ -64,6 +81,33 @@
 		"vite": "8.0.13",
 		"vitest": "3.2.3",
 		"@playwright/test": "1.52.0"
+=======
+		"daisyui": "5.5.19",
+		"drizzle-kit": "0.31.10",
+		"drizzle-orm": "0.45.2",
+		"eslint": "10.3.0",
+		"eslint-config-prettier": "10.1.8",
+		"eslint-plugin-svelte": "3.17.1",
+		"globals": "17.6.0",
+		"leaflet": "1.9.4",
+		"postgres": "3.4.9",
+		"prettier": "3.8.3",
+		"prettier-plugin-svelte": "3.5.2",
+		"prettier-plugin-tailwindcss": "0.8.0",
+		"sharp": "0.34.5",
+		"sveaflet": "0.1.4",
+		"svelte": "5.55.5",
+		"svelte-adapter-bun": "^1.0.1",
+		"svelte-check": "4.4.8",
+		"sveltekit-adapter-vercel": "^1.0.3",
+		"sveltekit-superforms": "2.30.1",
+		"tailwindcss": "4.3.0",
+		"typescript": "6.0.3",
+		"typescript-eslint": "8.59.3",
+		"unplugin-icons": "23.0.1",
+		"valibot": "1.4.0",
+		"vite": "8.0.12"
+>>>>>>> fbdbad719a14f8c96acec771d046f4f4574ee3bd
 	},
 	"dependencies": {
 		"@boxfish-studio/sveltekit-cookie-manager": "1.0.3",
