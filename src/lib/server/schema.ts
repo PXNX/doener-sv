@@ -137,6 +137,9 @@ export const doenerReviews = pgTable(
 		price: doublePrecision('price'), // in euros, nullable
 		cleanlinessRating: integer('cleanliness_rating'), // 1-4
 
+		// Upvotes
+		upvotes: integer('upvotes').notNull().default(0),
+
 		// Short description (max 200 characters)
 		description: varchar('description', { length: 200 }).notNull(),
 

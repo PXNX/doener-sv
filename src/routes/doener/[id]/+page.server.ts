@@ -43,8 +43,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		.where(eq(doenerReviews.restaurantId, restaurantId))
 		.orderBy(desc(doenerReviews.createdAt));
 
-	const reviews = reviewsData.map(({ review, user }) => ({
-		id: review.id,
+	// Lightweight review data for aggregate computation only (no image URLs)
+	const reviews = reviewsData.map(({ review }) => ({
 		meatRating: review.meatRating,
 		breadRating: review.breadRating,
 		veggiesRating: review.veggiesRating,
@@ -67,10 +67,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		breadFluffy: review.breadFluffy,
 		breadSesameSeeds: review.breadSesameSeeds,
 		hasTomatoes: review.hasTomatoes,
-		onionType: review.onionType,
-		redCabbageType: review.redCabbageType,
 		hasCabbage: review.hasCabbage,
-		saladType: review.saladType,
 		hasRucola: review.hasRucola,
 		hasCorn: review.hasCorn,
 		hasParsley: review.hasParsley,
@@ -81,9 +78,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		hasSpicySauce: review.hasSpicySauce,
 		doenerSize: review.doenerSize,
 		price: review.price,
-		description: review.description,
-		createdAt: review.createdAt.toISOString(),
-		user: { id: user.id, name: user.name }
+		reviewImage: review.reviewImage
 	}));
 
 	// --- Aggregate stats ---
@@ -196,7 +191,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			doenerImage: imageUrl
 		},
 		aggregate,
-		reviews,
 		userHasReviewed,
 		user: locals.user,
 		session: locals.session

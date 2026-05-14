@@ -462,24 +462,21 @@
 			</div>
 			{/if}
 
-				<!-- Submit button -->
-				<div class="flex flex-col gap-3 sm:flex-row">
-					<button
-						type="submit"
-						class="btn btn-lg flex-1 border-0 bg-gradient-to-r from-orange-600 to-red-600 text-lg text-white hover:from-orange-500 hover:to-red-500"
-						disabled={loading || (searchTerm.length < 2 && userLatitude === null)}
-					>
-						{#if loading}
-							<span class="loading loading-spinner loading-md"></span>
-						{:else}
-							<FluentEmojiStuffedFlatbread class="size-6" />
-						{/if}
-						<span>Find Döners</span>
-						<FluentArrowRight24Regular class="size-6" />
-					</button>
-				</div>
-			</div>
-		</form>
+			<!-- Submit button -->
+			<button
+				type="submit"
+				class="btn btn-lg w-full border-0 bg-gradient-to-r from-orange-600 to-red-600 text-lg text-white hover:from-orange-500 hover:to-red-500"
+				disabled={loading || (searchTerm.length < 2 && userLatitude === null)}
+			>
+				{#if loading}
+					<span class="loading loading-spinner loading-md"></span>
+				{:else}
+					<FluentEmojiStuffedFlatbread class="size-6" />
+				{/if}
+				<span>Find Döners</span>
+				<FluentArrowRight24Regular class="size-6" />
+			</button>
+			</form>
 	</div>
 </div>
 
