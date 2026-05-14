@@ -1,10 +1,11 @@
 // src/routes/+page.server.ts
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
-import { doenerRestaurants, doenerReviews, files } from '$lib/server/schema';
-import { eq, and, or, sql, desc, gte } from 'drizzle-orm';
+import { doenerRestaurants } from '$lib/server/schema';
+import { and, or, sql, desc, gte } from 'drizzle-orm';
 import type { DoenerRestaurantResult } from '$lib/types';
 import { getImageUrl } from '$lib/server/backblaze';
+import { aggregateRestaurantData } from '$lib/server/aggregate';
 
 /**
  * Calculate distance between two coordinates using Haversine formula
@@ -22,91 +23,6 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 		Math.sin(dLon / 2);
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	return R * c;
-}
-
-/**
- * Calculate most common attributes from reviews for a restaurant
- */
-async function aggregateRestaurantData(restaurantId: number) {
-	const reviews = await db.query.doenerReviews.findMany({
-		where: eq(doenerReviews.restaurantId, restaurantId),
-		orderBy: desc(doenerReviews.createdAt)
-	});
-
-	if (reviews.length === 0) {
-		return {
-			mostCommonBreadSesame: false,
-			mostCommonBreadFluffy: false,
-			mostCommonBreadCrispy: false,
-			mostCommonMeatType: null,
-			mostCommonMeatProtein: null,
-			mostCommonMeatSeasoning: null,
-			mostCommonSpiceLevel: null,
-			mostCommonYoghurtSauce: false,
-			mostCommonGarlicSauce: false,
-			latestReviewImage: null,
-			latestReviewNotes: null
-		};
-	}
-
-	// Count occurrences from new granular review columns
-	const breadSesameCount = reviews.filter((r) => r.breadSesameSeeds).length;
-	const breadFluffyCount = reviews.filter((r) => (r.breadFluffy ?? 0) >= 3).length;
-	const breadCrispyCount = reviews.filter((r) => (r.breadCrispiness ?? 0) >= 3).length;
-
-	const meatTypeCount = reviews.reduce(
-		(acc, r) => {
-			if (r.meatStyle) acc[r.meatStyle] = (acc[r.meatStyle] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
-
-	const meatProteinCount: Record<string, number> = {};
-	for (const r of reviews) {
-		if (r.meatChicken) meatProteinCount['chicken'] = (meatProteinCount['chicken'] || 0) + 1;
-		if (r.meatBeef) meatProteinCount['beef'] = (meatProteinCount['beef'] || 0) + 1;
-		if (r.meatLamb) meatProteinCount['lamb'] = (meatProteinCount['lamb'] || 0) + 1;
-	}
-
-	const meatSeasoningCount: Record<string, number> = {};
-
-	const yoghurtSauceCount = reviews.filter((r) => r.hasYoghurtSauce).length;
-	const garlicSauceCount = reviews.filter((r) => r.hasGarlicSauce).length;
-
-	const getMostCommon = (counts: Record<string, number>) => {
-		const entries = Object.entries(counts);
-		if (entries.length === 0) return null;
-		return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
-	};
-
-	const latestReviewWithImage = reviews.find((r) => r.reviewImage);
-	const latestReview = reviews[0];
-
-	let latestImageUrl = null;
-	if (latestReviewWithImage?.reviewImage) {
-		latestImageUrl = await getImageUrl(latestReviewWithImage.reviewImage);
-	}
-
-	const averageRating =
-		reviews.reduce(
-			(sum, r) => sum + (r.breadRating + r.meatRating + r.veggiesRating + r.sauceRating) / 4,
-			0
-		) / reviews.length;
-
-	return {
-		mostCommonBreadSesame: breadSesameCount > reviews.length / 2,
-		mostCommonBreadFluffy: breadFluffyCount > reviews.length / 2,
-		mostCommonBreadCrispy: breadCrispyCount > reviews.length / 2,
-		mostCommonMeatType: getMostCommon(meatTypeCount),
-		mostCommonMeatProtein: getMostCommon(meatProteinCount),
-		mostCommonMeatSeasoning: getMostCommon(meatSeasoningCount),
-		mostCommonYoghurtSauce: yoghurtSauceCount > reviews.length / 2,
-		mostCommonGarlicSauce: garlicSauceCount > reviews.length / 2,
-		latestReviewImage: latestImageUrl,
-		averageRating: averageRating > 0 ? averageRating : null,
-		latestReviewNotes: latestReview?.description || null
-	};
 }
 
 /**
@@ -282,8 +198,7 @@ async function searchRestaurants(
 				latitude: restaurant.latitude,
 				longitude: restaurant.longitude,
 				reviewCount: restaurant.reviewCount,
-				averageRating: 0, // restaurant.averageRating || 0,
-				distance: 'distance' in restaurant ? restaurant.distance : undefined,
+				distance: 'distance' in restaurant ? (restaurant as any).distance : undefined,
 				...aggregated
 			});
 		}

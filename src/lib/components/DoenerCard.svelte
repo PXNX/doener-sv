@@ -1,4 +1,3 @@
-<!-- src/lib/components/DoenerCard.svelte -->
 <script lang="ts">
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
 	import FluentStar20Filled from '~icons/fluent/star-20-filled';
@@ -12,21 +11,33 @@
 
 	let { restaurant }: Props = $props();
 
-	const ratingColor = $derived(
-		restaurant.averageRating >= 4.5
-			? 'text-yellow-400'
-			: restaurant.averageRating >= 3.5
-				? 'text-orange-400'
-				: 'text-red-400'
-	);
+	const rating = $derived(restaurant.averageRating ?? 0);
 
-	const ratingBg = $derived(
-		restaurant.averageRating >= 4.5
-			? 'bg-yellow-400/20 border-yellow-400/40'
-			: restaurant.averageRating >= 3.5
-				? 'bg-orange-400/20 border-orange-400/40'
-				: 'bg-red-400/20 border-red-400/40'
-	);
+	function ratingColor(r: number) {
+		if (r >= 3.5) return 'text-green-400';
+		if (r >= 2.5) return 'text-blue-400';
+		if (r >= 1.5) return 'text-yellow-400';
+		return 'text-orange-400';
+	}
+	function ratingBg(r: number) {
+		if (r >= 3.5) return 'bg-green-400/20 border-green-400/40';
+		if (r >= 2.5) return 'bg-blue-400/20 border-blue-400/40';
+		if (r >= 1.5) return 'bg-yellow-400/20 border-yellow-400/40';
+		return 'bg-orange-400/20 border-orange-400/40';
+	}
+
+	const sauceEmoji: Record<string, string> = {
+		Herbal: '🌿',
+		Yoghurt: '🥛',
+		Garlic: '🧄',
+		Cocktail: '🍹',
+		Spicy: '🌶️'
+	};
+	const proteinEmoji: Record<string, string> = {
+		Chicken: '🐔',
+		Beef: '🐄',
+		Lamb: '🐑'
+	};
 </script>
 
 <a
@@ -36,97 +47,97 @@
 >
 	<div class="card-body p-0">
 		<div class="flex flex-col items-start gap-4 p-4 sm:flex-row">
-			<PreviewImage src={restaurant.doenerImage} alt={restaurant.name} class="size-32" />
+			<PreviewImage
+				src={restaurant.latestReviewImage ?? restaurant.doenerImage}
+				alt={restaurant.name}
+				class="size-32"
+			/>
 
-			<!-- Restaurant Info -->
 			<div class="min-w-0 flex-1">
-				<div class="mb-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+				<!-- Name + Location -->
+				<div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
 					<div class="min-w-0 flex-1">
 						<h3
-							class="truncate text-xl font-bold text-white transition-colors duration-200 group-hover:text-orange-200"
+							class="truncate text-xl font-bold text-white transition-colors group-hover:text-orange-200"
 						>
 							{restaurant.name}
 						</h3>
-						<div class="mt-1 flex items-center gap-2 text-sm text-orange-300/90">
-							<FluentLocation20Filled class="size-4 shrink-0" />
+						<div class="mt-0.5 flex items-center gap-1.5 text-sm text-orange-300/80">
+							<FluentLocation20Filled class="size-3.5 shrink-0" />
 							<span class="truncate">{restaurant.city}, {restaurant.country}</span>
+							{#if restaurant.distance !== undefined}
+								<span class="text-xs text-gray-500">• {restaurant.distance.toFixed(1)} km</span>
+							{/if}
 						</div>
 					</div>
 
-					<!-- Rating Badge -->
-					<div class="flex shrink-0 items-center gap-3">
-						<div class="flex items-center gap-1 rounded-lg border px-3 py-1.5 {ratingBg}">
-							<FluentStar20Filled class="size-5 {ratingColor}" />
-							<span class="font-bold {ratingColor} text-lg">
-								{restaurant.averageRating?.toFixed(1) || 'N/A'}
+					<!-- Rating pill -->
+					{#if restaurant.reviewCount > 0}
+						<div class="flex shrink-0 items-center gap-2">
+							<div
+								class="flex items-center gap-1 rounded-lg border px-2.5 py-1 {ratingBg(rating)}"
+							>
+								<FluentStar20Filled class="size-4 {ratingColor(rating)}" />
+								<span class="text-base font-bold {ratingColor(rating)}">
+									{rating.toFixed(1)}
+								</span>
+							</div>
+							<span class="text-xs text-gray-400">
+								{restaurant.reviewCount} review{restaurant.reviewCount !== 1 ? 's' : ''}
 							</span>
 						</div>
-						<div class="text-sm text-orange-300/70">
-							{restaurant.reviewCount} review{restaurant.reviewCount !== 1 ? 's' : ''}
-						</div>
+					{:else}
+						<span class="badge badge-sm border-slate-600 bg-slate-700/50 text-gray-400"
+							>No reviews</span
+						>
+					{/if}
+				</div>
+
+				<!-- Tags row — review-derived -->
+				{#if restaurant.reviewCount > 0}
+					<div class="mt-2 flex flex-wrap gap-1.5">
+						<!-- Proteins -->
+						{#each restaurant.topProteins.slice(0, 2) as p}
+							<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
+								{proteinEmoji[p.label] || '🍖'} {p.label}
+								<span class="ml-0.5 opacity-60">{p.pct}%</span>
+							</span>
+						{/each}
+
+						<!-- Meat style -->
+						{#if restaurant.mostCommonMeatType}
+							<span class="badge badge-sm border-orange-400/40 bg-orange-500/20 text-orange-200">
+								🥩 {restaurant.mostCommonMeatType === 'minced' ? 'Minced' : 'Layered'}
+							</span>
+						{/if}
+
+						<!-- Sauces -->
+						{#each restaurant.topSauces.filter((s) => s.pct >= 40).slice(0, 3) as s}
+							<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">
+								{sauceEmoji[s.label] || '🫗'} {s.label}
+							</span>
+						{/each}
+
+						<!-- Price -->
+						{#if restaurant.avgPrice != null}
+							<span class="badge badge-sm border-green-400/40 bg-green-500/20 text-green-200">
+								💰 ~€{restaurant.avgPrice.toFixed(1)}
+							</span>
+						{/if}
+
+						<!-- Bread highlights -->
+						{#if restaurant.mostCommonBreadSesame}
+							<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200"
+								>🌰 Sesame</span
+							>
+						{/if}
+						{#if restaurant.mostCommonBreadCrispy}
+							<span class="badge badge-sm border-orange-400/40 bg-orange-500/20 text-orange-200"
+								>🔥 Crispy</span
+							>
+						{/if}
 					</div>
-				</div>
-
-				<!-- Criteria Tags - Most Common -->
-				<div class="mt-3 flex flex-wrap gap-2">
-					<!-- Bread Tags -->
-					{#if restaurant.breadHasSesame}
-						<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">
-							🌰 Sesame
-						</span>
-					{/if}
-					{#if restaurant.breadFluffyInside}
-						<span class="badge badge-sm border-yellow-400/40 bg-yellow-500/20 text-yellow-200">
-							☁️ Fluffy
-						</span>
-					{/if}
-					{#if restaurant.breadCrispyOutside}
-						<span class="badge badge-sm border-orange-400/40 bg-orange-500/20 text-orange-200">
-							🔥 Crispy
-						</span>
-					{/if}
-
-					<!-- Meat Tags -->
-					{#if restaurant.meatType === 'minced'}
-						<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
-							🥩 Minced
-						</span>
-					{:else if restaurant.meatType === 'layered'}
-						<span class="badge badge-sm border-red-500/40 bg-red-600/20 text-red-200">
-							🥓 Layered
-						</span>
-					{/if}
-
-					{#if restaurant.meatProtein === 'chicken'}
-						<span class="badge badge-sm border-orange-500/40 bg-orange-600/20 text-orange-200">
-							🐔 Chicken
-						</span>
-					{:else if restaurant.meatProtein === 'beef'}
-						<span class="badge badge-sm border-red-600/40 bg-red-700/20 text-red-200">
-							🐄 Beef
-						</span>
-					{:else if restaurant.meatProtein === 'lamb'}
-						<span class="badge badge-sm border-purple-500/40 bg-purple-600/20 text-purple-200">
-							🐑 Lamb
-						</span>
-					{:else if restaurant.meatProtein === 'mixed'}
-						<span class="badge badge-sm border-pink-400/40 bg-pink-500/20 text-pink-200">
-							🍖 Mixed
-						</span>
-					{/if}
-
-					<!-- Sauces -->
-					{#if restaurant.hasYoghurtSauce}
-						<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">
-							🥛 Yoghurt
-						</span>
-					{/if}
-					{#if restaurant.hasGarlicSauce}
-						<span class="badge badge-sm border-purple-300/40 bg-purple-400/20 text-purple-200">
-							🧄 Garlic
-						</span>
-					{/if}
-				</div>
+				{/if}
 			</div>
 
 			<!-- Arrow -->

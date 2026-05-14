@@ -1,8 +1,3 @@
-// src/lib/types.ts
-
-// src/lib/types.ts
-// Add distance field to DoenerRestaurantResult type
-
 export interface DoenerRestaurantResult {
 	id: number;
 	name: string;
@@ -12,38 +7,29 @@ export interface DoenerRestaurantResult {
 	latitude: number;
 	longitude: number;
 	reviewCount: number;
-	averageRating: number;
+	averageRating: number | null;
 	distance?: number;
+	// Review-derived aggregates
+	avgPrice: number | null;
+	minPrice: number | null;
+	maxPrice: number | null;
+	// Most-common tags (from reviews)
+	topProteins: { label: string; pct: number }[];
+	topStyles: { label: string; pct: number }[];
+	topSauces: { label: string; pct: number }[];
+	topVeggies: { label: string; pct: number }[];
+	// Boolean summaries (>50% of reviews)
 	mostCommonBreadSesame: boolean;
 	mostCommonBreadFluffy: boolean;
 	mostCommonBreadCrispy: boolean;
 	mostCommonMeatType: string | null;
 	mostCommonMeatProtein: string | null;
 	mostCommonMeatSeasoning: string | null;
-	mostCommonSpiceLevel: string | null;
 	mostCommonYoghurtSauce: boolean;
 	mostCommonGarlicSauce: boolean;
+	mostCommonHerbalSauce: boolean;
+	mostCommonCocktailSauce: boolean;
+	mostCommonSpicySauce: boolean;
 	latestReviewImage: string | null;
 	latestReviewNotes: string | null;
 }
-
-export interface DoenerReviewData {
-	id: number;
-	restaurantId: string;
-	userId: string;
-	rating: number;
-	description: string;
-	createdAt: string;
-	user: {
-		id: string;
-		name: string;
-		email: string;
-	};
-}
-
-export type BreadShape = 'triangular' | 'circular' | 'long';
-export type MeatType = 'minced' | 'layered';
-export type MeatProtein = 'chicken' | 'beef' | 'lamb';
-export type MeatSeasoning = 'pure' | 'seasoned' | 'phosphate';
-export type OnionLevel = 'mild' | 'spicy'; // No 'none' - null means no onions
-export type KrautLevel = 'mild' | 'sour'; // No 'none' - null means no kraut
