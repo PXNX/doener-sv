@@ -97,7 +97,7 @@
 				{#if restaurant.reviewCount > 0}
 					<div class="mt-2 flex flex-wrap gap-1.5">
 						<!-- Proteins -->
-						{#each restaurant.topProteins.slice(0, 2) as p}
+						{#each (restaurant.topProteins ?? []).slice(0, 2) as p}
 							<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
 								{proteinEmoji[p.label] || '🍖'} {p.label}
 								<span class="ml-0.5 opacity-60">{p.pct}%</span>
@@ -112,7 +112,7 @@
 						{/if}
 
 						<!-- Sauces -->
-						{#each restaurant.topSauces.filter((s) => s.pct >= 40).slice(0, 3) as s}
+						{#each (restaurant.topSauces ?? []).filter((s) => s.pct >= 40).slice(0, 3) as s}
 							<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">
 								{sauceEmoji[s.label] || '🫗'} {s.label}
 							</span>
