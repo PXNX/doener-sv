@@ -42,14 +42,12 @@ async function searchRestaurants(
 		meatLayered?: boolean;
 		meatChicken?: boolean;
 		meatBeef?: boolean;
-		meatMixed?: boolean;
-		seasoningPure?: boolean;
-		seasoningSeasoned?: boolean;
-		hasOnions?: boolean;
-		spicy?: boolean;
-		mild?: boolean;
+		meatLamb?: boolean;
 		yoghurtSauce?: boolean;
 		garlicSauce?: boolean;
+		herbalSauce?: boolean;
+		cocktailSauce?: boolean;
+		spicySauce?: boolean;
 	},
 	sortBy: 'rating' | 'reviews' | 'distance' = 'rating'
 ) {
@@ -127,14 +125,12 @@ async function searchRestaurants(
 				filters.meatLayered ||
 				filters.meatChicken ||
 				filters.meatBeef ||
-				filters.meatMixed ||
-				filters.seasoningPure ||
-				filters.seasoningSeasoned ||
-				filters.hasOnions ||
-				filters.spicy ||
-				filters.mild ||
+				filters.meatLamb ||
 				filters.yoghurtSauce ||
-				filters.garlicSauce);
+				filters.garlicSauce ||
+				filters.herbalSauce ||
+				filters.cocktailSauce ||
+				filters.spicySauce);
 
 		const results: DoenerRestaurantResult[] = [];
 
@@ -164,25 +160,20 @@ async function searchRestaurants(
 				}
 
 				// Protein filters (OR logic)
-				if (filters.meatChicken || filters.meatBeef || filters.meatMixed) {
+				if (filters.meatChicken || filters.meatBeef || filters.meatLamb) {
 					const proteinMatch =
-						(filters.meatChicken && aggregated.mostCommonMeatProtein === 'chicken') ||
-						(filters.meatBeef && aggregated.mostCommonMeatProtein === 'beef') ||
-						(filters.meatMixed && aggregated.mostCommonMeatProtein === 'mixed');
+						(filters.meatChicken && aggregated.mostCommonMeatProtein === 'Chicken') ||
+						(filters.meatBeef && aggregated.mostCommonMeatProtein === 'Beef') ||
+						(filters.meatLamb && aggregated.mostCommonMeatProtein === 'Lamb');
 					if (!proteinMatch) matches = false;
-				}
-
-				// Seasoning filters (OR logic)
-				if (filters.seasoningPure || filters.seasoningSeasoned) {
-					const seasoningMatch =
-						(filters.seasoningPure && aggregated.mostCommonMeatSeasoning === 'pure') ||
-						(filters.seasoningSeasoned && aggregated.mostCommonMeatSeasoning === 'seasoned');
-					if (!seasoningMatch) matches = false;
 				}
 
 				// Sauce filters (must have if selected)
 				if (filters.yoghurtSauce && !aggregated.mostCommonYoghurtSauce) matches = false;
 				if (filters.garlicSauce && !aggregated.mostCommonGarlicSauce) matches = false;
+				if (filters.herbalSauce && !aggregated.mostCommonHerbalSauce) matches = false;
+				if (filters.cocktailSauce && !aggregated.mostCommonCocktailSauce) matches = false;
+				if (filters.spicySauce && !aggregated.mostCommonSpicySauce) matches = false;
 
 				if (!matches) continue;
 			}
@@ -231,20 +222,14 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const meatLayered = url.searchParams.get('meatLayered') === 'true';
 	const meatChicken = url.searchParams.get('meatChicken') === 'true';
 	const meatBeef = url.searchParams.get('meatBeef') === 'true';
-	const meatMixed = url.searchParams.get('meatMixed') === 'true';
-
-	// Seasoning filters
-	const seasoningPure = url.searchParams.get('seasoningPure') === 'true';
-	const seasoningSeasoned = url.searchParams.get('seasoningSeasoned') === 'true';
-
-	// Topping filters
-	const hasOnions = url.searchParams.get('hasOnions') === 'true';
-	const spicy = url.searchParams.get('spicy') === 'true';
-	const mild = url.searchParams.get('mild') === 'true';
+	const meatLamb = url.searchParams.get('meatLamb') === 'true';
 
 	// Sauce filters
 	const yoghurtSauce = url.searchParams.get('yoghurtSauce') === 'true';
 	const garlicSauce = url.searchParams.get('garlicSauce') === 'true';
+	const herbalSauce = url.searchParams.get('herbalSauce') === 'true';
+	const cocktailSauce = url.searchParams.get('cocktailSauce') === 'true';
+	const spicySauce = url.searchParams.get('spicySauce') === 'true';
 
 	// Require either location text or GPS coordinates
 	if ((!location || location.length < 2) && (userLat === undefined || userLon === undefined)) {
@@ -269,14 +254,12 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			meatLayered,
 			meatChicken,
 			meatBeef,
-			meatMixed,
-			seasoningPure,
-			seasoningSeasoned,
-			hasOnions,
-			spicy,
-			mild,
+			meatLamb,
 			yoghurtSauce,
-			garlicSauce
+			garlicSauce,
+			herbalSauce,
+			cocktailSauce,
+			spicySauce
 		},
 		sortBy
 	);
@@ -314,20 +297,14 @@ export const actions: Actions = {
 		const meatLayered = formData.get('meatLayered') === 'on';
 		const meatChicken = formData.get('meatChicken') === 'on';
 		const meatBeef = formData.get('meatBeef') === 'on';
-		const meatMixed = formData.get('meatMixed') === 'on';
-
-		// Seasoning filters
-		const seasoningPure = formData.get('seasoningPure') === 'on';
-		const seasoningSeasoned = formData.get('seasoningSeasoned') === 'on';
-
-		// Topping filters
-		const hasOnions = formData.get('hasOnions') === 'on';
-		const spicy = formData.get('spicy') === 'on';
-		const mild = formData.get('mild') === 'on';
+		const meatLamb = formData.get('meatLamb') === 'on';
 
 		// Sauce filters
 		const yoghurtSauce = formData.get('yoghurtSauce') === 'on';
 		const garlicSauce = formData.get('garlicSauce') === 'on';
+		const herbalSauce = formData.get('herbalSauce') === 'on';
+		const cocktailSauce = formData.get('cocktailSauce') === 'on';
+		const spicySauce = formData.get('spicySauce') === 'on';
 
 		// Require either location text or GPS coordinates
 		if ((!location || location.length < 2) && (userLat === undefined || userLon === undefined)) {
@@ -351,14 +328,12 @@ export const actions: Actions = {
 				meatLayered,
 				meatChicken,
 				meatBeef,
-				meatMixed,
-				seasoningPure,
-				seasoningSeasoned,
-				hasOnions,
-				spicy,
-				mild,
+				meatLamb,
 				yoghurtSauce,
-				garlicSauce
+				garlicSauce,
+				herbalSauce,
+				cocktailSauce,
+				spicySauce
 			},
 			sortBy
 		);

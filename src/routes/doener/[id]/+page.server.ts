@@ -157,11 +157,11 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			avgFluffy: avgOf(reviews.map((r) => r.breadFluffy)),
 			sesamePct: Math.round((countTrue(reviews.map((r) => r.breadSesameSeeds)) / n) * 100),
 			// Frequency tables
-			proteins: topEntries(proteinCounts, n),
-			styles: topEntries(styleCounts, n),
+			topProteins: topEntries(proteinCounts, n),
+			topStyles: topEntries(styleCounts, n),
 			shapes: topEntries(shapeCounts, n),
-			sauces: topEntries(sauceCounts, n),
-			veggies: topEntries(veggieCounts, n),
+			topSauces: topEntries(sauceCounts, n),
+			topVeggies: topEntries(veggieCounts, n),
 			sizes: topEntries(sizeCounts, n),
 			// Price
 			avgPrice: prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : null,

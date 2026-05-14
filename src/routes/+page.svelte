@@ -6,11 +6,7 @@
 	import FluentEmojiStuffedFlatbread from '~icons/fluent-emoji/stuffed-flatbread';
 	import FluentLocation24Regular from '~icons/fluent/location-24-regular';
 	import FluentAdd24Regular from '~icons/fluent/add-24-regular';
-	import FluentEmojiBread from '~icons/fluent-emoji/bread';
-	import FluentEmojiPoultryLeg from '~icons/fluent-emoji/poultry-leg';
-	import FluentEmojiOnion from '~icons/fluent-emoji/onion';
-	import FluentEmojiLeafyGreen from '~icons/fluent-emoji/leafy-green';
-	import FluentEmojiBottleWithPoppingCork from '~icons/fluent-emoji/bottle-with-popping-cork';
+
 	import type { PageData, ActionData } from './$types';
 	import type { DoenerRestaurantResult } from '$lib/types';
 	import { page } from '$app/state';
@@ -75,123 +71,29 @@
 	// Filters - initialize from URL params or localStorage
 	const savedFilters = getFromStorage(STORAGE_KEYS.filters, {});
 
-	// Bread filters
-	let filterBreadTriangular = $state(
+	const f = (key: string) =>
 		hasUrlParams
-			? page.url.searchParams.get('breadTriangular') === 'true'
-			: savedFilters.breadTriangular || false
-	);
-	let filterBreadCircular = $state(
-		hasUrlParams
-			? page.url.searchParams.get('breadCircular') === 'true'
-			: savedFilters.breadCircular || false
-	);
-	let filterBreadLong = $state(
-		hasUrlParams
-			? page.url.searchParams.get('breadLong') === 'true'
-			: savedFilters.breadLong || false
-	);
-	let filterBreadSesame = $state(
-		hasUrlParams
-			? page.url.searchParams.get('breadSesame') === 'true'
-			: savedFilters.breadSesame || false
-	);
-	let filterBreadFluffy = $state(
-		hasUrlParams
-			? page.url.searchParams.get('breadFluffy') === 'true'
-			: savedFilters.breadFluffy || false
-	);
-	let filterBreadCrispy = $state(
-		hasUrlParams
-			? page.url.searchParams.get('breadCrispy') === 'true'
-			: savedFilters.breadCrispy || false
-	);
+			? page.url.searchParams.get(key) === 'true'
+			: savedFilters[key] || false;
 
-	// Meat filters
-	let filterMeatMinced = $state(
-		hasUrlParams
-			? page.url.searchParams.get('meatMinced') === 'true'
-			: savedFilters.meatMinced || false
-	);
-	let filterMeatLayered = $state(
-		hasUrlParams
-			? page.url.searchParams.get('meatLayered') === 'true'
-			: savedFilters.meatLayered || false
-	);
-	let filterMeatChicken = $state(
-		hasUrlParams
-			? page.url.searchParams.get('meatChicken') === 'true'
-			: savedFilters.meatChicken || false
-	);
-	let filterMeatBeef = $state(
-		hasUrlParams ? page.url.searchParams.get('meatBeef') === 'true' : savedFilters.meatBeef || false
-	);
-	let filterMeatLamb = $state(
-		hasUrlParams ? page.url.searchParams.get('meatLamb') === 'true' : savedFilters.meatBeef || false
-	);
-	let filterMeatMixed = $state(
-		hasUrlParams
-			? page.url.searchParams.get('meatMixed') === 'true'
-			: savedFilters.meatMixed || false
-	);
+	// Bread
+	let filterBreadSesame = $state(f('breadSesame'));
+	let filterBreadFluffy = $state(f('breadFluffy'));
+	let filterBreadCrispy = $state(f('breadCrispy'));
+	// Meat
+	let filterMeatMinced = $state(f('meatMinced'));
+	let filterMeatLayered = $state(f('meatLayered'));
+	let filterMeatChicken = $state(f('meatChicken'));
+	let filterMeatBeef = $state(f('meatBeef'));
+	let filterMeatLamb = $state(f('meatLamb'));
+	// Sauces
+	let filterYoghurtSauce = $state(f('yoghurtSauce'));
+	let filterGarlicSauce = $state(f('garlicSauce'));
+	let filterHerbalSauce = $state(f('herbalSauce'));
+	let filterCocktailSauce = $state(f('cocktailSauce'));
+	let filterSpicySauce = $state(f('spicySauce'));
 
-	// Seasoning filters
-	let filterSeasoningPure = $state(
-		hasUrlParams
-			? page.url.searchParams.get('seasoningPure') === 'true'
-			: savedFilters.seasoningPure || false
-	);
-	let filterSeasoningSeasoned = $state(
-		hasUrlParams
-			? page.url.searchParams.get('seasoningSeasoned') === 'true'
-			: savedFilters.seasoningSeasoned || false
-	);
-
-	// Onion filters
-	let filterOnionsNone = $state(
-		hasUrlParams
-			? page.url.searchParams.get('onionsNone') === 'true'
-			: savedFilters.onionsNone || false
-	);
-	let filterOnionsMild = $state(
-		hasUrlParams
-			? page.url.searchParams.get('onionsMild') === 'true'
-			: savedFilters.onionsMild || false
-	);
-	let filterOnionsSpicy = $state(
-		hasUrlParams
-			? page.url.searchParams.get('onionsSpicy') === 'true'
-			: savedFilters.onionsSpicy || false
-	);
-
-	// Kraut filters
-	let filterKrautNone = $state(
-		hasUrlParams
-			? page.url.searchParams.get('krautNone') === 'true'
-			: savedFilters.krautNone || false
-	);
-	let filterKrautMild = $state(
-		hasUrlParams
-			? page.url.searchParams.get('krautMild') === 'true'
-			: savedFilters.krautMild || false
-	);
-	let filterKrautSour = $state(
-		hasUrlParams
-			? page.url.searchParams.get('krautSour') === 'true'
-			: savedFilters.krautSour || false
-	);
-
-	// Sauce filters
-	let filterYoghurtSauce = $state(
-		hasUrlParams
-			? page.url.searchParams.get('yoghurtSauce') === 'true'
-			: savedFilters.yoghurtSauce || false
-	);
-	let filterGarlicSauce = $state(
-		hasUrlParams
-			? page.url.searchParams.get('garlicSauce') === 'true'
-			: savedFilters.garlicSauce || false
-	);
+	let showFilters = $state(false);
 
 	// Get user's current location
 	async function getUserLocation() {
@@ -264,9 +166,6 @@
 	// Persist filters to localStorage
 	$effect(() => {
 		setToStorage(STORAGE_KEYS.filters, {
-			breadTriangular: filterBreadTriangular,
-			breadCircular: filterBreadCircular,
-			breadLong: filterBreadLong,
 			breadSesame: filterBreadSesame,
 			breadFluffy: filterBreadFluffy,
 			breadCrispy: filterBreadCrispy,
@@ -274,17 +173,12 @@
 			meatLayered: filterMeatLayered,
 			meatChicken: filterMeatChicken,
 			meatBeef: filterMeatBeef,
-			meatMixed: filterMeatMixed,
-			seasoningPure: filterSeasoningPure,
-			seasoningSeasoned: filterSeasoningSeasoned,
-			onionsNone: filterOnionsNone,
-			onionsMild: filterOnionsMild,
-			onionsSpicy: filterOnionsSpicy,
-			krautNone: filterKrautNone,
-			krautMild: filterKrautMild,
-			krautSour: filterKrautSour,
+			meatLamb: filterMeatLamb,
 			yoghurtSauce: filterYoghurtSauce,
-			garlicSauce: filterGarlicSauce
+			garlicSauce: filterGarlicSauce,
+			herbalSauce: filterHerbalSauce,
+			cocktailSauce: filterCocktailSauce,
+			spicySauce: filterSpicySauce
 		});
 	});
 
@@ -327,9 +221,6 @@
 
 	const activeFilterCount = $derived(
 		[
-			filterBreadTriangular,
-			filterBreadCircular,
-			filterBreadLong,
 			filterBreadSesame,
 			filterBreadFluffy,
 			filterBreadCrispy,
@@ -337,17 +228,12 @@
 			filterMeatLayered,
 			filterMeatChicken,
 			filterMeatBeef,
-			filterMeatMixed,
-			filterSeasoningPure,
-			filterSeasoningSeasoned,
-			filterOnionsNone,
-			filterOnionsMild,
-			filterOnionsSpicy,
-			filterKrautNone,
-			filterKrautMild,
-			filterKrautSour,
+			filterMeatLamb,
 			filterYoghurtSauce,
-			filterGarlicSauce
+			filterGarlicSauce,
+			filterHerbalSauce,
+			filterCocktailSauce,
+			filterSpicySauce
 		].filter(Boolean).length
 	);
 </script>
@@ -491,297 +377,90 @@
 				{/if}
 			</div>
 
-			<!-- Filters -->
-			<div class="space-y-4">
-				<div class="flex items-center justify-between">
-					<h3 class="text-lg font-semibold text-orange-200">
-						🔍 Filters
-						{#if activeFilterCount > 0}
-							<span class="badge badge-sm ml-2 border-0 bg-orange-600 text-white">
-								{activeFilterCount}
-							</span>
-						{/if}
-					</h3>
-				</div>
+			<!-- Filters (collapsible) -->
+			<button
+				type="button"
+				onclick={() => (showFilters = !showFilters)}
+				class="flex w-full items-center justify-between rounded-lg bg-slate-700/30 px-3 py-2 text-left transition-colors hover:bg-slate-700/50"
+			>
+				<span class="text-sm font-semibold text-orange-200">
+					🔍 Filters
+					{#if activeFilterCount > 0}
+						<span class="badge badge-xs ml-1 border-0 bg-orange-600 text-white">{activeFilterCount}</span>
+					{/if}
+				</span>
+				<span class="text-xs text-gray-400">{showFilters ? '▲' : '▼'}</span>
+			</button>
 
+			{#if showFilters}
+			<div class="space-y-3 rounded-lg border border-white/5 bg-slate-800/30 p-3">
 				<!-- Bread -->
-				<div class="space-y-2">
-					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-						<FluentEmojiBread class="size-4" />
-						Bread
-					</h4>
-					<div class="space-y-2">
-						<p class="text-xs text-orange-200/70">Shape:</p>
-						<div class="grid grid-cols-3 gap-2">
+				<div>
+					<p class="mb-1.5 text-xs font-semibold text-orange-300">🍞 Bread</p>
+					<div class="flex flex-wrap gap-1.5">
+						{#each [{ name: 'breadSesame', label: '🌰 Sesame', bind: () => filterBreadSesame, set: (v: boolean) => (filterBreadSesame = v) }, { name: 'breadFluffy', label: '☁️ Fluffy', bind: () => filterBreadFluffy, set: (v: boolean) => (filterBreadFluffy = v) }, { name: 'breadCrispy', label: '🔥 Crispy', bind: () => filterBreadCrispy, set: (v: boolean) => (filterBreadCrispy = v) }] as opt}
 							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+								class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
+									{opt.bind() ? 'bg-amber-500/25 text-amber-200 border border-amber-400/40' : 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
 							>
 								<input
 									type="checkbox"
-									name="breadTriangular"
-									bind:checked={filterBreadTriangular}
-									class="checkbox checkbox-warning checkbox-sm"
+									name={opt.name}
+									checked={opt.bind()}
+									onchange={(e) => opt.set(e.currentTarget.checked)}
+									class="hidden"
 								/>
-								<span class="text-sm text-white">Triangular</span>
+								{opt.label}
 							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="breadCircular"
-									bind:checked={filterBreadCircular}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Circular</span>
-							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="breadLong"
-									bind:checked={filterBreadLong}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Long</span>
-							</label>
-						</div>
-						<p class="pt-2 text-xs text-orange-200/70">Properties:</p>
-						<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="breadSesame"
-									bind:checked={filterBreadSesame}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Sesame seeds</span>
-							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="breadFluffy"
-									bind:checked={filterBreadFluffy}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Fluffy inside</span>
-							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="breadCrispy"
-									bind:checked={filterBreadCrispy}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Crispy outside</span>
-							</label>
-						</div>
+						{/each}
 					</div>
 				</div>
 
-				<!-- Meat Type -->
-				<div class="space-y-2">
-					<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-						<FluentEmojiPoultryLeg class="size-4" />
-						Meat
-					</h4>
-
-					<div class="space-y-2">
-						<p class="text-xs text-orange-200/70">Consistency:</p>
-
-						<div class="grid grid-cols-2 gap-2">
+				<!-- Meat -->
+				<div>
+					<p class="mb-1.5 text-xs font-semibold text-orange-300">🥩 Meat</p>
+					<div class="flex flex-wrap gap-1.5">
+						{#each [{ name: 'meatMinced', label: '🔪 Minced', bind: () => filterMeatMinced, set: (v: boolean) => (filterMeatMinced = v) }, { name: 'meatLayered', label: '📐 Layered', bind: () => filterMeatLayered, set: (v: boolean) => (filterMeatLayered = v) }, { name: 'meatChicken', label: '🐔 Chicken', bind: () => filterMeatChicken, set: (v: boolean) => (filterMeatChicken = v) }, { name: 'meatBeef', label: '🐄 Beef', bind: () => filterMeatBeef, set: (v: boolean) => (filterMeatBeef = v) }, { name: 'meatLamb', label: '🐑 Lamb', bind: () => filterMeatLamb, set: (v: boolean) => (filterMeatLamb = v) }] as opt}
 							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
+								class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
+									{opt.bind() ? 'bg-red-500/25 text-red-200 border border-red-400/40' : 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
 							>
 								<input
 									type="checkbox"
-									name="meatMinced"
-									bind:checked={filterMeatMinced}
-									class="checkbox checkbox-warning checkbox-sm"
+									name={opt.name}
+									checked={opt.bind()}
+									onchange={(e) => opt.set(e.currentTarget.checked)}
+									class="hidden"
 								/>
-								<span class="text-sm text-white">Minced</span>
+								{opt.label}
 							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="meatLayered"
-									bind:checked={filterMeatLayered}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Layered</span>
-							</label>
-						</div>
-
-						<p class="pt-2 text-xs text-orange-200/70">Animal:</p>
-						<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="meatChicken"
-									bind:checked={filterMeatChicken}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Chicken</span>
-							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="meatBeef"
-									bind:checked={filterMeatBeef}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Cow</span>
-							</label>
-
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="meatLamb"
-									bind:checked={filterMeatLamb}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Lamb</span>
-							</label>
-						</div>
-
-						<p class="pt-2 text-xs text-orange-200/70">Seasoning:</p>
-						<div class="grid grid-cols-2 gap-2">
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="seasoningPure"
-									bind:checked={filterSeasoningPure}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Pure</span>
-							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="seasoningSeasoned"
-									bind:checked={filterSeasoningSeasoned}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Heavily seasoned</span>
-							</label>
-						</div>
-					</div>
-
-					<!-- Onions -->
-					<div class="space-y-2">
-						<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-							<FluentEmojiOnion class="size-4" />
-							<span>Onions</span>
-						</h4>
-						<div class="grid grid-cols-2 gap-2">
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="onionsMild"
-									bind:checked={filterOnionsMild}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Mild</span>
-							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="onionsSpicy"
-									bind:checked={filterOnionsSpicy}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Spicy</span>
-							</label>
-						</div>
-					</div>
-
-					<!-- Kraut -->
-					<div class="space-y-2">
-						<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-							<FluentEmojiLeafyGreen class="size-4" />
-							<span>Red Cabbage</span>
-						</h4>
-						<div class="grid grid-cols-2 gap-2">
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="krautMild"
-									bind:checked={filterKrautMild}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Mild</span>
-							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="krautSour"
-									bind:checked={filterKrautSour}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Sour</span>
-							</label>
-						</div>
-					</div>
-
-					<!-- Sauces -->
-					<div class="space-y-2">
-						<h4 class="flex items-center gap-2 text-sm font-bold text-orange-300">
-							<FluentEmojiBottleWithPoppingCork class="size-4" />
-							<span>Sauces</span>
-						</h4>
-						<div class="grid grid-cols-2 gap-2">
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="yoghurtSauce"
-									bind:checked={filterYoghurtSauce}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Yoghurt</span>
-							</label>
-							<label
-								class="flex cursor-pointer items-center gap-2 rounded-lg bg-slate-700/30 p-2 transition-colors hover:bg-slate-700/50"
-							>
-								<input
-									type="checkbox"
-									name="garlicSauce"
-									bind:checked={filterGarlicSauce}
-									class="checkbox checkbox-warning checkbox-sm"
-								/>
-								<span class="text-sm text-white">Garlic</span>
-							</label>
-						</div>
+						{/each}
 					</div>
 				</div>
+
+				<!-- Sauces -->
+				<div>
+					<p class="mb-1.5 text-xs font-semibold text-orange-300">🫗 Sauces</p>
+					<div class="flex flex-wrap gap-1.5">
+						{#each [{ name: 'yoghurtSauce', label: '🥛 Yoghurt', bind: () => filterYoghurtSauce, set: (v: boolean) => (filterYoghurtSauce = v) }, { name: 'garlicSauce', label: '🧄 Garlic', bind: () => filterGarlicSauce, set: (v: boolean) => (filterGarlicSauce = v) }, { name: 'herbalSauce', label: '🌿 Herbal', bind: () => filterHerbalSauce, set: (v: boolean) => (filterHerbalSauce = v) }, { name: 'cocktailSauce', label: '🍹 Cocktail', bind: () => filterCocktailSauce, set: (v: boolean) => (filterCocktailSauce = v) }, { name: 'spicySauce', label: '🌶️ Spicy', bind: () => filterSpicySauce, set: (v: boolean) => (filterSpicySauce = v) }] as opt}
+							<label
+								class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
+									{opt.bind() ? 'bg-blue-500/25 text-blue-200 border border-blue-400/40' : 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
+							>
+								<input
+									type="checkbox"
+									name={opt.name}
+									checked={opt.bind()}
+									onchange={(e) => opt.set(e.currentTarget.checked)}
+									class="hidden"
+								/>
+								{opt.label}
+							</label>
+						{/each}
+					</div>
+				</div>
+			</div>
+			{/if}
 
 				<!-- Submit button -->
 				<div class="flex flex-col gap-3 sm:flex-row">
