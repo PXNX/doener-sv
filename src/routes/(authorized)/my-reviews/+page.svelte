@@ -155,74 +155,21 @@
 							</div>
 
 							<!-- Döner Characteristics (from this specific review) -->
-							<div class="mt-3 flex flex-wrap gap-2">
-								<!-- Bread Shape -->
-								<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">
-									🥖 {review.breadShape === 'triangular'
-										? 'Triangular'
-										: review.breadShape === 'circular'
-											? 'Circular'
-											: 'Long'}
-								</span>
-
-								<!-- Bread Properties -->
-								{#if review.breadHasSesame}
-									<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">
-										🌰 Sesame
-									</span>
-								{/if}
-								{#if review.breadFluffyInside}
-									<span
-										class="badge badge-sm border-yellow-400/40 bg-yellow-500/20 text-yellow-200"
-									>
-										☁️ Fluffy
-									</span>
-								{/if}
-								{#if review.breadCrispyOutside}
-									<span
-										class="badge badge-sm border-orange-400/40 bg-orange-500/20 text-orange-200"
-									>
-										🔥 Crispy
-									</span>
-								{/if}
-
-								<!-- Meat -->
-								<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
-									🥩 {review.meatType === 'minced' ? 'Minced' : 'Layered'}
-								</span>
-								<span class="badge badge-sm border-orange-500/40 bg-orange-600/20 text-orange-200">
-									{#if review.meatProtein === 'chicken'}🐔{:else if review.meatProtein === 'beef'}🐄{:else if review.meatProtein === 'lamb'}🐑{:else}🍖{/if}
-									{review.meatProtein.charAt(0).toUpperCase() + review.meatProtein.slice(1)}
-								</span>
-
-								<!-- Onions & Kraut -->
-								{#if review.onionLevel}
-									<span
-										class="badge badge-sm border-purple-400/40 bg-purple-500/20 text-purple-200"
-									>
-										🧅 {review.onionLevel === 'mild' ? 'Mild' : 'Spicy'} onions
-									</span>
-								{/if}
-								{#if review.krautLevel}
-									<span class="badge badge-sm border-green-400/40 bg-green-500/20 text-green-200">
-										🥬 {review.krautLevel === 'mild' ? 'Mild' : 'Sour'} kraut
-									</span>
-								{/if}
-
-								<!-- Sauces -->
-								{#if review.hasYoghurtSauce}
-									<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">
-										🥛 Yoghurt
-									</span>
-								{/if}
-								{#if review.hasGarlicSauce}
-									<span
-										class="badge badge-sm border-purple-300/40 bg-purple-400/20 text-purple-200"
-									>
-										🧄 Garlic
-									</span>
-								{/if}
-							</div>
+						<div class="mt-3 flex flex-wrap gap-2">
+							{#if review.meatChicken}<span class="badge badge-sm border-orange-500/40 bg-orange-600/20 text-orange-200">🐔 Chicken</span>{/if}
+							{#if review.meatBeef}<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">🐄 Beef</span>{/if}
+							{#if review.meatLamb}<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">🐑 Lamb</span>{/if}
+							{#if review.meatStyle}<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">🥩 {review.meatStyle === 'minced' ? 'Minced' : 'Layered'}</span>{/if}
+							{#if review.breadShape}<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">🍞 {review.breadShape}</span>{/if}
+							{#if review.breadSesameSeeds}<span class="badge badge-sm border-amber-400/40 bg-amber-500/20 text-amber-200">🌰 Sesame</span>{/if}
+							{#if review.hasHerbalSauce}<span class="badge badge-sm border-green-300/40 bg-green-400/20 text-green-200">🌿 Herbal</span>{/if}
+							{#if review.hasYoghurtSauce}<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">🥛 Yoghurt</span>{/if}
+							{#if review.hasGarlicSauce}<span class="badge badge-sm border-purple-300/40 bg-purple-400/20 text-purple-200">🧄 Garlic</span>{/if}
+							{#if review.hasCocktailSauce}<span class="badge badge-sm border-pink-300/40 bg-pink-400/20 text-pink-200">🍹 Cocktail</span>{/if}
+							{#if review.hasSpicySauce}<span class="badge badge-sm border-red-300/40 bg-red-400/20 text-red-200">🌶️ Spicy</span>{/if}
+							{#if review.doenerSize}<span class="badge badge-sm border-slate-400/40 bg-slate-500/20 text-slate-200">📏 {review.doenerSize}</span>{/if}
+							{#if review.price}<span class="badge badge-sm border-green-400/40 bg-green-500/20 text-green-200">💰 €{review.price.toFixed(2)}</span>{/if}
+						</div>
 
 							<!-- Review Description -->
 							{#if review.description}

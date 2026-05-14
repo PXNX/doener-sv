@@ -105,35 +105,13 @@
 								)}
 							</div>
 
-							<!-- Döner Characteristics from restaurant -->
-							<div class="mb-2 flex flex-wrap gap-1">
-								<span class="badge badge-xs bg-amber-500/20 text-amber-200"
-									>{review.restaurant.breadShape}</span
-								>
-								{#if review.restaurant.breadHasSesame}<span
-										class="badge badge-xs bg-amber-500/20 text-amber-200">Sesame</span
-									>{/if}
-								{#if review.restaurant.breadFluffyInside}<span
-										class="badge badge-xs bg-yellow-500/20 text-yellow-200">Fluffy</span
-									>{/if}
-								{#if review.restaurant.breadCrispyOutside}<span
-										class="badge badge-xs bg-orange-500/20 text-orange-200">Crispy</span
-									>{/if}
-								<span class="badge badge-xs bg-red-500/20 text-red-200"
-									>{review.restaurant.meatType}</span
-								>
-								<span class="badge badge-xs bg-orange-600/20 text-orange-200"
-									>{review.restaurant.meatProtein}</span
-								>
-								{#if review.restaurant.onionLevel}<span
-										class="badge badge-xs bg-purple-500/20 text-purple-200"
-										>{review.restaurant.onionLevel} onions</span
-									>{/if}
-								{#if review.restaurant.krautLevel}<span
-										class="badge badge-xs bg-green-500/20 text-green-200"
-										>{review.restaurant.krautLevel} kraut</span
-									>{/if}
-							</div>
+							<!-- Category Ratings -->
+						<div class="mb-2 flex flex-wrap gap-1">
+							<span class="badge badge-xs bg-red-500/20 text-red-200">🥩 Meat {review.meatRating}/4</span>
+							<span class="badge badge-xs bg-amber-500/20 text-amber-200">🍞 Bread {review.breadRating}/4</span>
+							<span class="badge badge-xs bg-green-500/20 text-green-200">🥬 Veggies {review.veggiesRating}/4</span>
+							<span class="badge badge-xs bg-blue-500/20 text-blue-200">🧂 Sauce {review.sauceRating}/4</span>
+						</div>
 
 							<!-- Review Description -->
 							{#if review.description}

@@ -29,51 +29,41 @@ async function aggregateRestaurantData(restaurantId: number) {
 		};
 	}
 
-	// Count occurrences
-	const breadSesameCount = reviews.filter((r) => r.breadHasSesame).length;
-	const breadFluffyCount = reviews.filter((r) => r.breadFluffyInside).length;
-	const breadCrispyCount = reviews.filter((r) => r.breadCrispyOutside).length;
+	const breadSesameCount = reviews.filter((r) => r.breadSesameSeeds).length;
+	const breadFluffyCount = reviews.filter((r) => (r.breadFluffy ?? 0) >= 3).length;
+	const breadCrispyCount = reviews.filter((r) => (r.breadCrispiness ?? 0) >= 3).length;
 
 	const meatTypeCount = reviews.reduce(
 		(acc, r) => {
-			acc[r.meatType] = (acc[r.meatType] || 0) + 1;
+			if (r.meatStyle) acc[r.meatStyle] = (acc[r.meatStyle] || 0) + 1;
 			return acc;
 		},
 		{} as Record<string, number>
 	);
 
-	const meatProteinCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.meatProtein] = (acc[r.meatProtein] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	const meatProteinCount: Record<string, number> = {};
+	for (const r of reviews) {
+		if (r.meatChicken) meatProteinCount['chicken'] = (meatProteinCount['chicken'] || 0) + 1;
+		if (r.meatBeef) meatProteinCount['beef'] = (meatProteinCount['beef'] || 0) + 1;
+		if (r.meatLamb) meatProteinCount['lamb'] = (meatProteinCount['lamb'] || 0) + 1;
+	}
 
-	const meatSeasoningCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.meatSeasoning] = (acc[r.meatSeasoning] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	const meatSeasoningCount: Record<string, number> = {};
 
 	const yoghurtSauceCount = reviews.filter((r) => r.hasYoghurtSauce).length;
 	const garlicSauceCount = reviews.filter((r) => r.hasGarlicSauce).length;
 
-	// Find most common
 	const getMostCommon = (counts: Record<string, number>) => {
 		const entries = Object.entries(counts);
 		if (entries.length === 0) return null;
 		return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
 	};
 
-	// Get latest review with image
-	const latestReviewWithImage = reviews.find((r) => r.doenerImage);
+	const latestReviewWithImage = reviews.find((r) => r.reviewImage);
 
 	let latestImageUrl = null;
-	if (latestReviewWithImage?.doenerImage) {
-		latestImageUrl = await getImageUrl(latestReviewWithImage.doenerImage);
+	if (latestReviewWithImage?.reviewImage) {
+		latestImageUrl = await getImageUrl(latestReviewWithImage.reviewImage);
 	}
 
 	return {

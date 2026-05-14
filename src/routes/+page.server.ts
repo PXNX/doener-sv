@@ -17,9 +17,9 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 	const a =
 		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
 		Math.cos((lat1 * Math.PI) / 180) *
-			Math.cos((lat2 * Math.PI) / 180) *
-			Math.sin(dLon / 2) *
-			Math.sin(dLon / 2);
+		Math.cos((lat2 * Math.PI) / 180) *
+		Math.sin(dLon / 2) *
+		Math.sin(dLon / 2);
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	return R * c;
 }
@@ -49,52 +49,43 @@ async function aggregateRestaurantData(restaurantId: number) {
 		};
 	}
 
-	// Count occurrences
-	const breadSesameCount = reviews.filter((r) => r.breadHasSesame).length;
-	const breadFluffyCount = reviews.filter((r) => r.breadFluffyInside).length;
-	const breadCrispyCount = reviews.filter((r) => r.breadCrispyOutside).length;
+	// Count occurrences from new granular review columns
+	const breadSesameCount = reviews.filter((r) => r.breadSesameSeeds).length;
+	const breadFluffyCount = reviews.filter((r) => (r.breadFluffy ?? 0) >= 3).length;
+	const breadCrispyCount = reviews.filter((r) => (r.breadCrispiness ?? 0) >= 3).length;
 
 	const meatTypeCount = reviews.reduce(
 		(acc, r) => {
-			acc[r.meatType] = (acc[r.meatType] || 0) + 1;
+			if (r.meatStyle) acc[r.meatStyle] = (acc[r.meatStyle] || 0) + 1;
 			return acc;
 		},
 		{} as Record<string, number>
 	);
 
-	const meatProteinCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.meatProtein] = (acc[r.meatProtein] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	const meatProteinCount: Record<string, number> = {};
+	for (const r of reviews) {
+		if (r.meatChicken) meatProteinCount['chicken'] = (meatProteinCount['chicken'] || 0) + 1;
+		if (r.meatBeef) meatProteinCount['beef'] = (meatProteinCount['beef'] || 0) + 1;
+		if (r.meatLamb) meatProteinCount['lamb'] = (meatProteinCount['lamb'] || 0) + 1;
+	}
 
-	const meatSeasoningCount = reviews.reduce(
-		(acc, r) => {
-			acc[r.meatSeasoning] = (acc[r.meatSeasoning] || 0) + 1;
-			return acc;
-		},
-		{} as Record<string, number>
-	);
+	const meatSeasoningCount: Record<string, number> = {};
 
 	const yoghurtSauceCount = reviews.filter((r) => r.hasYoghurtSauce).length;
 	const garlicSauceCount = reviews.filter((r) => r.hasGarlicSauce).length;
 
-	// Find most common
 	const getMostCommon = (counts: Record<string, number>) => {
 		const entries = Object.entries(counts);
 		if (entries.length === 0) return null;
 		return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
 	};
 
-	// Get latest review with image
-	const latestReviewWithImage = reviews.find((r) => r.doenerImage);
+	const latestReviewWithImage = reviews.find((r) => r.reviewImage);
 	const latestReview = reviews[0];
 
 	let latestImageUrl = null;
-	if (latestReviewWithImage?.doenerImage) {
-		latestImageUrl = await getImageUrl(latestReviewWithImage.doenerImage);
+	if (latestReviewWithImage?.reviewImage) {
+		latestImageUrl = await getImageUrl(latestReviewWithImage.reviewImage);
 	}
 
 	const averageRating =
@@ -114,7 +105,7 @@ async function aggregateRestaurantData(restaurantId: number) {
 		mostCommonGarlicSauce: garlicSauceCount > reviews.length / 2,
 		latestReviewImage: latestImageUrl,
 		averageRating: averageRating > 0 ? averageRating : null,
-		latestReviewNotes: latestReview?.notes || null
+		latestReviewNotes: latestReview?.description || null
 	};
 }
 
@@ -162,7 +153,7 @@ async function searchRestaurants(
 
 		// Rating filter
 		if (filters?.minRating && filters.minRating > 0) {
-			conditions.push(gte(doenerRestaurants.averageRating, filters.minRating));
+			conditions.push(gte(doenerRestaurants.averageOverallRating, filters.minRating));
 		}
 
 		// Base query - get all restaurants matching location/rating

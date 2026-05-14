@@ -203,56 +203,6 @@
 					{/each}
 				</div>
 
-				<!-- Döner Characteristics -->
-				<div class="mb-4">
-					<h3 class="mb-2 text-sm font-semibold text-orange-300">What to expect here:</h3>
-					<div class="flex flex-wrap gap-2">
-						{#if data.restaurant.breadHasSesame}
-							<span class="badge border-amber-400/40 bg-amber-500/20 text-amber-200"
-								>🌰 Sesame seeds</span
-							>
-						{/if}
-						{#if data.restaurant.breadFluffyInside}
-							<span class="badge border-yellow-400/40 bg-yellow-500/20 text-yellow-200"
-								>☁️ Fluffy bread</span
-							>
-						{/if}
-						{#if data.restaurant.breadCrispyOutside}
-							<span class="badge border-orange-400/40 bg-orange-500/20 text-orange-200"
-								>🔥 Crispy outside</span
-							>
-						{/if}
-						<span class="badge border-red-400/40 bg-red-500/20 text-red-200">
-							🥩 {data.restaurant.meatType === 'minced' ? 'Minced' : 'Layered'} meat
-						</span>
-						<span class="badge border-orange-500/40 bg-orange-600/20 text-orange-200">
-							{#if data.restaurant.meatProtein === 'chicken'}🐔{:else if data.restaurant.meatProtein === 'beef'}🐄{:else if data.restaurant.meatProtein === 'lamb'}🐑{:else}🍖{/if}
-							{data.restaurant.meatProtein.charAt(0).toUpperCase() +
-								data.restaurant.meatProtein.slice(1)}
-						</span>
-						{#if data.restaurant.onionLevel}
-							<span class="badge border-purple-400/40 bg-purple-500/20 text-purple-200">
-								🧅 {data.restaurant.onionLevel === 'spicy' ? 'Spicy' : 'Mild'} onions
-							</span>
-						{/if}
-						{#if data.restaurant.krautLevel}
-							<span class="badge border-green-400/40 bg-green-500/20 text-green-200">
-								🥬 {data.restaurant.krautLevel === 'sour' ? 'Sour' : 'Mild'} kraut
-							</span>
-						{/if}
-						{#if data.restaurant.hasYoghurtSauce}
-							<span class="badge border-blue-300/40 bg-blue-400/20 text-blue-200"
-								>🥛 Yoghurt sauce</span
-							>
-						{/if}
-						{#if data.restaurant.hasGarlicSauce}
-							<span class="badge border-purple-300/40 bg-purple-400/20 text-purple-200"
-								>🧄 Garlic sauce</span
-							>
-						{/if}
-					</div>
-				</div>
-
 				<!-- Action Button -->
 				{#if data.user && !data.userHasReviewed}
 					<a
@@ -360,14 +310,39 @@
 												{category.rating}
 											</span>
 										{/each}
+										{#if review.overallFlavorRating}
+											<span class="badge badge-xs {getRatingBg(review.overallFlavorRating)}">⭐ Flavor {review.overallFlavorRating}</span>
+										{/if}
+										{#if review.cleanlinessRating}
+											<span class="badge badge-xs {getRatingBg(review.cleanlinessRating)}">🧹 Clean {review.cleanlinessRating}</span>
+										{/if}
+									</div>
+
+									<!-- Review Tags -->
+									<div class="mb-3 flex flex-wrap gap-1">
+										{#if review.meatChicken}<span class="badge badge-xs border-orange-500/40 bg-orange-600/20 text-orange-200">🐔 Chicken</span>{/if}
+										{#if review.meatBeef}<span class="badge badge-xs border-red-400/40 bg-red-500/20 text-red-200">🐄 Beef</span>{/if}
+										{#if review.meatLamb}<span class="badge badge-xs border-amber-400/40 bg-amber-500/20 text-amber-200">🐑 Lamb</span>{/if}
+										{#if review.meatStyle}<span class="badge badge-xs border-red-400/40 bg-red-500/20 text-red-200">🥩 {review.meatStyle === 'minced' ? 'Minced' : 'Layered'}</span>{/if}
+										{#if review.breadShape}<span class="badge badge-xs border-amber-400/40 bg-amber-500/20 text-amber-200">🍞 {review.breadShape}</span>{/if}
+										{#if review.breadSesameSeeds}<span class="badge badge-xs border-amber-400/40 bg-amber-500/20 text-amber-200">🌰 Sesame</span>{/if}
+										{#if review.hasYoghurtSauce}<span class="badge badge-xs border-blue-300/40 bg-blue-400/20 text-blue-200">🥛 Yoghurt</span>{/if}
+										{#if review.hasGarlicSauce}<span class="badge badge-xs border-purple-300/40 bg-purple-400/20 text-purple-200">🧄 Garlic</span>{/if}
+										{#if review.hasHerbalSauce}<span class="badge badge-xs border-green-300/40 bg-green-400/20 text-green-200">🌿 Herbal</span>{/if}
+										{#if review.hasCocktailSauce}<span class="badge badge-xs border-pink-300/40 bg-pink-400/20 text-pink-200">🍹 Cocktail</span>{/if}
+										{#if review.hasSpicySauce}<span class="badge badge-xs border-red-300/40 bg-red-400/20 text-red-200">🌶️ Spicy</span>{/if}
+										{#if review.doenerSize}<span class="badge badge-xs border-slate-400/40 bg-slate-500/20 text-slate-200">📏 {review.doenerSize}</span>{/if}
+										{#if review.price}<span class="badge badge-xs border-green-400/40 bg-green-500/20 text-green-200">💰 €{review.price.toFixed(2)}</span>{/if}
 									</div>
 
 									<!-- Review Description -->
+									{#if review.description}
 									<div class="rounded-lg border border-orange-500/20 bg-slate-800/40 p-3">
 										<p class="text-sm leading-relaxed text-orange-100/90 italic">
 											"{review.description}"
 										</p>
 									</div>
+									{/if}
 								</div>
 							</div>
 						</div>

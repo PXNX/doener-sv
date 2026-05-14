@@ -29,9 +29,16 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			// Get image from restaurant
 			const imageUrl = await getImageUrl(restaurant.doenerImage);
 
+			const overallRating =
+				(review.meatRating + review.breadRating + review.veggiesRating + review.sauceRating) / 4;
+
 			return {
 				id: review.id,
-				rating: review.rating,
+				rating: Math.round(overallRating * 10) / 10,
+				meatRating: review.meatRating,
+				breadRating: review.breadRating,
+				veggiesRating: review.veggiesRating,
+				sauceRating: review.sauceRating,
 				description: review.description,
 				createdAt: review.createdAt.toISOString(),
 				imageUrl,
@@ -39,19 +46,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 					id: restaurant.id,
 					name: restaurant.name,
 					city: restaurant.city,
-					country: restaurant.country,
-					// Include döner characteristics
-					breadShape: restaurant.breadShape,
-					breadHasSesame: restaurant.breadHasSesame,
-					breadFluffyInside: restaurant.breadFluffyInside,
-					breadCrispyOutside: restaurant.breadCrispyOutside,
-					meatType: restaurant.meatType,
-					meatProtein: restaurant.meatProtein,
-					meatSeasoning: restaurant.meatSeasoning,
-					onionLevel: restaurant.onionLevel,
-					krautLevel: restaurant.krautLevel,
-					hasYoghurtSauce: restaurant.hasYoghurtSauce,
-					hasGarlicSauce: restaurant.hasGarlicSauce
+					country: restaurant.country
 				},
 				user: {
 					id: user.id,
@@ -81,32 +76,53 @@ export const actions: Actions = {
 		}
 
 		// Get review to update restaurant stats
+		const reviewIdNum = parseInt(reviewId);
+		if (isNaN(reviewIdNum)) {
+			return fail(400, { error: 'Invalid review ID' });
+		}
+
 		const review = await db.query.doenerReviews.findFirst({
-			where: eq(doenerReviews.id, reviewId)
+			where: eq(doenerReviews.id, reviewIdNum)
 		});
 
 		if (!review) {
 			return fail(404, { error: 'Review not found' });
 		}
 
-		// Delete the review
-		await db.delete(doenerReviews).where(eq(doenerReviews.id, reviewId));
+		await db.delete(doenerReviews).where(eq(doenerReviews.id, reviewIdNum));
 
 		// Update restaurant stats
 		const remainingReviews = await db.query.doenerReviews.findMany({
 			where: eq(doenerReviews.restaurantId, review.restaurantId)
 		});
 
-		const avgRating =
+		const avgMeat =
 			remainingReviews.length > 0
-				? remainingReviews.reduce((sum, r) => sum + r.rating, 0) / remainingReviews.length
+				? remainingReviews.reduce((s, r) => s + r.meatRating, 0) / remainingReviews.length
 				: 0;
+		const avgBread =
+			remainingReviews.length > 0
+				? remainingReviews.reduce((s, r) => s + r.breadRating, 0) / remainingReviews.length
+				: 0;
+		const avgVeggies =
+			remainingReviews.length > 0
+				? remainingReviews.reduce((s, r) => s + r.veggiesRating, 0) / remainingReviews.length
+				: 0;
+		const avgSauce =
+			remainingReviews.length > 0
+				? remainingReviews.reduce((s, r) => s + r.sauceRating, 0) / remainingReviews.length
+				: 0;
+		const avgOverall = (avgMeat + avgBread + avgVeggies + avgSauce) / 4;
 
 		await db
 			.update(doenerRestaurants)
 			.set({
 				reviewCount: remainingReviews.length,
-				averageRating: avgRating > 0 ? avgRating : null,
+				averageMeatRating: avgMeat > 0 ? avgMeat : null,
+				averageBreadRating: avgBread > 0 ? avgBread : null,
+				averageVeggiesRating: avgVeggies > 0 ? avgVeggies : null,
+				averageSauceRating: avgSauce > 0 ? avgSauce : null,
+				averageOverallRating: avgOverall > 0 ? avgOverall : null,
 				updatedAt: new Date()
 			})
 			.where(eq(doenerRestaurants.id, review.restaurantId));

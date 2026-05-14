@@ -43,18 +43,25 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				sauceRating: review.sauceRating,
 				description: review.description,
 				createdAt: review.createdAt.toISOString(),
-				// Döner characteristics from this review
-				breadShape: restaurant.breadShape,
-				breadHasSesame: restaurant.breadHasSesame,
-				breadFluffyInside: restaurant.breadFluffyInside,
-				breadCrispyOutside: restaurant.breadCrispyOutside,
-				meatType: restaurant.meatType,
-				meatProtein: restaurant.meatProtein,
-				meatSeasoning: restaurant.meatSeasoning,
-				onionLevel: restaurant.onionLevel,
-				krautLevel: restaurant.krautLevel,
-				hasYoghurtSauce: restaurant.hasYoghurtSauce,
-				hasGarlicSauce: restaurant.hasGarlicSauce,
+				// Meat details from review
+				meatChicken: review.meatChicken,
+				meatBeef: review.meatBeef,
+				meatLamb: review.meatLamb,
+				meatStyle: review.meatStyle,
+				// Bread details from review
+				breadShape: review.breadShape,
+				breadSesameSeeds: review.breadSesameSeeds,
+				// Sauce details from review
+				hasHerbalSauce: review.hasHerbalSauce,
+				hasYoghurtSauce: review.hasYoghurtSauce,
+				hasGarlicSauce: review.hasGarlicSauce,
+				hasCocktailSauce: review.hasCocktailSauce,
+				hasSpicySauce: review.hasSpicySauce,
+				// Overall details from review
+				doenerSize: review.doenerSize,
+				price: review.price,
+				overallFlavorRating: review.overallFlavorRating,
+				cleanlinessRating: review.cleanlinessRating,
 				imageUrl,
 				restaurant: {
 					id: restaurant.id,

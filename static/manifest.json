@@ -1,28 +1,33 @@
 {
-	"theme_color": "#8936FF",
-	"background_color": "#000000",
+	"name": "Döner Rating",
+	"short_name": "Döner Rating",
+	"description": "Search for Döner in Europe. Rate and review döner spots.",
+	"start_url": "/",
+	"display": "standalone",
+	"orientation": "portrait",
+	"theme_color": "#ea580c",
+	"background_color": "#0f172a",
+	"dir": "ltr",
+	"lang": "en",
 	"icons": [
 		{
-			"purpose": "maskable",
-			"sizes": "512x512",
-			"src": "icon-512.png",
+			"src": "favicon.png",
+			"sizes": "32x32",
 			"type": "image/png"
 		},
 		{
-			"purpose": "any",
-			"sizes": "512x512",
 			"src": "icon-512.png",
-			"type": "image/png"
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any"
+		},
+		{
+			"src": "icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
 		}
 	],
-	"orientation": "portrait",
-	"display": "standalone",
-	"dir": "ltr",
-	"lang": "en",
-	"name": "Döner Rating",
-	"short_name": "Döner Rating",
-	"description": "Search for Döner in Europe",
-	"start_url": "/",
 	"share_target": {
 		"action": "/add-doener",
 		"method": "GET",

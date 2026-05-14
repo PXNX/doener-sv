@@ -1,8 +1,7 @@
-// src/routes/doener/create/+page.server.ts
 import { db } from '$lib/server/db';
 import { doenerRestaurants, files } from '$lib/server/schema';
-import { redirect, error } from '@sveltejs/kit';
-import { eq, and, sql } from 'drizzle-orm';
+import { redirect } from '@sveltejs/kit';
+import { and, sql } from 'drizzle-orm';
 import { randomUUID } from 'crypto';
 import type { Actions, PageServerLoad } from './$types';
 import { uploadFileFromForm } from '$lib/server/backblaze';
@@ -47,11 +46,6 @@ async function getCityFromCoordinates(
 	}
 }
 
-/**
- * Google Maps place names often include the full address:
- * "Aeschacher Bistro, Wackerstraße 7, 88131 Lindau"
- * Strip everything after the first comma to get just the restaurant name.
- */
 function cleanRestaurantName(name: string): string {
 	return name.split(',')[0].trim();
 }
@@ -61,17 +55,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const form = await superValidate(valibot(createDoenerSchema));
 
-	// Check for prefilled data from query parameters (from share target)
 	const lat = url.searchParams.get('lat');
 	const lon = url.searchParams.get('lon');
 	const name = url.searchParams.get('name');
 
-	// Prefill form data if available
 	if (lat && lon) {
 		const latitude = parseFloat(lat);
 		const longitude = parseFloat(lon);
 
-		// Validate coordinates
 		if (
 			!isNaN(latitude) &&
 			!isNaN(longitude) &&
@@ -102,27 +93,10 @@ export const actions: Actions = {
 			return message(form, 'Please fix the validation errors', { status: 400 });
 		}
 
-		const {
-			restaurantName,
-			latitude,
-			longitude,
-			doenerImage,
-			breadShape,
-			breadHasSesame,
-			breadFluffyInside,
-			breadCrispyOutside,
-			meatType,
-			meatProtein,
-			meatSeasoning,
-			onionLevel,
-			krautLevel,
-			hasYoghurtSauce,
-			hasGarlicSauce
-		} = form.data;
+		const { restaurantName, latitude, longitude, doenerImage } = form.data;
 
 		const { city, country } = await getCityFromCoordinates(latitude, longitude);
 
-		// Check if restaurant already exists at this location
 		const existingRestaurant = await db.query.doenerRestaurants.findFirst({
 			where: and(
 				sql`${doenerRestaurants.name} ILIKE ${restaurantName}`,
@@ -159,16 +133,6 @@ export const actions: Actions = {
 			imageFileId = fileId;
 		}
 
-		// Create new restaurant
-		console.log('Inserting restaurant with data:', {
-			name: restaurantName,
-			city,
-			country,
-			latitude,
-			longitude,
-			addedBy: account.id
-		});
-
 		const result = await db
 			.insert(doenerRestaurants)
 			.values({
@@ -178,36 +142,15 @@ export const actions: Actions = {
 				latitude,
 				longitude,
 				doenerImage: imageFileId,
-				breadShape,
-				breadHasSesame,
-				breadFluffyInside,
-				breadCrispyOutside,
-				meatType,
-				meatProtein,
-				meatSeasoning,
-				onionLevel: onionLevel || null,
-				krautLevel: krautLevel || null,
-				hasYoghurtSauce,
-				hasGarlicSauce,
 				addedBy: account.id,
 				reviewCount: 0
 			})
 			.returning();
 
-		console.log('Insert result:', result);
-
-		if (!result || result.length === 0 || !result[0]) {
-			console.error('Insert returned no data');
+		if (!result || result.length === 0 || !result[0]?.id) {
 			return message(form, 'Failed to create döner listing. Please try again.', { status: 500 });
 		}
 
-		const newRestaurant = result[0];
-
-		if (!newRestaurant.id) {
-			console.error('Restaurant created but has no ID:', newRestaurant);
-			return message(form, 'Failed to create döner listing. Please try again.', { status: 500 });
-		}
-
-		redirect(303, `/doener/${newRestaurant.id}`);
+		redirect(303, `/doener/${result[0].id}/review`);
 	}
 };
