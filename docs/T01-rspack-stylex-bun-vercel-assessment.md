@@ -54,3 +54,11 @@ Source: https://bun.com/docs/typescript-6
 ## 1024px uploads and rating-first search
 
 The image transform now produces fixed 1024×1024 WebP output. The local search UI was inspected in Chromium on 2026-08-25 and exposes a `Rank results by` selector with Overall, Meat, Bread, Veggie, Sauce, and Distance options. Review count is no longer available as a ranking choice or emphasized beside the result rating.
+
+## Redesign browser verification — search shell
+
+On 2026-08-25, the redesigned local search page rendered without a client-side error. The rating selector and full search form remained visible above the results area. Local, browser-only fixture data was then seeded to inspect the redesigned ranking cards without modifying database records.
+
+## Redesign browser verification — result cards
+
+The seeded local fixture view confirmed that the redesigned results area renders a clear `Tasting shortlist` header, selected-ranking badge, numbered cards, map-distance badge, prominent rating block, taste/profile chips, and a visible detail-page call to action. The desktop grid collapses to a single column at the currently rendered layout width, preserving card hierarchy and text legibility.

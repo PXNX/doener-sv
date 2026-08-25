@@ -16,8 +16,6 @@
 
 	const FAVORITES_KEY = 'doener_favorites';
 	let isFavorite = $state(false);
-
-	// Reviews state — lazy loaded
 	let showReviews = $state(false);
 	let reviews = $state<any[]>([]);
 	let reviewsLoading = $state(false);
@@ -54,10 +52,10 @@
 		if (showReviews && !reviewsLoaded) {
 			reviewsLoading = true;
 			try {
-				const res = await fetch(`/doener/${data.restaurant.id}/reviews`);
-				if (res.ok) reviews = await res.json();
-			} catch (e) {
-				console.error('Failed to load reviews', e);
+				const response = await fetch(`/doener/${data.restaurant.id}/reviews`);
+				if (response.ok) reviews = await response.json();
+			} catch (error) {
+				console.error('Failed to load reviews', error);
 			} finally {
 				reviewsLoading = false;
 				reviewsLoaded = true;
@@ -66,365 +64,495 @@
 	}
 
 	async function upvote(reviewId: number) {
-		// Optimistic update
-		reviews = reviews.map((r) => (r.id === reviewId ? { ...r, upvotes: (r.upvotes ?? 0) + 1 } : r));
-
+		reviews = reviews.map((review) =>
+			review.id === reviewId ? { ...review, upvotes: (review.upvotes ?? 0) + 1 } : review
+		);
 		try {
-			const res = await fetch(`/doener/${data.restaurant.id}/reviews`, {
+			const response = await fetch(`/doener/${data.restaurant.id}/reviews`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ reviewId })
 			});
-			if (res.ok) {
-				const { upvotes } = await res.json();
-				reviews = reviews.map((r) => (r.id === reviewId ? { ...r, upvotes } : r));
+			if (response.ok) {
+				const { upvotes } = await response.json();
+				reviews = reviews.map((review) =>
+					review.id === reviewId ? { ...review, upvotes } : review
+				);
 			}
 		} catch {}
 	}
 
 	const sortedReviews = $derived(() => {
-		const r = [...reviews];
-		if (sortBy === 'highest') return r.sort((a, b) => b.overallRating - a.overallRating);
-		if (sortBy === 'lowest') return r.sort((a, b) => a.overallRating - b.overallRating);
-		return r;
+		const values = [...reviews];
+		if (sortBy === 'highest') return values.sort((a, b) => b.overallRating - a.overallRating);
+		if (sortBy === 'lowest') return values.sort((a, b) => a.overallRating - b.overallRating);
+		return values;
 	});
 
-	function formatDate(d: string) {
-		return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+	function formatDate(date: string) {
+		return new Date(date).toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
 	}
-
-	function rc(r: number) {
-		if (r >= 3.5) return 'text-green-400';
-		if (r >= 2.5) return 'text-blue-400';
-		if (r >= 1.5) return 'text-yellow-400';
-		return 'text-orange-400';
+	function rc(rating: number) {
+		if (rating >= 3.5) return 'text-emerald-300';
+		if (rating >= 2.5) return 'text-sky-300';
+		if (rating >= 1.5) return 'text-amber-300';
+		return 'text-orange-300';
 	}
-	function rb(r: number) {
-		if (r >= 3.5) return 'bg-green-400/20 border-green-400/40';
-		if (r >= 2.5) return 'bg-blue-400/20 border-blue-400/40';
-		if (r >= 1.5) return 'bg-yellow-400/20 border-yellow-400/40';
-		return 'bg-orange-400/20 border-orange-400/40';
+	function rb(rating: number) {
+		if (rating >= 3.5) return 'border-emerald-400/40 bg-emerald-400/10';
+		if (rating >= 2.5) return 'border-sky-400/40 bg-sky-400/10';
+		if (rating >= 1.5) return 'border-amber-400/40 bg-amber-400/10';
+		return 'border-orange-400/40 bg-orange-400/10';
 	}
-	function rl(r: number) {
-		if (r >= 3.5) return 'Excellent';
-		if (r >= 2.5) return 'Good';
-		if (r >= 1.5) return 'Average';
-		return 'Sub Average';
+	function scoreLabel(rating: number) {
+		if (rating >= 3.5) return 'Exceptional stop';
+		if (rating >= 2.5) return 'Strong pick';
+		if (rating >= 1.5) return 'Mixed tasting notes';
+		return 'Awaiting tasting notes';
 	}
-	function barW(v: number | null) {
-		return v != null ? `${(v / 4) * 100}%` : '0%';
+	function barWidth(value: number | null) {
+		return value != null ? `${(value / 4) * 100}%` : '0%';
 	}
 
 	const a = $derived(data.aggregate);
 	const overall = $derived(a?.avgOverall ?? data.restaurant.averageOverallRating ?? 0);
-
 	const googleMapsUrl = $derived(
 		`https://www.google.com/maps/search/?api=1&query=${data.restaurant.latitude},${data.restaurant.longitude}`
 	);
+	const primaryMeatStyle = $derived(a?.topStyles?.[0]?.label ?? null);
+	const scoreCards = $derived([
+		{
+			label: 'Meat',
+			emoji: '🥩',
+			value: a?.avgMeat ?? null,
+			tone: 'from-red-500/20 to-orange-500/5'
+		},
+		{
+			label: 'Bread',
+			emoji: '🍞',
+			value: a?.avgBread ?? null,
+			tone: 'from-amber-500/20 to-orange-500/5'
+		},
+		{
+			label: 'Veggies',
+			emoji: '🥬',
+			value: a?.avgVeggies ?? null,
+			tone: 'from-emerald-500/20 to-green-500/5'
+		},
+		{
+			label: 'Sauce',
+			emoji: '🫗',
+			value: a?.avgSauce ?? null,
+			tone: 'from-sky-500/20 to-blue-500/5'
+		}
+	]);
 
-	const sauceEmoji: Record<string, string> = { Herbal: '🌿', Yoghurt: '🥛', Garlic: '🧄', Cocktail: '🍹', Spicy: '🌶️' };
+	const sauceEmoji: Record<string, string> = {
+		Herbal: '🌿',
+		Yoghurt: '🥛',
+		Garlic: '🧄',
+		Cocktail: '🍹',
+		Spicy: '🌶️'
+	};
 	const proteinEmoji: Record<string, string> = { Chicken: '🐔', Beef: '🐄', Lamb: '🐑' };
-	const veggieEmoji: Record<string, string> = { Tomatoes: '🍅', Cabbage: '🥬', Rucola: '🌿', Corn: '🌽', Parsley: '🌱' };
+	const veggieEmoji: Record<string, string> = {
+		Tomatoes: '🍅',
+		Cabbage: '🥬',
+		Rucola: '🌿',
+		Corn: '🌽',
+		Parsley: '🌱'
+	};
 </script>
 
 <svelte:head>
-	<title>{data.restaurant.name} - Döner Finder</title>
+	<title>{data.restaurant.name} — Döner Rating</title>
 </svelte:head>
 
 <BackButton href="/" />
 
-<!-- ========== HERO CARD ========== -->
-<div class="card mb-4 border border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-md">
-	<div class="card-body p-5">
-		<div class="flex flex-col gap-5 lg:flex-row">
-			<div class="shrink-0">
-				{#if data.restaurant.doenerImage}
-					<img src={data.restaurant.doenerImage} alt={data.restaurant.name} class="h-56 w-full rounded-xl border-2 border-orange-500/30 object-cover shadow-lg lg:w-56" />
-				{:else}
-					<div class="flex h-56 w-full items-center justify-center rounded-xl border-2 border-orange-500/30 bg-gradient-to-br from-orange-600/40 to-red-600/40 lg:w-56">
-						<span class="text-7xl">🥙</span>
-					</div>
-				{/if}
+<section
+	class="relative mb-5 overflow-hidden rounded-3xl border border-orange-400/25 bg-slate-900 shadow-2xl shadow-orange-950/25"
+>
+	<div
+		class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(249,115,22,0.26),_transparent_42%),linear-gradient(135deg,_rgba(127,29,29,0.42),_rgba(15,23,42,0.95)_56%)]"
+	></div>
+	<div class="relative grid gap-0 lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
+		<div class="relative min-h-72 overflow-hidden bg-slate-800 lg:min-h-full">
+			{#if data.restaurant.doenerImage}
+				<img
+					src={data.restaurant.doenerImage}
+					alt={data.restaurant.name}
+					class="absolute inset-0 h-full w-full object-cover"
+				/>
+			{:else}
+				<div
+					class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-orange-500/35 to-red-800/35 text-9xl"
+				>
+					🥙
+				</div>
+			{/if}
+			<div
+				class="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-slate-950/85 to-transparent"
+			></div>
+			<div
+				class="absolute bottom-5 left-5 rounded-xl border border-white/10 bg-slate-950/65 px-3 py-2 text-[11px] font-bold tracking-[0.16em] text-orange-200 uppercase backdrop-blur"
+			>
+				Tasting dossier
 			</div>
+		</div>
 
-			<div class="flex-1 space-y-3">
-				<div>
-					<h1 class="text-2xl font-bold text-white lg:text-3xl">{data.restaurant.name}</h1>
-					<a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" class="mt-1 flex w-fit items-center gap-1.5 text-orange-300/80 transition-colors hover:text-orange-200">
-						<FluentLocation20Filled class="size-4" />
+		<div class="relative p-5 sm:p-8 lg:py-10">
+			<div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+				<div class="min-w-0">
+					<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">
+						Döner profile
+					</p>
+					<h1 class="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+						{data.restaurant.name}
+					</h1>
+					<a
+						href={googleMapsUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition-colors hover:text-orange-200"
+					>
+						<FluentLocation20Filled class="size-4 text-orange-300" />
 						<span>{data.restaurant.city}, {data.restaurant.country}</span>
-						<FluentChevronRight20Regular class="size-3.5" />
+						<FluentChevronRight20Regular class="size-4" />
 					</a>
 				</div>
+				<button
+					onclick={toggleFavorite}
+					class="btn btn-circle border {isFavorite
+						? 'border-orange-300 bg-orange-400 text-slate-950 hover:bg-orange-300'
+						: 'border-white/15 bg-white/5 text-orange-200 hover:border-orange-300 hover:bg-orange-300/10'}"
+					title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+				>
+					{#if isFavorite}<FluentHeart20Filled class="size-5" />{:else}<FluentHeart20Regular
+							class="size-5"
+						/>{/if}
+				</button>
+			</div>
 
-				<div class="flex items-center gap-2">
-					<div class="flex items-center gap-1.5 rounded-xl border px-3 py-1.5 {rb(overall)}">
+			<div class="mt-7 flex flex-wrap items-end gap-4">
+				<div class="rounded-2xl border px-4 py-3 {rb(overall)}">
+					<div class="flex items-center gap-2">
 						<FluentStar20Filled class="size-5 {rc(overall)}" />
-						<span class="text-xl font-bold {rc(overall)}">{overall > 0 ? overall.toFixed(1) : 'N/A'}</span>
+						<span class="text-4xl font-black leading-none {rc(overall)}"
+							>{overall > 0 ? overall.toFixed(1) : '—'}</span
+						>
+						<span class="self-end pb-0.5 text-sm font-semibold text-slate-300">/ 4</span>
 					</div>
-					<button onclick={toggleFavorite} class="btn btn-circle {isFavorite ? 'btn-warning' : 'btn-outline btn-warning'} transition-transform hover:scale-110" title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
-						{#if isFavorite}<FluentHeart20Filled class="size-5" />{:else}<FluentHeart20Regular class="size-5" />{/if}
-					</button>
+					<p class="mt-1 text-xs font-semibold text-slate-300">{scoreLabel(overall)}</p>
 				</div>
+				<div class="pb-1 text-sm text-slate-400">
+					<p class="font-semibold text-slate-200">A profile built from community tasting notes.</p>
+					{#if a?.avgPrice != null}<p class="mt-1 text-emerald-200">
+							Typical spend: €{a.avgPrice.toFixed(1)}
+						</p>{/if}
+				</div>
+			</div>
 
-				{#if a}
-					<div class="flex flex-wrap gap-2">
-						{#if a.avgPrice != null}
-							<div class="rounded-lg border border-green-500/30 bg-green-500/10 px-2.5 py-1 text-sm">
-								<span class="text-green-300">💰 ~€{a.avgPrice.toFixed(1)}</span>
-								{#if a.minPrice != null && a.maxPrice != null && a.minPrice !== a.maxPrice}
-									<span class="text-xs text-green-400/60">(€{a.minPrice.toFixed(0)}–{a.maxPrice.toFixed(0)})</span>
-								{/if}
-							</div>
-						{/if}
-						{#each a.topProteins as p}
-							<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">{proteinEmoji[p.label] || '🍖'} {p.label} <span class="opacity-60">{p.pct}%</span></span>
-						{/each}
-						{#if a.mostCommonMeatType}
-							<span class="badge badge-sm border-orange-400/40 bg-orange-500/20 text-orange-200">🥩 {a.mostCommonMeatType === 'minced' ? 'Minced' : 'Layered'}</span>
-						{/if}
-						{#each (a.topSauces ?? []).filter((s) => s.pct >= 30) as s}
-							<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">{sauceEmoji[s.label] || '🫗'} {s.label}</span>
-						{/each}
-					</div>
-				{/if}
-
+			<div class="mt-7 flex flex-wrap gap-2">
 				{#if data.user && !data.userHasReviewed}
-					<a href="/doener/{data.restaurant.id}/review" class="btn btn-sm border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-500 hover:to-red-500">
-						<FluentAdd24Regular class="size-4" /> Add Your Review
+					<a
+						href="/doener/{data.restaurant.id}/review"
+						class="btn border-0 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-900/25 hover:from-orange-400 hover:to-red-400"
+					>
+						<FluentAdd24Regular class="size-4" /> Add your tasting note
 					</a>
 				{:else if data.userHasReviewed}
-					<div class="inline-flex items-center gap-1.5 text-sm text-green-300"><span>✓</span> You've reviewed this döner</div>
+					<span
+						class="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm font-semibold text-emerald-100"
+						>✓ Your tasting note is on this profile</span
+					>
 				{/if}
+				<a
+					href={googleMapsUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="btn border-white/12 bg-white/5 text-slate-100 hover:border-orange-300/50 hover:bg-orange-400/10"
+					>Open directions</a
+				>
 			</div>
 		</div>
 	</div>
-</div>
+</section>
 
-<!-- ========== AGGREGATE BREAKDOWN ========== -->
 {#if a}
-	<div class="mb-4 space-y-3">
-		<!-- Radar chart -->
-		<div class="rounded-xl border border-white/5 bg-slate-800/50 p-4">
-			<h2 class="mb-2 text-sm font-semibold tracking-wide text-gray-400 uppercase">Rating Breakdown</h2>
-			<RadarChart axes={[
-				{ emoji: '🥩', label: 'Meat', value: a.avgMeat },
-				{ emoji: '🍞', label: 'Bread', value: a.avgBread },
-				{ emoji: '🥬', label: 'Veggies', value: a.avgVeggies },
-				{ emoji: '🫗', label: 'Sauce', value: a.avgSauce },
-				{ emoji: '⭐', label: 'Flavor', value: a.avgFlavor },
-				{ emoji: '🧹', label: 'Hygiene', value: a.avgCleanliness }
-			]} />
+	<section class="mb-5" aria-label="Taste scorecard">
+		<div class="mb-3 flex items-end justify-between gap-4">
+			<div>
+				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">Scorecard</p>
+				<h2 class="mt-1 text-2xl font-bold text-white">How the Döner tastes</h2>
+			</div>
+			<p class="hidden text-sm text-slate-400 sm:block">Each score is measured out of four.</p>
 		</div>
 
-		<!-- Meat & Bread details -->
-		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-			<div class="rounded-xl border border-white/5 bg-slate-800/50 p-4">
-				<h3 class="mb-2.5 text-sm font-semibold tracking-wide text-gray-400 uppercase">🥩 Meat Profile</h3>
-				<div class="space-y-2">
-					{#each [{ l: 'Juiciness', v: a.avgJuiciness }, { l: 'Crispiness', v: a.avgMeatCrispiness }, { l: 'Dry Feel', v: a.avgDryFeel }, { l: 'Fattiness', v: a.avgFatty }] as row}
-						<div class="flex items-center justify-between">
-							<span class="text-sm text-gray-400">{row.l}</span>
-							<div class="flex items-center gap-1.5">
-								<div class="flex gap-0.5">
-									{#each [1, 2, 3, 4] as dot}
-										<div class="size-2 rounded-full {(row.v ?? 0) >= dot ? 'bg-orange-400' : 'bg-slate-600'}"></div>
-									{/each}
-								</div>
-								<span class="w-6 text-right text-xs text-gray-500">{row.v != null ? row.v.toFixed(1) : '–'}</span>
-							</div>
-						</div>
-					{/each}
-				</div>
-			</div>
-			<div class="rounded-xl border border-white/5 bg-slate-800/50 p-4">
-				<h3 class="mb-2.5 text-sm font-semibold tracking-wide text-gray-400 uppercase">🍞 Bread Profile</h3>
-				<div class="space-y-2">
-					{#each [{ l: 'Thickness', v: a.avgThickness }, { l: 'Crispiness', v: a.avgBreadCrispiness }, { l: 'Fluffy', v: a.avgFluffy }] as row}
-						<div class="flex items-center justify-between">
-							<span class="text-sm text-gray-400">{row.l}</span>
-							<div class="flex items-center gap-1.5">
-								<div class="flex gap-0.5">
-									{#each [1, 2, 3, 4] as dot}
-										<div class="size-2 rounded-full {(row.v ?? 0) >= dot ? 'bg-amber-400' : 'bg-slate-600'}"></div>
-									{/each}
-								</div>
-								<span class="w-6 text-right text-xs text-gray-500">{row.v != null ? row.v.toFixed(1) : '–'}</span>
-							</div>
-						</div>
-					{/each}
-					{#if a.sesamePct > 0}
-						<div class="flex items-center justify-between">
-							<span class="text-sm text-gray-400">Sesame Seeds</span>
-							<span class="text-xs text-amber-300">{a.sesamePct}% of reviews</span>
-						</div>
-					{/if}
-					{#if a.shapes.length > 0}
-						<div class="flex items-center justify-between">
-							<span class="text-sm text-gray-400">Shape</span>
-							<div class="flex gap-1">
-								{#each a.shapes as s}
-									<span class="badge badge-xs border-amber-400/30 bg-amber-500/15 text-amber-200">{s.label} <span class="opacity-50">{s.pct}%</span></span>
-								{/each}
-							</div>
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-
-		<!-- Veggies & Sauces -->
-		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-			{#if (a.topVeggies ?? []).length > 0}
-				<div class="rounded-xl border border-white/5 bg-slate-800/50 p-4">
-					<h3 class="mb-2.5 text-sm font-semibold tracking-wide text-gray-400 uppercase">🥬 Veggies Reported</h3>
-					<div class="flex flex-wrap gap-1.5">
-						{#each a.topVeggies as v}
-							<span class="badge badge-sm border-green-400/30 bg-green-500/15 text-green-200">{veggieEmoji[v.label] || '🥗'} {v.label} <span class="ml-0.5 opacity-50">{v.pct}%</span></span>
-						{/each}
+		<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+			{#each scoreCards as score}
+				<div class="rounded-2xl border border-white/8 bg-gradient-to-br {score.tone} p-4">
+					<div class="flex items-start justify-between gap-2">
+						<span class="text-xl">{score.emoji}</span>
+						<span class="text-2xl font-black text-white"
+							>{score.value != null ? score.value.toFixed(1) : '—'}</span
+						>
+					</div>
+					<p class="mt-4 text-sm font-semibold text-slate-200">{score.label}</p>
+					<div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-950/45">
+						<div
+							class="h-full rounded-full bg-white/75"
+							style={`width: ${barWidth(score.value)}`}
+						></div>
 					</div>
 				</div>
-			{/if}
-			{#if (a.topSauces ?? []).length > 0}
-				<div class="rounded-xl border border-white/5 bg-slate-800/50 p-4">
-					<h3 class="mb-2.5 text-sm font-semibold tracking-wide text-gray-400 uppercase">🫗 Sauces Reported</h3>
-					<div class="flex flex-wrap gap-1.5">
-						{#each a.topSauces as s}
-							<span class="badge badge-sm border-blue-300/30 bg-blue-400/15 text-blue-200">{sauceEmoji[s.label] || '🫗'} {s.label} <span class="ml-0.5 opacity-50">{s.pct}%</span></span>
-						{/each}
-					</div>
-				</div>
-			{/if}
+			{/each}
 		</div>
 
-		{#if (a.sizes ?? []).length > 0}
-			<div class="rounded-xl border border-white/5 bg-slate-800/50 p-4">
-				<h3 class="mb-2.5 text-sm font-semibold tracking-wide text-gray-400 uppercase">📏 Portion Size</h3>
-				<div class="flex gap-2">
-					{#each a.sizes as s}
-						<div class="flex-1 rounded-lg border border-white/5 bg-slate-700/40 p-2 text-center">
-							<div class="text-lg">{s.label === 'small' ? '🤏' : s.label === 'medium' ? '👌' : '💪'}</div>
-							<div class="text-xs font-medium capitalize text-gray-300">{s.label}</div>
-							<div class="text-xs text-gray-500">{s.pct}%</div>
+		<div class="mt-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+			<div class="rounded-2xl border border-white/8 bg-slate-900/55 p-5">
+				<div class="mb-3 flex items-center justify-between">
+					<h3 class="font-semibold text-white">Flavor geometry</h3>
+					<span class="text-xs text-slate-500">6 dimensions</span>
+				</div>
+				<RadarChart
+					axes={[
+						{ emoji: '🥩', label: 'Meat', value: a.avgMeat },
+						{ emoji: '🍞', label: 'Bread', value: a.avgBread },
+						{ emoji: '🥬', label: 'Veggies', value: a.avgVeggies },
+						{ emoji: '🫗', label: 'Sauce', value: a.avgSauce },
+						{ emoji: '⭐', label: 'Flavor', value: a.avgFlavor },
+						{ emoji: '🧹', label: 'Hygiene', value: a.avgCleanliness }
+					]}
+				/>
+			</div>
+			<div class="rounded-2xl border border-white/8 bg-slate-900/55 p-5">
+				<div class="mb-4 flex items-center justify-between">
+					<h3 class="font-semibold text-white">At a glance</h3>
+					<span class="text-xs text-slate-500">Community patterns</span>
+				</div>
+				<div class="grid gap-4 sm:grid-cols-2">
+					<div>
+						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+							Protein & style
+						</p>
+						<div class="mt-2 flex flex-wrap gap-1.5">
+							{#each a.topProteins as protein}<span
+									class="rounded-full border border-red-400/25 bg-red-400/10 px-2 py-1 text-xs text-red-100"
+									>{proteinEmoji[protein.label] || '🍖'} {protein.label}</span
+								>{/each}
+							{#if primaryMeatStyle}<span
+									class="rounded-full border border-orange-400/25 bg-orange-400/10 px-2 py-1 text-xs text-orange-100"
+									>🥩 {primaryMeatStyle === 'minced' ? 'Minced' : 'Layered'}</span
+								>{/if}
+						</div>
+					</div>
+					<div>
+						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">Sauces</p>
+						<div class="mt-2 flex flex-wrap gap-1.5">
+							{#each a.topSauces as sauce}<span
+									class="rounded-full border border-sky-400/25 bg-sky-400/10 px-2 py-1 text-xs text-sky-100"
+									>{sauceEmoji[sauce.label] || '🫗'} {sauce.label}</span
+								>{/each}
+						</div>
+					</div>
+					<div>
+						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+							Veggie signals
+						</p>
+						<div class="mt-2 flex flex-wrap gap-1.5">
+							{#each a.topVeggies as veggie}<span
+									class="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2 py-1 text-xs text-emerald-100"
+									>{veggieEmoji[veggie.label] || '🥗'} {veggie.label}</span
+								>{/each}
+						</div>
+					</div>
+					<div>
+						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+							Value & build
+						</p>
+						<div class="mt-2 space-y-1 text-sm text-slate-300">
+							{#if a.avgPrice != null}<p>
+									Average €{a.avgPrice.toFixed(1)}
+									{#if a.minPrice != null && a.maxPrice != null && a.minPrice !== a.maxPrice}<span
+											class="text-slate-500"
+											>(€{a.minPrice.toFixed(0)}–{a.maxPrice.toFixed(0)})</span
+										>{/if}
+								</p>{/if}
+							{#if (a.avgBreadCrispiness ?? 0) >= 3}<p>🔥 Often described as crisp</p>{/if}
+							{#if a.sesamePct >= 50}<p>🌰 Sesame appears frequently</p>{/if}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="mt-3 grid gap-3 md:grid-cols-2">
+			<div class="rounded-2xl border border-white/8 bg-slate-900/45 p-5">
+				<p class="text-[11px] font-bold tracking-[0.14em] text-orange-300 uppercase">
+					Texture notes
+				</p>
+				<h3 class="mt-1 font-semibold text-white">Meat & bread</h3>
+				<div class="mt-4 space-y-3">
+					{#each [{ label: 'Meat juiciness', value: a.avgJuiciness }, { label: 'Meat crispiness', value: a.avgMeatCrispiness }, { label: 'Bread crispiness', value: a.avgBreadCrispiness }, { label: 'Bread fluffiness', value: a.avgFluffy }] as metric}
+						<div>
+							<div class="mb-1 flex items-center justify-between text-sm">
+								<span class="text-slate-300">{metric.label}</span><span
+									class="font-semibold text-orange-200"
+									>{metric.value != null ? metric.value.toFixed(1) : '—'}</span
+								>
+							</div>
+							<div class="h-1.5 overflow-hidden rounded-full bg-slate-800">
+								<div
+									class="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-300"
+									style={`width: ${barWidth(metric.value)}`}
+								></div>
+							</div>
 						</div>
 					{/each}
 				</div>
 			</div>
-		{/if}
-	</div>
+			<div class="rounded-2xl border border-white/8 bg-slate-900/45 p-5">
+				<p class="text-[11px] font-bold tracking-[0.14em] text-orange-300 uppercase">
+					Serving notes
+				</p>
+				<h3 class="mt-1 font-semibold text-white">Portion & bread shape</h3>
+				<div class="mt-4 grid grid-cols-3 gap-2">
+					{#each a.sizes as size}
+						<div class="rounded-xl border border-white/8 bg-slate-800/70 p-3 text-center">
+							<p class="text-xl">
+								{size.label === 'small' ? '🤏' : size.label === 'medium' ? '👌' : '💪'}
+							</p>
+							<p class="mt-1 text-xs font-semibold capitalize text-slate-200">{size.label}</p>
+							<p class="text-xs text-slate-500">{size.pct}%</p>
+						</div>
+					{/each}
+					{#if a.sizes.length === 0}<p class="col-span-3 text-sm text-slate-500">
+							No portion-size notes yet.
+						</p>{/if}
+				</div>
+			</div>
+		</div>
+	</section>
 {:else}
-	<div class="card mb-4 border border-orange-500/30 bg-gradient-to-br from-orange-900/20 to-red-900/20 backdrop-blur-md">
-		<div class="card-body items-center py-10">
-			<div class="text-5xl">📝</div>
-			<p class="mt-2 text-orange-200/80">No reviews yet — be the first!</p>
-			{#if data.user}
-				<a href="/doener/{data.restaurant.id}/review" class="btn btn-sm mt-3 border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white">
-					<FluentAdd24Regular class="size-4" /> Write a Review
-				</a>
-			{/if}
-		</div>
-	</div>
+	<section
+		class="mb-5 rounded-3xl border border-orange-400/25 bg-gradient-to-br from-orange-500/10 to-slate-900 p-8 text-center"
+	>
+		<div class="text-5xl">📝</div>
+		<p class="mt-4 text-lg font-semibold text-white">
+			This profile is waiting for its first tasting note.
+		</p>
+		<p class="mt-1 text-sm text-slate-400">
+			Add a review to shape the scorecard and taste profile.
+		</p>
+		{#if data.user}<a
+				href="/doener/{data.restaurant.id}/review"
+				class="btn mt-5 border-0 bg-gradient-to-r from-orange-500 to-red-500 text-white"
+				><FluentAdd24Regular class="size-4" /> Write the first review</a
+			>{/if}
+	</section>
 {/if}
 
-<!-- ========== INDIVIDUAL REVIEWS (lazy loaded) ========== -->
 {#if data.restaurant.reviewCount > 0}
-	<div class="mb-6">
+	<section
+		class="mb-6 rounded-3xl border border-white/8 bg-slate-900/45 p-4 sm:p-5"
+		aria-label="Community reviews"
+	>
 		<button
 			onclick={toggleReviews}
-			class="mb-3 flex w-full items-center justify-between rounded-xl border border-white/5 bg-slate-800/50 px-4 py-3 transition-colors hover:bg-slate-800/70"
+			class="flex w-full items-center justify-between gap-4 text-left"
 		>
-			<h2 class="text-lg font-semibold text-white">Individual Reviews ({data.restaurant.reviewCount})</h2>
-			{#if showReviews}
-				<FluentChevronUp20Regular class="size-5 text-gray-400" />
-			{:else}
-				<FluentChevronDown20Regular class="size-5 text-gray-400" />
-			{/if}
+			<div>
+				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">
+					Community notes
+				</p>
+				<h2 class="mt-1 text-xl font-bold text-white">Individual tasting reports</h2>
+			</div>
+			<div class="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-300">
+				{#if showReviews}<FluentChevronUp20Regular
+						class="size-5"
+					/>{:else}<FluentChevronDown20Regular class="size-5" />{/if}
+			</div>
 		</button>
 
 		{#if showReviews}
 			{#if reviewsLoading}
-				<div class="flex justify-center py-8">
+				<div class="flex justify-center py-12">
 					<span class="loading loading-spinner loading-lg text-orange-400"></span>
 				</div>
 			{:else}
-				<!-- Sort -->
-				<div class="mb-3 flex gap-1.5">
-					{#each [{ k: 'recent', l: 'Recent' }, { k: 'highest', l: 'Best' }, { k: 'lowest', l: 'Worst' }] as s}
+				<div class="mt-5 flex flex-wrap gap-2">
+					{#each [{ key: 'recent', label: 'Latest' }, { key: 'highest', label: 'Highest score' }, { key: 'lowest', label: 'Lowest score' }] as option}
 						<button
-							onclick={() => (sortBy = s.k as any)}
-							class="btn btn-xs {sortBy === s.k ? 'btn-primary' : 'btn-ghost text-gray-400 hover:text-white'}"
-						>{s.l}</button>
+							onclick={() => (sortBy = option.key as typeof sortBy)}
+							class="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors {sortBy ===
+							option.key
+								? 'border-orange-300 bg-orange-400 text-slate-950'
+								: 'border-white/10 bg-white/5 text-slate-300 hover:border-orange-300/50'}"
+							>{option.label}</button
+						>
 					{/each}
 				</div>
 
-				<div class="space-y-3">
+				<div class="mt-4 grid gap-3 lg:grid-cols-2">
 					{#each sortedReviews() as review (review.id)}
-						<div class="rounded-xl border border-white/5 bg-slate-800/40 p-4">
-							<!-- Header: date + rating + upvote -->
-							<div class="mb-2.5 flex items-center justify-between">
-								<span class="text-xs text-gray-500">{formatDate(review.createdAt)}</span>
+						<article class="rounded-2xl border border-white/8 bg-slate-950/35 p-4">
+							<div class="flex items-start justify-between gap-3">
+								<div>
+									<p class="text-xs text-slate-500">{formatDate(review.createdAt)}</p>
+									<p class="mt-1 text-sm font-semibold text-slate-200">Community tasting note</p>
+								</div>
 								<div class="flex items-center gap-2">
-									<!-- Upvote button -->
 									<button
 										onclick={() => upvote(review.id)}
-										class="flex items-center gap-1 rounded-md border border-white/10 bg-slate-700/50 px-2 py-0.5 text-xs transition-colors hover:border-orange-400/40 hover:bg-orange-500/15 hover:text-orange-300 active:scale-95"
-										title="Helpful"
+										class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-slate-300 hover:border-orange-300/50"
+										>👍 {review.upvotes ?? 0}</button
 									>
-										<span>👍</span>
-										<span class="font-medium">{review.upvotes ?? 0}</span>
-									</button>
-									<div class="flex items-center gap-1 rounded-md border px-1.5 py-0.5 {rb(review.overallRating)}">
-										<FluentStar20Filled class="size-3 {rc(review.overallRating)}" />
-										<span class="text-xs font-bold {rc(review.overallRating)}">{review.overallRating.toFixed(1)}</span>
+									<div
+										class="flex items-center gap-1 rounded-lg border px-2 py-1 {rb(
+											review.overallRating
+										)}"
+									>
+										<FluentStar20Filled class="size-3.5 {rc(review.overallRating)}" /><span
+											class="text-sm font-bold {rc(review.overallRating)}"
+											>{review.overallRating.toFixed(1)}</span
+										>
 									</div>
 								</div>
 							</div>
-
-							<!-- Review photo -->
-							{#if review.reviewImageUrl}
-								<img src={review.reviewImageUrl} alt="Döner" class="mb-2.5 h-40 w-full rounded-lg border border-white/10 object-cover" />
-							{/if}
-
-							<!-- Rating bars compact -->
-							<div class="mb-2.5 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
-								{#each [{ l: 'Meat', v: review.meatRating }, { l: 'Bread', v: review.breadRating }, { l: 'Veggies', v: review.veggiesRating }, { l: 'Sauce', v: review.sauceRating }, { l: 'Flavor', v: review.overallFlavorRating }, { l: 'Hygiene', v: review.cleanlinessRating }] as cat}
-									<div class="flex items-center gap-2">
-										<span class="w-14 text-xs text-gray-500">{cat.l}</span>
-										<div class="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-700">
+							{#if review.reviewImageUrl}<img
+									src={review.reviewImageUrl}
+									alt="Döner review"
+									class="mt-4 h-48 w-full rounded-xl border border-white/8 object-cover"
+								/>{/if}
+							<div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+								{#each [{ label: 'Meat', value: review.meatRating }, { label: 'Bread', value: review.breadRating }, { label: 'Veggies', value: review.veggiesRating }, { label: 'Sauce', value: review.sauceRating }, { label: 'Flavor', value: review.overallFlavorRating }, { label: 'Hygiene', value: review.cleanlinessRating }] as metric}
+									<div>
+										<div class="mb-1 flex justify-between text-[11px] text-slate-500">
+											<span>{metric.label}</span><span>{metric.value ?? '—'}</span>
+										</div>
+										<div class="h-1 rounded-full bg-slate-800">
 											<div
-												class="absolute inset-y-0 left-0 rounded-full {cat.v != null && cat.v >= 3.5 ? 'bg-green-500' : cat.v != null && cat.v >= 2.5 ? 'bg-blue-500' : cat.v != null && cat.v >= 1.5 ? 'bg-yellow-500' : 'bg-orange-500'}"
-												style="width: {barW(cat.v ?? 0)}"
+												class="h-full rounded-full bg-orange-400"
+												style={`width: ${barWidth(metric.value ?? 0)}`}
 											></div>
 										</div>
-										<span class="w-4 text-right text-[10px] text-gray-500">{cat.v ?? '–'}</span>
 									</div>
 								{/each}
 							</div>
-
-							<!-- Tags -->
-							<div class="mb-2 flex flex-wrap gap-1">
-								{#if review.meatChicken}<span class="badge badge-xs border-red-400/30 bg-red-500/15 text-red-200">🐔 Chicken</span>{/if}
-								{#if review.meatBeef}<span class="badge badge-xs border-red-400/30 bg-red-500/15 text-red-200">🐄 Beef</span>{/if}
-								{#if review.meatLamb}<span class="badge badge-xs border-amber-400/30 bg-amber-500/15 text-amber-200">🐑 Lamb</span>{/if}
-								{#if review.meatStyle}<span class="badge badge-xs border-orange-400/30 bg-orange-500/15 text-orange-200">🥩 {review.meatStyle === 'minced' ? 'Minced' : 'Layered'}</span>{/if}
-								{#if review.breadShape}<span class="badge badge-xs border-amber-400/30 bg-amber-500/15 text-amber-200">🍞 {review.breadShape}</span>{/if}
-								{#if review.breadSesameSeeds}<span class="badge badge-xs border-amber-400/30 bg-amber-500/15 text-amber-200">🌰 Sesame</span>{/if}
-								{#if review.hasHerbalSauce}<span class="badge badge-xs border-green-300/30 bg-green-400/15 text-green-200">🌿 Herbal</span>{/if}
-								{#if review.hasYoghurtSauce}<span class="badge badge-xs border-blue-300/30 bg-blue-400/15 text-blue-200">🥛 Yoghurt</span>{/if}
-								{#if review.hasGarlicSauce}<span class="badge badge-xs border-purple-300/30 bg-purple-400/15 text-purple-200">🧄 Garlic</span>{/if}
-								{#if review.hasCocktailSauce}<span class="badge badge-xs border-pink-300/30 bg-pink-400/15 text-pink-200">🍹 Cocktail</span>{/if}
-								{#if review.hasSpicySauce}<span class="badge badge-xs border-red-300/30 bg-red-400/15 text-red-200">🌶️ Spicy</span>{/if}
-								{#if review.doenerSize}<span class="badge badge-xs border-slate-400/30 bg-slate-500/15 text-slate-300">📏 {review.doenerSize}</span>{/if}
-								{#if review.price != null}<span class="badge badge-xs border-green-400/30 bg-green-500/15 text-green-200">💰 €{review.price.toFixed(2)}</span>{/if}
-							</div>
-
-							{#if review.description}
-								<p class="rounded-lg bg-slate-900/40 p-2.5 text-sm leading-relaxed text-gray-300 italic">"{review.description}"</p>
-							{/if}
-						</div>
+							{#if review.description}<p
+									class="mt-4 rounded-xl bg-white/5 p-3 text-sm leading-relaxed text-slate-300"
+								>
+									“{review.description}”
+								</p>{/if}
+						</article>
 					{/each}
 				</div>
 			{/if}
 		{/if}
-	</div>
+	</section>
 {/if}

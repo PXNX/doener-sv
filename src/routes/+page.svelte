@@ -1,6 +1,6 @@
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { enhance, type SubmitFunction } from '$app/forms';
 	import { browser } from '$app/environment';
 	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
 	import FluentEmojiStuffedFlatbread from '~icons/fluent-emoji/stuffed-flatbread';
@@ -85,11 +85,20 @@
 	// Filters - initialize from URL params or localStorage
 	const savedFilters = getFromStorage<Record<string, boolean | SortBy>>(STORAGE_KEYS.filters, {});
 	let sortBy = $state<SortBy>(
-		parseSortBy(hasUrlParams ? page.url.searchParams.get('sortBy') : savedFilters.sortBy)
+		parseSortBy(
+			hasUrlParams
+				? page.url.searchParams.get('sortBy')
+				: typeof savedFilters.sortBy === 'string'
+					? savedFilters.sortBy
+					: undefined
+		)
 	);
 
 	const f = (key: string) =>
 		hasUrlParams ? page.url.searchParams.get(key) === 'true' : savedFilters[key] === true;
+	const activeRankingLabel = $derived(
+		sortOptions.find((option) => option.value === sortBy)?.label ?? 'Overall rating'
+	);
 
 	// Bread
 	let filterBreadSesame = $state(f('breadSesame'));
@@ -221,13 +230,13 @@
 		}
 	});
 
-	function handleFormSubmit() {
+	const handleFormSubmit: SubmitFunction = () => {
 		loading = true;
 		return async ({ update }) => {
 			await update({ reset: false });
 			loading = false;
 		};
-	}
+	};
 
 	const showEmptyState = $derived(
 		!loading &&
@@ -528,25 +537,33 @@
 	</div>
 {/if}
 
-<!-- Search Results Count -->
+<!-- Search Results -->
 {#if !loading && searchResults.length > 0}
-	<div class="mb-4">
-		<p class="text-lg font-semibold text-orange-200">
-			Found <span class="text-xl text-white">{searchResults.length}</span> döner spot{searchResults.length !==
-			1
-				? 's'
-				: ''}
-		</p>
-	</div>
-{/if}
+	<section class="mt-8" aria-label="Search results">
+		<div
+			class="mb-5 flex flex-col gap-3 rounded-2xl border border-white/8 bg-slate-900/45 p-4 sm:flex-row sm:items-center sm:justify-between"
+		>
+			<div>
+				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">
+					Tasting shortlist
+				</p>
+				<h2 class="mt-1 text-2xl font-bold text-white">
+					{searchResults.length} Döner spot{searchResults.length === 1 ? '' : 's'} found
+				</h2>
+			</div>
+			<div
+				class="rounded-xl border border-orange-400/25 bg-orange-400/10 px-3 py-2 text-sm font-semibold text-orange-100"
+			>
+				Ranked by {activeRankingLabel}
+			</div>
+		</div>
 
-<!-- Restaurant Cards -->
-{#if searchResults.length > 0}
-	<div class="space-y-4">
-		{#each searchResults as restaurant (restaurant.id)}
-			<DoenerCard {restaurant} />
-		{/each}
-	</div>
+		<div class="grid gap-4 lg:grid-cols-2">
+			{#each searchResults as restaurant, index (restaurant.id)}
+				<DoenerCard {restaurant} position={index + 1} rankingLabel={activeRankingLabel} />
+			{/each}
+		</div>
+	</section>
 {/if}
 
 <!-- Empty State -->
