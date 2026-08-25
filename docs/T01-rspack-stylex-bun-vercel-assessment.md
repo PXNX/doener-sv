@@ -62,3 +62,15 @@ On 2026-08-25, the redesigned local search page rendered without a client-side e
 ## Redesign browser verification — result cards
 
 The seeded local fixture view confirmed that the redesigned results area renders a clear `Tasting shortlist` header, selected-ranking badge, numbered cards, map-distance badge, prominent rating block, taste/profile chips, and a visible detail-page call to action. The desktop grid collapses to a single column at the currently rendered layout width, preserving card hierarchy and text legibility.
+
+## Station-sv design reference
+
+The deployed `station-sv` reference uses a quiet, dark-blue atmospheric background; a narrow, centered content rail; restrained borders; concise navigation; an oversized search field; and compact, evenly spaced filter controls. Its strongest transferable qualities are the calm hierarchy, high image/content contrast, disciplined card spacing, and a functional, uncluttered information density. The corrected Döner implementation will retain its own orange identity and use these layout principles without copying Station Atlas branding or assets.
+
+## Image restoration verification checkpoint
+
+The corrected local search shell loaded successfully. A temporary browser-only fixture with an explicit image URL was then prepared to verify that the restored result-card media rail is visible, substantial, and no longer displaced by score blocks.
+
+## Image restoration browser result
+
+The corrected image-backed card was rendered locally in Chromium. The restaurant photo now appears as a substantial, persistent left-side media rail with the name, location, score, tasting tags, and action aligned beside it. This resolves the prior regression in which the score-led card treatment visually displaced the image. The synthetic browser fixture was then removed.

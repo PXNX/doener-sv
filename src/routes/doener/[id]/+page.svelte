@@ -175,13 +175,13 @@
 <BackButton href="/" />
 
 <section
-	class="relative mb-5 overflow-hidden rounded-3xl border border-orange-400/25 bg-slate-900 shadow-2xl shadow-orange-950/25"
+	class="relative mb-6 overflow-hidden rounded-2xl border border-white/12 bg-slate-900/70 shadow-xl shadow-black/20"
 >
 	<div
-		class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(249,115,22,0.26),_transparent_42%),linear-gradient(135deg,_rgba(127,29,29,0.42),_rgba(15,23,42,0.95)_56%)]"
+		class="absolute inset-0 bg-gradient-to-br from-orange-950/35 via-slate-900 to-slate-950"
 	></div>
-	<div class="relative grid gap-0 lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
-		<div class="relative min-h-72 overflow-hidden bg-slate-800 lg:min-h-full">
+	<div class="relative">
+		<div class="relative h-72 overflow-hidden bg-slate-800 sm:h-96">
 			{#if data.restaurant.doenerImage}
 				<img
 					src={data.restaurant.doenerImage}
@@ -205,7 +205,7 @@
 			</div>
 		</div>
 
-		<div class="relative p-5 sm:p-8 lg:py-10">
+		<div class="relative border-t border-white/8 p-5 sm:p-8">
 			<div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
 				<div class="min-w-0">
 					<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">
