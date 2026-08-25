@@ -29,7 +29,7 @@ export interface UploadResult {
 	error?: string;
 }
 
-// Images are normalized to WebP with their longest edge capped at this value.
+// Images are normalized to this fixed square WebP dimension.
 const IMAGE_SIZE = 256;
 const WEBP_QUALITY = 95;
 const MAX_IMAGE_PIXELS = 24_000_000;
@@ -37,16 +37,14 @@ const MAX_IMAGE_PIXELS = 24_000_000;
 /**
  * Convert validated image bytes to an optimized WebP buffer with Bun.Image.
  *
- * Bun.Image currently supports `fill` and `inside` resize modes. `inside`
- * preserves the source aspect ratio; the UI applies object-fit: cover when a
- * square presentation is required, avoiding destructive server-side stretching.
+ * The fixed `fill` mode guarantees exactly IMAGE_SIZE × IMAGE_SIZE output.
  */
 async function processImageToWebP(buffer: Buffer): Promise<Buffer> {
 	return await new Bun.Image(buffer, {
 		maxPixels: MAX_IMAGE_PIXELS,
 		autoOrient: true
 	})
-		.resize(IMAGE_SIZE, IMAGE_SIZE, { fit: 'inside' })
+		.resize(IMAGE_SIZE, IMAGE_SIZE, { fit: 'fill' })
 		.webp({ quality: WEBP_QUALITY })
 		.buffer();
 }
@@ -59,7 +57,7 @@ async function processImageToWebP(buffer: Buffer): Promise<Buffer> {
  */
 export async function uploadFile(buffer: Buffer, fileName: string): Promise<UploadResult> {
 	try {
-		// Always process to 96x96 WebP
+		// Always process to fixed 256x256 WebP
 		const processedBuffer = await processImageToWebP(buffer);
 
 		// Generate unique key with .webp extension
@@ -74,7 +72,7 @@ export async function uploadFile(buffer: Buffer, fileName: string): Promise<Uplo
 			Metadata: {
 				originalName: fileName,
 				uploadedAt: new Date().toISOString(),
-				resized: `max-${IMAGE_SIZE}px`
+				resized: `${IMAGE_SIZE}x${IMAGE_SIZE}`
 			}
 		});
 
