@@ -1,7 +1,6 @@
 // src/lib/server/backblaze.ts
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import sharp from 'sharp';
 import { randomUUID } from 'crypto';
 import {
 	BACKBLAZE_KEY_ID,
@@ -30,28 +29,30 @@ export interface UploadResult {
 	error?: string;
 }
 
-// Fixed image dimensions - all images converted to 96x96 WebP
+// Images are normalized to WebP with their longest edge capped at this value.
 const IMAGE_SIZE = 256;
 const WEBP_QUALITY = 95;
+const MAX_IMAGE_PIXELS = 24_000_000;
 
 /**
- * Convert image to 96x96 WebP format
- * @param buffer - Original image buffer
- * @returns Processed WebP image buffer
+ * Convert validated image bytes to an optimized WebP buffer with Bun.Image.
+ *
+ * Bun.Image currently supports `fill` and `inside` resize modes. `inside`
+ * preserves the source aspect ratio; the UI applies object-fit: cover when a
+ * square presentation is required, avoiding destructive server-side stretching.
  */
 async function processImageToWebP(buffer: Buffer): Promise<Buffer> {
-	return await sharp(buffer)
-		.resize(IMAGE_SIZE, IMAGE_SIZE, {
-			fit: 'cover',
-			position: 'center',
-			withoutEnlargement: false
-		})
+	return await new Bun.Image(buffer, {
+		maxPixels: MAX_IMAGE_PIXELS,
+		autoOrient: true
+	})
+		.resize(IMAGE_SIZE, IMAGE_SIZE, { fit: 'inside' })
 		.webp({ quality: WEBP_QUALITY })
-		.toBuffer();
+		.buffer();
 }
 
 /**
- * Upload a file buffer to Backblaze B2 (converted to 96x96 WebP)
+ * Upload a file buffer to Backblaze B2 (optimized as WebP)
  * @param buffer - File buffer to upload
  * @param fileName - Original filename (for reference)
  * @returns Upload result with storage key
@@ -73,7 +74,7 @@ export async function uploadFile(buffer: Buffer, fileName: string): Promise<Uplo
 			Metadata: {
 				originalName: fileName,
 				uploadedAt: new Date().toISOString(),
-				resized: `${IMAGE_SIZE}x${IMAGE_SIZE}`
+				resized: `max-${IMAGE_SIZE}px`
 			}
 		});
 
@@ -94,7 +95,7 @@ export async function uploadFile(buffer: Buffer, fileName: string): Promise<Uplo
 }
 
 /**
- * Upload a file directly from FormData (converted to 96x96 WebP)
+ * Upload a file directly from FormData (optimized as WebP)
  * @param file - File from form input
  * @returns Upload result with storage key
  */

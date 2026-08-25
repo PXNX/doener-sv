@@ -1,19 +1,38 @@
-@import 'tailwindcss';
-@plugin 'daisyui' {
-	themes: dark --default;
+@import './styles/utility-compat.css';
+
+@font-face {
+	font-family: 'HPSimplified';
+	src: url('/fonts/HPSimplified.ttf') format('truetype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
 }
 
-@layer base {
-	@theme {
-		--font-sans: 'HPSimplified', system-ui, sans-serif;
-	}
+:root {
+	color-scheme: dark;
+	font-family: 'HPSimplified', system-ui, sans-serif;
+	background: #0f172a;
+	color: #f8fafc;
+}
 
-	@font-face {
-		font-family: 'HPSimplified';
-		src: url('/fonts/HPSimplified.ttf') format('truetype');
+* {
+	box-sizing: border-box;
+}
 
-		font-weight: 400;
-		font-style: normal;
-		font-display: swap;
-	}
+html,
+body {
+	min-width: 320px;
+	min-height: 100%;
+	margin: 0;
+}
+
+body {
+	background: #0f172a;
+}
+
+button,
+input,
+select,
+textarea {
+	font: inherit;
 }

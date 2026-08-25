@@ -2,3 +2,4 @@
 package-lock.json
 pnpm-lock.yaml
 bun.lock
+src/styles/utility-compat.css

@@ -18,6 +18,6 @@ declare global {
 	}
 }
 
-export {};
+declare module 'virtual:stylex:runtime';
 
 export {};
