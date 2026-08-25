@@ -16,7 +16,10 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 		throw redirect(302, `/auth/login?next=${encodeURIComponent(url.pathname)}`);
 	}
 
-	const restaurantId = params.id;
+	const restaurantId = Number(params.id);
+	if (!Number.isInteger(restaurantId)) {
+		throw error(404, 'Restaurant not found');
+	}
 
 	const restaurant = await db.query.doenerRestaurants.findFirst({
 		where: eq(doenerRestaurants.id, restaurantId),
@@ -39,17 +42,17 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			restaurantName: restaurant.name,
 			latitude: restaurant.latitude,
 			longitude: restaurant.longitude,
-			breadShape: restaurant.breadShape,
-			breadHasSesame: restaurant.breadHasSesame,
-			breadFluffyInside: restaurant.breadFluffyInside,
-			breadCrispyOutside: restaurant.breadCrispyOutside,
-			meatType: restaurant.meatType,
-			meatProtein: restaurant.meatProtein,
-			meatSeasoning: restaurant.meatSeasoning,
+			breadShape: restaurant.breadShape ?? undefined,
+			breadHasSesame: restaurant.breadHasSesame ?? false,
+			breadFluffyInside: restaurant.breadFluffyInside ?? false,
+			breadCrispyOutside: restaurant.breadCrispyOutside ?? false,
+			meatType: restaurant.meatType ?? undefined,
+			meatProtein: restaurant.meatProtein ?? undefined,
+			meatSeasoning: restaurant.meatSeasoning ?? undefined,
 			onionLevel: restaurant.onionLevel || null,
 			krautLevel: restaurant.krautLevel || null,
-			hasYoghurtSauce: restaurant.hasYoghurtSauce,
-			hasGarlicSauce: restaurant.hasGarlicSauce
+			hasYoghurtSauce: restaurant.hasYoghurtSauce ?? false,
+			hasGarlicSauce: restaurant.hasGarlicSauce ?? false
 		},
 		valibot(createDoenerSchema)
 	);
@@ -73,7 +76,10 @@ export const actions: Actions = {
 			throw redirect(302, '/auth/login');
 		}
 
-		const restaurantId = params.id;
+		const restaurantId = Number(params.id);
+		if (!Number.isInteger(restaurantId)) {
+			return fail(400, { error: 'Invalid restaurant ID' });
+		}
 
 		const restaurant = await db.query.doenerRestaurants.findFirst({
 			where: eq(doenerRestaurants.id, restaurantId)

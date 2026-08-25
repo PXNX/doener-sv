@@ -1,26 +1,18 @@
 // src/lib/server/backblaze.ts
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'crypto';
-import {
-	BACKBLAZE_KEY_ID,
-	BACKBLAZE_APPLICATION_KEY,
-	BACKBLAZE_BUCKET_NAME,
-	BACKBLAZE_REGION,
-	BACKBLAZE_ENDPOINT
-} from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { db } from './db';
 import { eq } from 'drizzle-orm/sql';
 import { files } from './schema';
 
-const s3Client = new S3Client({
-	endpoint: BACKBLAZE_ENDPOINT,
-	region: BACKBLAZE_REGION,
-	credentials: {
-		accessKeyId: BACKBLAZE_KEY_ID,
-		secretAccessKey: BACKBLAZE_APPLICATION_KEY
-	},
-	forcePathStyle: true
+const s3Client = new Bun.S3Client({
+	accessKeyId: env.BACKBLAZE_KEY_ID,
+	secretAccessKey: env.BACKBLAZE_APPLICATION_KEY,
+	bucket: env.BACKBLAZE_BUCKET_NAME,
+	region: env.BACKBLAZE_REGION,
+	endpoint: env.BACKBLAZE_ENDPOINT,
+	// Backblaze B2's S3-compatible endpoint uses path-style bucket addressing.
+	virtualHostedStyle: false
 });
 
 export interface UploadResult {
@@ -52,10 +44,9 @@ async function processImageToWebP(buffer: Buffer): Promise<Buffer> {
 /**
  * Upload a file buffer to Backblaze B2 (optimized as WebP)
  * @param buffer - File buffer to upload
- * @param fileName - Original filename (for reference)
  * @returns Upload result with storage key
  */
-export async function uploadFile(buffer: Buffer, fileName: string): Promise<UploadResult> {
+export async function uploadFile(buffer: Buffer): Promise<UploadResult> {
 	try {
 		// Always process to fixed 256x256 WebP
 		const processedBuffer = await processImageToWebP(buffer);
@@ -63,20 +54,10 @@ export async function uploadFile(buffer: Buffer, fileName: string): Promise<Uplo
 		// Generate unique key with .webp extension
 		const uniqueKey = `${randomUUID()}.webp`;
 
-		const command = new PutObjectCommand({
-			Bucket: BACKBLAZE_BUCKET_NAME,
-			Key: uniqueKey,
-			Body: processedBuffer,
-			ContentType: 'image/webp',
-			CacheControl: 'public, max-age=31536000, immutable',
-			Metadata: {
-				originalName: fileName,
-				uploadedAt: new Date().toISOString(),
-				resized: `${IMAGE_SIZE}x${IMAGE_SIZE}`
-			}
+		await s3Client.write(uniqueKey, processedBuffer, {
+			type: 'image/webp',
+			retry: 3
 		});
-
-		await s3Client.send(command);
 
 		return {
 			success: true,
@@ -128,37 +109,31 @@ export async function uploadFileFromForm(file: File): Promise<UploadResult> {
 	// Convert to buffer
 	const buffer = Buffer.from(await file.arrayBuffer());
 
-	return uploadFile(buffer, file.name);
+	return uploadFile(buffer);
 }
 
-export async function getPresignedUploadUrl(key: string): Promise<string> {
-	const command = new PutObjectCommand({
-		Bucket: BACKBLAZE_BUCKET_NAME,
-		Key: key,
-		ContentType: 'image/webp',
-		CacheControl: 'public, max-age=31536000, immutable'
+export function getPresignedUploadUrl(key: string): string {
+	return s3Client.presign(key, {
+		method: 'PUT',
+		type: 'image/webp',
+		expiresIn: 3600
 	});
-
-	return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 }
 
 /**
- * Get signed download URL with extended expiration for caching
+ * Get a temporary signed download URL.
  * @param key - File key in B2
- * @param expiresIn - Expiration time in seconds (default: 7 days for better caching)
+ * @param expiresIn - Expiration time in seconds (default: 7 days)
  * @returns Signed URL
  */
-export async function getSignedDownloadUrl(
+export function getSignedDownloadUrl(
 	key: string,
 	expiresIn: number = 604800 // 7 days
-): Promise<string> {
-	const command = new GetObjectCommand({
-		Bucket: BACKBLAZE_BUCKET_NAME,
-		Key: key,
-		ResponseCacheControl: `public, max-age=${expiresIn}, immutable`
+): string {
+	return s3Client.presign(key, {
+		method: 'GET',
+		expiresIn
 	});
-
-	return await getSignedUrl(s3Client, command, { expiresIn });
 }
 
 /**

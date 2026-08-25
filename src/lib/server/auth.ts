@@ -1,22 +1,29 @@
 // src/lib/server/auth.ts
 import { Google } from 'arctic';
-import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
-import { sha256 } from '@oslojs/crypto/sha2';
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
 import { sessions, users } from './schema';
 
-export const google = new Google(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI);
+export const google = new Google(
+	env.GOOGLE_CLIENT_ID ?? '',
+	env.GOOGLE_CLIENT_SECRET ?? '',
+	env.GOOGLE_REDIRECT_URI ?? ''
+);
+
+const SESSION_TOKEN_BYTES = 20;
+
+function hashSessionToken(token: string): string {
+	return new Bun.CryptoHasher('sha256').update(token).digest('hex');
+}
 
 export function generateSessionToken(): string {
-	const bytes = new Uint8Array(20);
-	crypto.getRandomValues(bytes);
-	return encodeBase32LowerCaseNoPadding(bytes);
+	const bytes = crypto.getRandomValues(new Uint8Array(SESSION_TOKEN_BYTES));
+	return Buffer.from(bytes).toString('base64url');
 }
 
 export async function createSession(token: string, userId: string) {
-	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+	const sessionId = hashSessionToken(token);
 	const session = {
 		id: sessionId,
 		userId,
@@ -27,7 +34,7 @@ export async function createSession(token: string, userId: string) {
 }
 
 export async function validateSessionToken(token: string) {
-	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+	const sessionId = hashSessionToken(token);
 	const result = await db
 		.select({ user: users, session: sessions })
 		.from(sessions)

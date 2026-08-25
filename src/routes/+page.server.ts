@@ -18,9 +18,9 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 	const a =
 		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
 		Math.cos((lat1 * Math.PI) / 180) *
-		Math.cos((lat2 * Math.PI) / 180) *
-		Math.sin(dLon / 2) *
-		Math.sin(dLon / 2);
+			Math.cos((lat2 * Math.PI) / 180) *
+			Math.sin(dLon / 2) *
+			Math.sin(dLon / 2);
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	return R * c;
 }
@@ -71,7 +71,7 @@ async function searchRestaurants(
 		}
 
 		// Base query - get all restaurants matching location/rating
-		let query = db
+		const query = db
 			.select({
 				id: doenerRestaurants.id,
 				name: doenerRestaurants.name,
@@ -86,15 +86,10 @@ async function searchRestaurants(
 			.from(doenerRestaurants)
 			.where(conditions.length > 0 ? and(...conditions) : undefined);
 
-		// Apply sorting (except distance which is done after fetching)
-		if (sortBy === 'rating') {
-			// TODO: calculate actual average rating from reviews
-			// query = query.orderBy(desc(doenerRestaurants.averageRating));
-		} else if (sortBy === 'reviews') {
-			query = query.orderBy(desc(doenerRestaurants.reviewCount));
-		}
-
-		let restaurants = await query.limit(200); // Fetch more for GPS filtering
+		// Distance sorting is done after fetching; preserve the builder type for the review sort.
+		const sortedQuery =
+			sortBy === 'reviews' ? query.orderBy(desc(doenerRestaurants.reviewCount)) : query;
+		let restaurants = await sortedQuery.limit(200); // Fetch more for GPS filtering
 
 		// Filter by GPS distance if coordinates provided
 		if (userLat !== undefined && userLon !== undefined) {
@@ -241,7 +236,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	}
 
 	const restaurants = await searchRestaurants(
-		location,
+		location ?? undefined,
 		userLat,
 		userLon,
 		50, // 50km max distance
@@ -278,9 +273,7 @@ export const actions: Actions = {
 		const latitude = formData.get('latitude')?.toString();
 		const longitude = formData.get('longitude')?.toString();
 		const sortBy = (formData.get('sortBy')?.toString() || 'rating') as
-			| 'rating'
-			| 'reviews'
-			| 'distance';
+			'rating' | 'reviews' | 'distance';
 		const minRating = parseInt(formData.get('minRating')?.toString() || '0');
 
 		// Parse GPS coordinates

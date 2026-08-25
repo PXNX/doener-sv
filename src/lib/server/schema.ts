@@ -183,6 +183,10 @@ export const doenerRestaurantsRelations = relations(doenerRestaurants, ({ one, m
 		fields: [doenerRestaurants.addedBy],
 		references: [users.id]
 	}),
+	image: one(files, {
+		fields: [doenerRestaurants.doenerImage],
+		references: [files.id]
+	}),
 	reviews: many(doenerReviews)
 }));
 

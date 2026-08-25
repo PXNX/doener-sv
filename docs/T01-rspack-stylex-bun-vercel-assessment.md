@@ -38,3 +38,15 @@ Retain Vite because it is the SvelteKit-required application build pipeline, but
 ## Browser verification
 
 The local `/about` page was served through the Bun development command and inspected in Chromium on 2026-08-25. The page retained its dark theme, centered responsive layout, typography, cards, gradients, icons, spacing, and interactive Back link. This verifies that the static compatibility stylesheet is delivered correctly alongside the new StyleX root layout.
+
+## Native storage, session cryptography, and TypeScript 7
+
+The Backblaze B2 integration now uses `Bun.S3Client` with B2’s S3-compatible path-style endpoint. Uploads use the native `write` API, while upload and download links use native `presign` with explicit PUT and GET methods. The AWS SDK packages are no longer required. The previous AWS-specific object metadata and response-cache-control parameters were unused by the application and are not represented in Bun’s S3 option surface.
+
+Google OAuth continues to use Arctic because Bun does not provide a complete provider-level OAuth client. Session-token generation and SHA-256 session IDs now use the native `crypto.getRandomValues` and `Bun.CryptoHasher` APIs, replacing the Oslo cryptography dependency without changing the session-ID hash algorithm.
+
+The TypeScript 7 native compiler is pinned through `@typescript/native@7.0.2`, and `typecheck:ts7` resolves to its `tsc` binary. `tsconfig.json` explicitly includes the `bun` type package, as required by TypeScript 6 and 7. TypeScript 6 remains installed only as the current `svelte-check` compatibility bridge; that tool requires it even when its `--tsgo` mode uses TypeScript 7.
+
+Source: https://bun.com/docs/runtime/s3
+Source: https://bun.com/docs/runtime/hashing
+Source: https://bun.com/docs/typescript-6

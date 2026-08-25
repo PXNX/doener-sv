@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				hasYoghurtSauce: restaurant.hasYoghurtSauce,
 				hasGarlicSauce: restaurant.hasGarlicSauce,
 				reviewCount: restaurant.reviewCount,
-				averageRating: restaurant.averageRating,
+				averageRating: restaurant.averageOverallRating,
 				createdAt: restaurant.createdAt.toISOString(),
 				updatedAt: restaurant.updatedAt.toISOString(),
 				imageUrl,
@@ -70,10 +70,10 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const restaurantId = formData.get('restaurantId')?.toString();
+		const restaurantId = Number(formData.get('restaurantId'));
 
-		if (!restaurantId) {
-			return fail(400, { error: 'Restaurant ID required' });
+		if (!Number.isInteger(restaurantId)) {
+			return fail(400, { error: 'Valid restaurant ID required' });
 		}
 
 		// Get restaurant to delete associated image
