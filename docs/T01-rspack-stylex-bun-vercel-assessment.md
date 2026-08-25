@@ -50,3 +50,7 @@ The TypeScript 7 native compiler is pinned through `@typescript/native@7.0.2`, a
 Source: https://bun.com/docs/runtime/s3
 Source: https://bun.com/docs/runtime/hashing
 Source: https://bun.com/docs/typescript-6
+
+## 1024px uploads and rating-first search
+
+The image transform now produces fixed 1024×1024 WebP output. The local search UI was inspected in Chromium on 2026-08-25 and exposes a `Rank results by` selector with Overall, Meat, Bread, Veggie, Sauce, and Distance options. Review count is no longer available as a ranking choice or emphasized beside the result rating.

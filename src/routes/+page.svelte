@@ -13,6 +13,20 @@
 	import DoenerCard from '$lib/components/DoenerCard.svelte';
 	import { resolve } from '$app/paths';
 
+	const sortOptions = [
+		{ value: 'overall', label: 'Overall rating' },
+		{ value: 'meat', label: 'Meat rating' },
+		{ value: 'bread', label: 'Bread rating' },
+		{ value: 'veggies', label: 'Veggie rating' },
+		{ value: 'sauce', label: 'Sauce rating' },
+		{ value: 'distance', label: 'Distance (nearby first)' }
+	] as const;
+	type SortBy = (typeof sortOptions)[number]['value'];
+
+	function parseSortBy(value: string | null | undefined): SortBy {
+		return sortOptions.some((option) => option.value === value) ? (value as SortBy) : 'overall';
+	}
+
 	interface Props {
 		data: PageData;
 		form: ActionData;
@@ -69,12 +83,13 @@
 	let favoritesCount = $state(0);
 
 	// Filters - initialize from URL params or localStorage
-	const savedFilters = getFromStorage(STORAGE_KEYS.filters, {});
+	const savedFilters = getFromStorage<Record<string, boolean | SortBy>>(STORAGE_KEYS.filters, {});
+	let sortBy = $state<SortBy>(
+		parseSortBy(hasUrlParams ? page.url.searchParams.get('sortBy') : savedFilters.sortBy)
+	);
 
 	const f = (key: string) =>
-		hasUrlParams
-			? page.url.searchParams.get(key) === 'true'
-			: savedFilters[key] || false;
+		hasUrlParams ? page.url.searchParams.get(key) === 'true' : savedFilters[key] === true;
 
 	// Bread
 	let filterBreadSesame = $state(f('breadSesame'));
@@ -166,6 +181,7 @@
 	// Persist filters to localStorage
 	$effect(() => {
 		setToStorage(STORAGE_KEYS.filters, {
+			sortBy,
 			breadSesame: filterBreadSesame,
 			breadFluffy: filterBreadFluffy,
 			breadCrispy: filterBreadCrispy,
@@ -377,6 +393,23 @@
 				{/if}
 			</div>
 
+			<!-- Result ranking -->
+			<label
+				class="flex flex-col gap-1.5 text-sm font-semibold text-orange-200 sm:flex-row sm:items-center sm:justify-between"
+			>
+				<span>Rank results by</span>
+				<select
+					name="sortBy"
+					bind:value={sortBy}
+					class="select select-sm w-full border-orange-500/40 bg-slate-900/50 text-orange-100 sm:w-64"
+					disabled={loading}
+				>
+					{#each sortOptions as option (option.value)}
+						<option value={option.value}>{option.label}</option>
+					{/each}
+				</select>
+			</label>
+
 			<!-- Filters (collapsible) -->
 			<button
 				type="button"
@@ -386,80 +419,88 @@
 				<span class="text-sm font-semibold text-orange-200">
 					🔍 Filters
 					{#if activeFilterCount > 0}
-						<span class="badge badge-xs ml-1 border-0 bg-orange-600 text-white">{activeFilterCount}</span>
+						<span class="badge badge-xs ml-1 border-0 bg-orange-600 text-white"
+							>{activeFilterCount}</span
+						>
 					{/if}
 				</span>
 				<span class="text-xs text-gray-400">{showFilters ? '▲' : '▼'}</span>
 			</button>
 
 			{#if showFilters}
-			<div class="space-y-3 rounded-lg border border-white/5 bg-slate-800/30 p-3">
-				<!-- Bread -->
-				<div>
-					<p class="mb-1.5 text-xs font-semibold text-orange-300">🍞 Bread</p>
-					<div class="flex flex-wrap gap-1.5">
-						{#each [{ name: 'breadSesame', label: '🌰 Sesame', bind: () => filterBreadSesame, set: (v: boolean) => (filterBreadSesame = v) }, { name: 'breadFluffy', label: '☁️ Fluffy', bind: () => filterBreadFluffy, set: (v: boolean) => (filterBreadFluffy = v) }, { name: 'breadCrispy', label: '🔥 Crispy', bind: () => filterBreadCrispy, set: (v: boolean) => (filterBreadCrispy = v) }] as opt}
-							<label
-								class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
-									{opt.bind() ? 'bg-amber-500/25 text-amber-200 border border-amber-400/40' : 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
-							>
-								<input
-									type="checkbox"
-									name={opt.name}
-									checked={opt.bind()}
-									onchange={(e) => opt.set(e.currentTarget.checked)}
-									class="hidden"
-								/>
-								{opt.label}
-							</label>
-						{/each}
+				<div class="space-y-3 rounded-lg border border-white/5 bg-slate-800/30 p-3">
+					<!-- Bread -->
+					<div>
+						<p class="mb-1.5 text-xs font-semibold text-orange-300">🍞 Bread</p>
+						<div class="flex flex-wrap gap-1.5">
+							{#each [{ name: 'breadSesame', label: '🌰 Sesame', bind: () => filterBreadSesame, set: (v: boolean) => (filterBreadSesame = v) }, { name: 'breadFluffy', label: '☁️ Fluffy', bind: () => filterBreadFluffy, set: (v: boolean) => (filterBreadFluffy = v) }, { name: 'breadCrispy', label: '🔥 Crispy', bind: () => filterBreadCrispy, set: (v: boolean) => (filterBreadCrispy = v) }] as opt}
+								<label
+									class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
+									{opt.bind()
+										? 'bg-amber-500/25 text-amber-200 border border-amber-400/40'
+										: 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
+								>
+									<input
+										type="checkbox"
+										name={opt.name}
+										checked={opt.bind()}
+										onchange={(e) => opt.set(e.currentTarget.checked)}
+										class="hidden"
+									/>
+									{opt.label}
+								</label>
+							{/each}
+						</div>
 					</div>
-				</div>
 
-				<!-- Meat -->
-				<div>
-					<p class="mb-1.5 text-xs font-semibold text-orange-300">🥩 Meat</p>
-					<div class="flex flex-wrap gap-1.5">
-						{#each [{ name: 'meatMinced', label: '🔪 Minced', bind: () => filterMeatMinced, set: (v: boolean) => (filterMeatMinced = v) }, { name: 'meatLayered', label: '📐 Layered', bind: () => filterMeatLayered, set: (v: boolean) => (filterMeatLayered = v) }, { name: 'meatChicken', label: '🐔 Chicken', bind: () => filterMeatChicken, set: (v: boolean) => (filterMeatChicken = v) }, { name: 'meatBeef', label: '🐄 Beef', bind: () => filterMeatBeef, set: (v: boolean) => (filterMeatBeef = v) }, { name: 'meatLamb', label: '🐑 Lamb', bind: () => filterMeatLamb, set: (v: boolean) => (filterMeatLamb = v) }] as opt}
-							<label
-								class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
-									{opt.bind() ? 'bg-red-500/25 text-red-200 border border-red-400/40' : 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
-							>
-								<input
-									type="checkbox"
-									name={opt.name}
-									checked={opt.bind()}
-									onchange={(e) => opt.set(e.currentTarget.checked)}
-									class="hidden"
-								/>
-								{opt.label}
-							</label>
-						{/each}
+					<!-- Meat -->
+					<div>
+						<p class="mb-1.5 text-xs font-semibold text-orange-300">🥩 Meat</p>
+						<div class="flex flex-wrap gap-1.5">
+							{#each [{ name: 'meatMinced', label: '🔪 Minced', bind: () => filterMeatMinced, set: (v: boolean) => (filterMeatMinced = v) }, { name: 'meatLayered', label: '📐 Layered', bind: () => filterMeatLayered, set: (v: boolean) => (filterMeatLayered = v) }, { name: 'meatChicken', label: '🐔 Chicken', bind: () => filterMeatChicken, set: (v: boolean) => (filterMeatChicken = v) }, { name: 'meatBeef', label: '🐄 Beef', bind: () => filterMeatBeef, set: (v: boolean) => (filterMeatBeef = v) }, { name: 'meatLamb', label: '🐑 Lamb', bind: () => filterMeatLamb, set: (v: boolean) => (filterMeatLamb = v) }] as opt}
+								<label
+									class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
+									{opt.bind()
+										? 'bg-red-500/25 text-red-200 border border-red-400/40'
+										: 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
+								>
+									<input
+										type="checkbox"
+										name={opt.name}
+										checked={opt.bind()}
+										onchange={(e) => opt.set(e.currentTarget.checked)}
+										class="hidden"
+									/>
+									{opt.label}
+								</label>
+							{/each}
+						</div>
 					</div>
-				</div>
 
-				<!-- Sauces -->
-				<div>
-					<p class="mb-1.5 text-xs font-semibold text-orange-300">🫗 Sauces</p>
-					<div class="flex flex-wrap gap-1.5">
-						{#each [{ name: 'yoghurtSauce', label: '🥛 Yoghurt', bind: () => filterYoghurtSauce, set: (v: boolean) => (filterYoghurtSauce = v) }, { name: 'garlicSauce', label: '🧄 Garlic', bind: () => filterGarlicSauce, set: (v: boolean) => (filterGarlicSauce = v) }, { name: 'herbalSauce', label: '🌿 Herbal', bind: () => filterHerbalSauce, set: (v: boolean) => (filterHerbalSauce = v) }, { name: 'cocktailSauce', label: '🍹 Cocktail', bind: () => filterCocktailSauce, set: (v: boolean) => (filterCocktailSauce = v) }, { name: 'spicySauce', label: '🌶️ Spicy', bind: () => filterSpicySauce, set: (v: boolean) => (filterSpicySauce = v) }] as opt}
-							<label
-								class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
-									{opt.bind() ? 'bg-blue-500/25 text-blue-200 border border-blue-400/40' : 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
-							>
-								<input
-									type="checkbox"
-									name={opt.name}
-									checked={opt.bind()}
-									onchange={(e) => opt.set(e.currentTarget.checked)}
-									class="hidden"
-								/>
-								{opt.label}
-							</label>
-						{/each}
+					<!-- Sauces -->
+					<div>
+						<p class="mb-1.5 text-xs font-semibold text-orange-300">🫗 Sauces</p>
+						<div class="flex flex-wrap gap-1.5">
+							{#each [{ name: 'yoghurtSauce', label: '🥛 Yoghurt', bind: () => filterYoghurtSauce, set: (v: boolean) => (filterYoghurtSauce = v) }, { name: 'garlicSauce', label: '🧄 Garlic', bind: () => filterGarlicSauce, set: (v: boolean) => (filterGarlicSauce = v) }, { name: 'herbalSauce', label: '🌿 Herbal', bind: () => filterHerbalSauce, set: (v: boolean) => (filterHerbalSauce = v) }, { name: 'cocktailSauce', label: '🍹 Cocktail', bind: () => filterCocktailSauce, set: (v: boolean) => (filterCocktailSauce = v) }, { name: 'spicySauce', label: '🌶️ Spicy', bind: () => filterSpicySauce, set: (v: boolean) => (filterSpicySauce = v) }] as opt}
+								<label
+									class="flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors
+									{opt.bind()
+										? 'bg-blue-500/25 text-blue-200 border border-blue-400/40'
+										: 'bg-slate-700/40 text-gray-300 border border-transparent hover:bg-slate-700/60'}"
+								>
+									<input
+										type="checkbox"
+										name={opt.name}
+										checked={opt.bind()}
+										onchange={(e) => opt.set(e.currentTarget.checked)}
+										class="hidden"
+									/>
+									{opt.label}
+								</label>
+							{/each}
+						</div>
 					</div>
 				</div>
-			</div>
 			{/if}
 
 			<!-- Submit button -->
@@ -476,7 +517,7 @@
 				<span>Find Döners</span>
 				<FluentArrowRight24Regular class="size-6" />
 			</button>
-			</form>
+		</form>
 	</div>
 </div>
 

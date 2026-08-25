@@ -22,7 +22,7 @@ export interface UploadResult {
 }
 
 // Images are normalized to this fixed square WebP dimension.
-const IMAGE_SIZE = 256;
+const IMAGE_SIZE = 1024;
 const WEBP_QUALITY = 95;
 const MAX_IMAGE_PIXELS = 24_000_000;
 
@@ -48,7 +48,7 @@ async function processImageToWebP(buffer: Buffer): Promise<Buffer> {
  */
 export async function uploadFile(buffer: Buffer): Promise<UploadResult> {
 	try {
-		// Always process to fixed 256x256 WebP
+		// Always process to fixed 1024x1024 WebP
 		const processedBuffer = await processImageToWebP(buffer);
 
 		// Generate unique key with .webp extension

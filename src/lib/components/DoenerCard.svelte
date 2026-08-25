@@ -73,17 +73,15 @@
 
 					<!-- Rating pill -->
 					{#if restaurant.reviewCount > 0}
-						<div class="flex shrink-0 items-center gap-2">
-							<div
-								class="flex items-center gap-1 rounded-lg border px-2.5 py-1 {ratingBg(rating)}"
-							>
-								<FluentStar20Filled class="size-4 {ratingColor(rating)}" />
-								<span class="text-base font-bold {ratingColor(rating)}">
-									{rating.toFixed(1)}
-								</span>
-							</div>
-							<span class="text-xs text-gray-400">
-								{restaurant.reviewCount} review{restaurant.reviewCount !== 1 ? 's' : ''}
+						<div
+							class="flex shrink-0 items-center gap-1 rounded-lg border px-2.5 py-1 {ratingBg(
+								rating
+							)}"
+							aria-label={`Overall rating: ${rating.toFixed(1)} out of 4`}
+						>
+							<FluentStar20Filled class="size-4 {ratingColor(rating)}" />
+							<span class="text-base font-bold {ratingColor(rating)}">
+								{rating.toFixed(1)}
 							</span>
 						</div>
 					{:else}
@@ -99,7 +97,8 @@
 						<!-- Proteins -->
 						{#each (restaurant.topProteins ?? []).slice(0, 2) as p}
 							<span class="badge badge-sm border-red-400/40 bg-red-500/20 text-red-200">
-								{proteinEmoji[p.label] || '🍖'} {p.label}
+								{proteinEmoji[p.label] || '🍖'}
+								{p.label}
 								<span class="ml-0.5 opacity-60">{p.pct}%</span>
 							</span>
 						{/each}
@@ -114,7 +113,8 @@
 						<!-- Sauces -->
 						{#each (restaurant.topSauces ?? []).filter((s) => s.pct >= 40).slice(0, 3) as s}
 							<span class="badge badge-sm border-blue-300/40 bg-blue-400/20 text-blue-200">
-								{sauceEmoji[s.label] || '🫗'} {s.label}
+								{sauceEmoji[s.label] || '🫗'}
+								{s.label}
 							</span>
 						{/each}
 

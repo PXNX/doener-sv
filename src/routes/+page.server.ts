@@ -2,7 +2,7 @@
 import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/server/db';
 import { doenerRestaurants } from '$lib/server/schema';
-import { and, or, sql, desc, gte } from 'drizzle-orm';
+import { and, or, sql, gte } from 'drizzle-orm';
 import type { DoenerRestaurantResult } from '$lib/types';
 import { getImageUrl } from '$lib/server/backblaze';
 import { aggregateRestaurantData } from '$lib/server/aggregate';
@@ -23,6 +23,21 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 			Math.sin(dLon / 2);
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	return R * c;
+}
+
+const sortOptions = ['overall', 'meat', 'bread', 'veggies', 'sauce', 'distance'] as const;
+type SortBy = (typeof sortOptions)[number];
+
+const ratingSortColumns = {
+	overall: doenerRestaurants.averageOverallRating,
+	meat: doenerRestaurants.averageMeatRating,
+	bread: doenerRestaurants.averageBreadRating,
+	veggies: doenerRestaurants.averageVeggiesRating,
+	sauce: doenerRestaurants.averageSauceRating
+} as const;
+
+function parseSortBy(value: string | null | undefined): SortBy {
+	return sortOptions.includes(value as SortBy) ? (value as SortBy) : 'overall';
 }
 
 /**
@@ -49,7 +64,7 @@ async function searchRestaurants(
 		cocktailSauce?: boolean;
 		spicySauce?: boolean;
 	},
-	sortBy: 'rating' | 'reviews' | 'distance' = 'rating'
+	sortBy: SortBy = 'overall'
 ) {
 	try {
 		const conditions = [];
@@ -86,9 +101,12 @@ async function searchRestaurants(
 			.from(doenerRestaurants)
 			.where(conditions.length > 0 ? and(...conditions) : undefined);
 
-		// Distance sorting is done after fetching; preserve the builder type for the review sort.
+		// Distance sorting is done after fetching. Rating sorts keep unrated listings at the end.
+		const ratingSort = sortBy === 'distance' ? 'overall' : sortBy;
 		const sortedQuery =
-			sortBy === 'reviews' ? query.orderBy(desc(doenerRestaurants.reviewCount)) : query;
+			sortBy === 'distance'
+				? query
+				: query.orderBy(sql`${ratingSortColumns[ratingSort]} DESC NULLS LAST`);
 		let restaurants = await sortedQuery.limit(200); // Fetch more for GPS filtering
 
 		// Filter by GPS distance if coordinates provided
@@ -200,7 +218,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const location = url.searchParams.get('location');
 	const latitude = url.searchParams.get('latitude');
 	const longitude = url.searchParams.get('longitude');
-	const sortBy = (url.searchParams.get('sortBy') || 'rating') as 'rating' | 'reviews' | 'distance';
+	const sortBy = parseSortBy(url.searchParams.get('sortBy'));
 	const minRating = parseInt(url.searchParams.get('minRating') || '0');
 
 	// Parse GPS coordinates
@@ -272,8 +290,7 @@ export const actions: Actions = {
 		const location = formData.get('location')?.toString() || '';
 		const latitude = formData.get('latitude')?.toString();
 		const longitude = formData.get('longitude')?.toString();
-		const sortBy = (formData.get('sortBy')?.toString() || 'rating') as
-			'rating' | 'reviews' | 'distance';
+		const sortBy = parseSortBy(formData.get('sortBy')?.toString());
 		const minRating = parseInt(formData.get('minRating')?.toString() || '0');
 
 		// Parse GPS coordinates
