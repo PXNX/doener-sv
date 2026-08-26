@@ -2,6 +2,7 @@
 	import { browser } from '$app/environment';
 	import { locale, t } from '$lib/i18n';
 	import BackButton from '$lib/components/BackButton.svelte';
+	import PreviewImage from '$lib/components/PreviewImage.svelte';
 	import RadarChart from '$lib/components/RadarChart.svelte';
 	import FluentStar20Filled from '~icons/fluent/star-20-filled';
 	import FluentLocation20Filled from '~icons/fluent/location-20-filled';
@@ -183,19 +184,12 @@
 	></div>
 	<div class="relative">
 		<div class="relative h-72 overflow-hidden bg-slate-800 sm:h-96">
-			{#if data.restaurant.doenerImage}
-				<img
-					src={data.restaurant.doenerImage}
-					alt={data.restaurant.name}
-					class="absolute inset-0 h-full w-full object-cover"
-				/>
-			{:else}
-				<div
-					class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-orange-500/35 to-red-800/35 text-9xl"
-				>
-					🥙
-				</div>
-			{/if}
+			<PreviewImage
+				src={data.restaurant.doenerImage}
+				alt={data.restaurant.name}
+				priority
+				class="absolute inset-0 h-full w-full rounded-none"
+			/>
 			<div
 				class="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-slate-950/85 to-transparent"
 			></div>

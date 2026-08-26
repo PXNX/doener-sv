@@ -7,9 +7,10 @@
 		src: string | null | undefined;
 		alt: string;
 		class?: string;
+		priority?: boolean;
 	}
 
-	let { src, alt, class: className = '' }: Props = $props();
+	let { src, alt, class: className = '', priority = false }: Props = $props();
 
 	let loaded = $state(false);
 	let error = $state(false);
@@ -38,7 +39,8 @@
 			bind:this={img}
 			{src}
 			{alt}
-			loading="lazy"
+			loading={priority ? 'eager' : 'lazy'}
+			fetchpriority={priority ? 'high' : 'auto'}
 			decoding="async"
 			class="size-full object-cover transition-opacity duration-300 {loaded
 				? 'opacity-100'
