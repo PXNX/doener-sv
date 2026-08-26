@@ -410,11 +410,12 @@
 				<select
 					name="sortBy"
 					bind:value={sortBy}
-					class="select select-sm w-full border-orange-500/40 bg-slate-900/50 text-orange-100 sm:w-64"
+					class="select select-sm w-full border-orange-500/40 bg-slate-950 text-orange-100 focus:bg-slate-950 sm:w-64"
 					disabled={loading}
 				>
 					{#each sortOptions as option (option.value)}
-						<option value={option.value}>{option.label}</option>
+						<option value={option.value} class="bg-slate-950 text-orange-100">{option.label}</option
+						>
 					{/each}
 				</select>
 			</label>
