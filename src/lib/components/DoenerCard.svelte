@@ -1,5 +1,4 @@
 <script lang="ts">
-	import FluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
 	import FluentStar20Filled from '~icons/fluent/star-20-filled';
 	import FluentLocation20Filled from '~icons/fluent/location-20-filled';
 	import type { DoenerRestaurantResult } from '$lib/types';
@@ -33,12 +32,10 @@
 
 <a
 	href="/doener/{restaurant.id}"
-	class="group relative flex items-start gap-4 overflow-hidden rounded-2xl border border-white/12 bg-slate-900/55 p-3 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-300/55 hover:bg-slate-800/70 hover:shadow-lg hover:shadow-black/25 sm:p-4"
+	class="group relative flex items-start gap-4 overflow-hidden rounded-2xl bg-slate-900/55 p-3 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800/70 hover:shadow-lg hover:shadow-black/25 sm:p-4"
 	style="view-transition-name: restaurant-{restaurant.id}"
 >
-	<div
-		class="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-slate-800 sm:h-36 sm:w-44"
-	>
+	<div class="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl bg-slate-800 sm:h-36 sm:w-44">
 		<PreviewImage
 			src={restaurant.latestReviewImage ?? restaurant.doenerImage}
 			alt={restaurant.name}
@@ -112,11 +109,5 @@
 					>{/if}
 			</div>
 		{/if}
-
-		<div
-			class="mt-3 flex items-center gap-1 text-sm font-semibold text-orange-300 transition-all group-hover:gap-2"
-		>
-			<span>Open tasting profile</span><FluentArrowRight24Regular class="size-4" />
-		</div>
 	</div>
 </a>

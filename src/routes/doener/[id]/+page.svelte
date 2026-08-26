@@ -175,7 +175,7 @@
 <BackButton href="/" />
 
 <section
-	class="relative mb-6 overflow-hidden rounded-2xl border border-white/12 bg-slate-900/70 shadow-xl shadow-black/20"
+	class="relative mb-6 overflow-hidden rounded-2xl bg-slate-900/70 shadow-xl shadow-black/20"
 >
 	<div
 		class="absolute inset-0 bg-gradient-to-br from-orange-950/35 via-slate-900 to-slate-950"
@@ -198,20 +198,12 @@
 			<div
 				class="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-slate-950/85 to-transparent"
 			></div>
-			<div
-				class="absolute bottom-5 left-5 rounded-xl border border-white/10 bg-slate-950/65 px-3 py-2 text-[11px] font-bold tracking-[0.16em] text-orange-200 uppercase backdrop-blur"
-			>
-				Tasting dossier
-			</div>
 		</div>
 
-		<div class="relative border-t border-white/8 p-5 sm:p-8">
+		<div class="relative p-5 sm:p-8">
 			<div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
 				<div class="min-w-0">
-					<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">
-						Döner profile
-					</p>
-					<h1 class="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+					<h1 class="text-3xl font-black tracking-tight text-white sm:text-4xl">
 						{data.restaurant.name}
 					</h1>
 					<a
@@ -229,7 +221,7 @@
 					onclick={toggleFavorite}
 					class="btn btn-circle border {isFavorite
 						? 'border-orange-300 bg-orange-400 text-slate-950 hover:bg-orange-300'
-						: 'border-white/15 bg-white/5 text-orange-200 hover:border-orange-300 hover:bg-orange-300/10'}"
+						: 'border-slate-700/70 bg-white/5 text-orange-200 hover:border-orange-300 hover:bg-orange-300/10'}"
 					title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
 				>
 					{#if isFavorite}<FluentHeart20Filled class="size-5" />{:else}<FluentHeart20Regular
@@ -250,7 +242,6 @@
 					<p class="mt-1 text-xs font-semibold text-slate-300">{scoreLabel(overall)}</p>
 				</div>
 				<div class="pb-1 text-sm text-slate-400">
-					<p class="font-semibold text-slate-200">A profile built from community tasting notes.</p>
 					{#if a?.avgPrice != null}<p class="mt-1 text-emerald-200">
 							Typical spend: €{a.avgPrice.toFixed(1)}
 						</p>{/if}
@@ -275,7 +266,7 @@
 					href={googleMapsUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="btn border-white/12 bg-white/5 text-slate-100 hover:border-orange-300/50 hover:bg-orange-400/10"
+					class="btn border-slate-700/70 bg-white/5 text-slate-100 hover:border-orange-300/50 hover:bg-orange-400/10"
 					>Open directions</a
 				>
 			</div>
@@ -287,15 +278,13 @@
 	<section class="mb-5" aria-label="Taste scorecard">
 		<div class="mb-3 flex items-end justify-between gap-4">
 			<div>
-				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">Scorecard</p>
-				<h2 class="mt-1 text-2xl font-bold text-white">How the Döner tastes</h2>
+				<h2 class="text-2xl font-bold text-white">Ratings</h2>
 			</div>
-			<p class="hidden text-sm text-slate-400 sm:block">Each score is measured out of four.</p>
 		</div>
 
 		<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
 			{#each scoreCards as score}
-				<div class="rounded-2xl border border-white/8 bg-gradient-to-br {score.tone} p-4">
+				<div class="rounded-2xl bg-gradient-to-br {score.tone} p-4">
 					<div class="flex items-start justify-between gap-2">
 						<span class="text-xl">{score.emoji}</span>
 						<span class="text-2xl font-black text-white"
@@ -314,10 +303,9 @@
 		</div>
 
 		<div class="mt-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
-			<div class="rounded-2xl border border-white/8 bg-slate-900/55 p-5">
+			<div class="rounded-2xl bg-slate-900/55 p-5">
 				<div class="mb-3 flex items-center justify-between">
-					<h3 class="font-semibold text-white">Flavor geometry</h3>
-					<span class="text-xs text-slate-500">6 dimensions</span>
+					<h3 class="font-semibold text-white">Taste breakdown</h3>
 				</div>
 				<RadarChart
 					axes={[
@@ -330,10 +318,9 @@
 					]}
 				/>
 			</div>
-			<div class="rounded-2xl border border-white/8 bg-slate-900/55 p-5">
+			<div class="rounded-2xl bg-slate-900/55 p-5">
 				<div class="mb-4 flex items-center justify-between">
-					<h3 class="font-semibold text-white">At a glance</h3>
-					<span class="text-xs text-slate-500">Community patterns</span>
+					<h3 class="font-semibold text-white">Details</h3>
 				</div>
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div>
@@ -392,7 +379,7 @@
 		</div>
 
 		<div class="mt-3 grid gap-3 md:grid-cols-2">
-			<div class="rounded-2xl border border-white/8 bg-slate-900/45 p-5">
+			<div class="rounded-2xl bg-slate-900/45 p-5">
 				<p class="text-[11px] font-bold tracking-[0.14em] text-orange-300 uppercase">
 					Texture notes
 				</p>
@@ -416,14 +403,14 @@
 					{/each}
 				</div>
 			</div>
-			<div class="rounded-2xl border border-white/8 bg-slate-900/45 p-5">
+			<div class="rounded-2xl bg-slate-900/45 p-5">
 				<p class="text-[11px] font-bold tracking-[0.14em] text-orange-300 uppercase">
 					Serving notes
 				</p>
 				<h3 class="mt-1 font-semibold text-white">Portion & bread shape</h3>
 				<div class="mt-4 grid grid-cols-3 gap-2">
 					{#each a.sizes as size}
-						<div class="rounded-xl border border-white/8 bg-slate-800/70 p-3 text-center">
+						<div class="rounded-xl bg-slate-800/70 p-3 text-center">
 							<p class="text-xl">
 								{size.label === 'small' ? '🤏' : size.label === 'medium' ? '👌' : '💪'}
 							</p>
@@ -458,21 +445,15 @@
 {/if}
 
 {#if data.restaurant.reviewCount > 0}
-	<section
-		class="mb-6 rounded-3xl border border-white/8 bg-slate-900/45 p-4 sm:p-5"
-		aria-label="Community reviews"
-	>
+	<section class="mb-6 rounded-3xl bg-slate-900/45 p-4 sm:p-5" aria-label="Community reviews">
 		<button
 			onclick={toggleReviews}
 			class="flex w-full items-center justify-between gap-4 text-left"
 		>
 			<div>
-				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">
-					Community notes
-				</p>
-				<h2 class="mt-1 text-xl font-bold text-white">Individual tasting reports</h2>
+				<h2 class="text-xl font-bold text-white">Reviews</h2>
 			</div>
-			<div class="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-300">
+			<div class="rounded-xl bg-white/5 p-2 text-slate-300">
 				{#if showReviews}<FluentChevronUp20Regular
 						class="size-5"
 					/>{:else}<FluentChevronDown20Regular class="size-5" />{/if}
@@ -492,7 +473,7 @@
 							class="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors {sortBy ===
 							option.key
 								? 'border-orange-300 bg-orange-400 text-slate-950'
-								: 'border-white/10 bg-white/5 text-slate-300 hover:border-orange-300/50'}"
+								: 'border-slate-700/70 bg-white/5 text-slate-300 hover:border-orange-300/50'}"
 							>{option.label}</button
 						>
 					{/each}
@@ -500,7 +481,7 @@
 
 				<div class="mt-4 grid gap-3 lg:grid-cols-2">
 					{#each sortedReviews() as review (review.id)}
-						<article class="rounded-2xl border border-white/8 bg-slate-950/35 p-4">
+						<article class="rounded-2xl bg-slate-950/35 p-4">
 							<div class="flex items-start justify-between gap-3">
 								<div>
 									<p class="text-xs text-slate-500">{formatDate(review.createdAt)}</p>
@@ -509,7 +490,7 @@
 								<div class="flex items-center gap-2">
 									<button
 										onclick={() => upvote(review.id)}
-										class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-slate-300 hover:border-orange-300/50"
+										class="rounded-lg border border-slate-700/70 bg-white/5 px-2 py-1 text-xs text-slate-300 hover:border-orange-300/50"
 										>👍 {review.upvotes ?? 0}</button
 									>
 									<div
@@ -527,7 +508,7 @@
 							{#if review.reviewImageUrl}<img
 									src={review.reviewImageUrl}
 									alt="Döner review"
-									class="mt-4 h-48 w-full rounded-xl border border-white/8 object-cover"
+									class="mt-4 h-48 w-full rounded-xl object-cover"
 								/>{/if}
 							<div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
 								{#each [{ label: 'Meat', value: review.meatRating }, { label: 'Bread', value: review.breadRating }, { label: 'Veggies', value: review.veggiesRating }, { label: 'Sauce', value: review.sauceRating }, { label: 'Flavor', value: review.overallFlavorRating }, { label: 'Hygiene', value: review.cleanlinessRating }] as metric}

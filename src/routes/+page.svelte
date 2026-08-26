@@ -437,7 +437,7 @@
 			</button>
 
 			{#if showFilters}
-				<div class="space-y-3 rounded-lg border border-white/5 bg-slate-800/30 p-3">
+				<div class="space-y-3 rounded-lg bg-slate-800/30 p-3">
 					<!-- Bread -->
 					<div>
 						<p class="mb-1.5 text-xs font-semibold text-orange-300">🍞 Bread</p>
@@ -541,12 +541,10 @@
 {#if !loading && searchResults.length > 0}
 	<section class="mt-8" aria-label="Search results">
 		<div
-			class="mb-5 flex flex-col gap-3 rounded-2xl border border-white/8 bg-slate-900/45 p-4 sm:flex-row sm:items-center sm:justify-between"
+			class="mb-5 flex flex-col gap-3 rounded-2xl bg-slate-900/45 p-4 sm:flex-row sm:items-center sm:justify-between"
 		>
 			<div>
-				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">
-					Tasting shortlist
-				</p>
+				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">Results</p>
 				<h2 class="mt-1 text-2xl font-bold text-white">
 					{searchResults.length} Döner spot{searchResults.length === 1 ? '' : 's'} found
 				</h2>

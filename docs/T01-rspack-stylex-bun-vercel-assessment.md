@@ -74,3 +74,11 @@ The corrected local search shell loaded successfully. A temporary browser-only f
 ## Image restoration browser result
 
 The corrected image-backed card was rendered locally in Chromium. The restaurant photo now appears as a substantial, persistent left-side media rail with the name, location, score, tasting tags, and action aligned beside it. This resolves the prior regression in which the score-led card treatment visually displaced the image. The synthetic browser fixture was then removed.
+
+## Visual cleanup verification checkpoint
+
+A temporary image-backed local fixture was prepared after removing filler result-card copy and white border tokens. The follow-up browser inspection checks that the image remains present while the result surface no longer uses the prior bright framing treatment.
+
+## Visual cleanup browser result
+
+The refined result card rendered with its image media rail intact, a plain functional `Results` heading, and no `Open tasting profile` call to action. The former white card outline was absent. The browser-only fixture was removed after verification.
