@@ -1,6 +1,10 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import FluentChevronRight20Regular from '~icons/fluent/chevron-right-20-regular';
 	import FluentStar20Filled from '~icons/fluent/star-20-filled';
 	import FluentLocation20Filled from '~icons/fluent/location-20-filled';
+	import { t } from '$lib/i18n';
+	import type { TranslationKey } from '$lib/i18n/messages';
 	import type { DoenerRestaurantResult } from '$lib/types';
 	import PreviewImage from './PreviewImage.svelte';
 
@@ -11,6 +15,7 @@
 	}
 
 	let { restaurant, position, rankingLabel = 'Overall rating' }: Props = $props();
+	let opening = $state(false);
 	const rating = $derived(restaurant.averageRating ?? 0);
 
 	function ratingColor(value: number) {
@@ -28,11 +33,40 @@
 		Spicy: '🌶️'
 	};
 	const proteinEmoji: Record<string, string> = { Chicken: '🐔', Beef: '🐄', Lamb: '🐑' };
+	const proteinTranslationKey: Record<string, TranslationKey> = {
+		Chicken: 'protein.chicken',
+		Beef: 'protein.beef',
+		Lamb: 'protein.lamb'
+	};
+	const sauceTranslationKey: Record<string, TranslationKey> = {
+		Herbal: 'sauce.herbal',
+		Yoghurt: 'sauce.yoghurt',
+		Garlic: 'sauce.garlic',
+		Cocktail: 'sauce.cocktail',
+		Spicy: 'sauce.spicy'
+	};
+
+	function translatedLabel(value: string, translations: Record<string, TranslationKey>): string {
+		return translations[value] ? $t(translations[value]) : value;
+	}
+
+	function openRestaurant(event: MouseEvent): void {
+		event.preventDefault();
+		if (opening) return;
+
+		opening = true;
+		requestAnimationFrame(() => {
+			void goto(`/doener/${restaurant.id}`);
+		});
+	}
 </script>
 
 <a
 	href="/doener/{restaurant.id}"
-	class="group relative flex items-start gap-4 overflow-hidden rounded-2xl bg-slate-900/55 p-3 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800/70 hover:shadow-lg hover:shadow-black/25 sm:p-4"
+	onclick={openRestaurant}
+	aria-label={$t('card.openRestaurant', { name: restaurant.name })}
+	aria-busy={opening}
+	class="group relative flex items-start gap-4 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 p-3 shadow-lg shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:from-slate-800 hover:to-slate-950 hover:shadow-xl hover:shadow-black/30 sm:p-4"
 	style="view-transition-name: restaurant-{restaurant.id}"
 >
 	<div class="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl bg-slate-800 sm:h-36 sm:w-44">
@@ -70,19 +104,31 @@
 					<span class="truncate">{restaurant.city}, {restaurant.country}</span>
 				</div>
 			</div>
-			{#if restaurant.reviewCount > 0}
-				<div class="shrink-0 text-right">
-					<p class="text-[10px] font-semibold tracking-[0.12em] text-white/40 uppercase">
-						{rankingLabel}
-					</p>
-					<div class="mt-1 flex items-center justify-end gap-1">
-						<FluentStar20Filled class="size-4 {ratingColor(rating)}" />
-						<span class="text-xl font-black leading-none {ratingColor(rating)}"
-							>{rating.toFixed(1)}</span
-						>
+			<div class="ml-auto flex shrink-0 items-start gap-2">
+				{#if restaurant.reviewCount > 0}
+					<div class="text-right">
+						<p class="text-[10px] font-semibold tracking-[0.12em] text-white/40 uppercase">
+							{rankingLabel}
+						</p>
+						<div class="mt-1 flex items-center justify-end gap-1">
+							<FluentStar20Filled class="size-4 {ratingColor(rating)}" />
+							<span class="text-xl font-black leading-none {ratingColor(rating)}"
+								>{rating.toFixed(1)}</span
+							>
+						</div>
 					</div>
-				</div>
-			{/if}
+				{/if}
+				<span
+					class="mt-0.5 inline-flex size-8 items-center justify-center rounded-full bg-slate-800 text-orange-200 transition-colors group-hover:bg-orange-500 group-hover:text-white"
+					aria-hidden="true"
+				>
+					{#if opening}
+						<span class="loading loading-spinner loading-xs"></span>
+					{:else}
+						<FluentChevronRight20Regular class="size-5" />
+					{/if}
+				</span>
+			</div>
 		</div>
 
 		{#if restaurant.reviewCount > 0}
@@ -90,17 +136,21 @@
 				{#each (restaurant.topProteins ?? []).slice(0, 2) as protein}
 					<span
 						class="rounded-full border border-red-400/25 bg-red-400/10 px-2 py-0.5 text-xs text-red-100"
-						>{proteinEmoji[protein.label] || '🍖'} {protein.label}</span
+						>{proteinEmoji[protein.label] || '🍖'}
+						{translatedLabel(protein.label, proteinTranslationKey)}</span
 					>
 				{/each}
 				{#if restaurant.mostCommonMeatType}<span
 						class="rounded-full border border-orange-400/25 bg-orange-400/10 px-2 py-0.5 text-xs text-orange-100"
-						>🥩 {restaurant.mostCommonMeatType === 'minced' ? 'Minced' : 'Layered'}</span
+						>🥩 {restaurant.mostCommonMeatType === 'minced'
+							? $t('card.meat.minced')
+							: $t('card.meat.layered')}</span
 					>{/if}
 				{#each (restaurant.topSauces ?? []).filter((sauce) => sauce.pct >= 40).slice(0, 2) as sauce}
 					<span
 						class="rounded-full border border-sky-400/25 bg-sky-400/10 px-2 py-0.5 text-xs text-sky-100"
-						>{sauceEmoji[sauce.label] || '🫗'} {sauce.label}</span
+						>{sauceEmoji[sauce.label] || '🫗'}
+						{translatedLabel(sauce.label, sauceTranslationKey)}</span
 					>
 				{/each}
 				{#if restaurant.avgPrice != null}<span

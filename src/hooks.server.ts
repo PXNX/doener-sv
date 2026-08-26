@@ -1,7 +1,10 @@
 import { validateSessionToken } from '$lib/server/auth';
+import { resolveLocale } from '$lib/i18n/messages';
 import type { Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	event.locals.locale = resolveLocale(event.request.headers.get('accept-language'));
+
 	const token = event.cookies.get('session');
 
 	if (token) {

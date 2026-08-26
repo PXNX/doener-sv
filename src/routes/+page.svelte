@@ -10,21 +10,15 @@
 	import type { PageData, ActionData } from './$types';
 	import type { DoenerRestaurantResult } from '$lib/types';
 	import { page } from '$app/state';
+	import { t } from '$lib/i18n';
 	import DoenerCard from '$lib/components/DoenerCard.svelte';
 	import { resolve } from '$app/paths';
 
-	const sortOptions = [
-		{ value: 'overall', label: 'Overall rating' },
-		{ value: 'meat', label: 'Meat rating' },
-		{ value: 'bread', label: 'Bread rating' },
-		{ value: 'veggies', label: 'Veggie rating' },
-		{ value: 'sauce', label: 'Sauce rating' },
-		{ value: 'distance', label: 'Distance (nearby first)' }
-	] as const;
-	type SortBy = (typeof sortOptions)[number]['value'];
+	const sortValues = ['overall', 'meat', 'bread', 'veggies', 'sauce', 'distance'] as const;
+	type SortBy = (typeof sortValues)[number];
 
 	function parseSortBy(value: string | null | undefined): SortBy {
-		return sortOptions.some((option) => option.value === value) ? (value as SortBy) : 'overall';
+		return sortValues.includes(value as SortBy) ? (value as SortBy) : 'overall';
 	}
 
 	interface Props {
@@ -33,6 +27,15 @@
 	}
 
 	let { data, form }: Props = $props();
+
+	const sortOptions = $derived([
+		{ value: 'overall' as const, label: $t('sort.overall') },
+		{ value: 'meat' as const, label: $t('sort.meat') },
+		{ value: 'bread' as const, label: $t('sort.bread') },
+		{ value: 'veggies' as const, label: $t('sort.veggies') },
+		{ value: 'sauce' as const, label: $t('sort.sauce') },
+		{ value: 'distance' as const, label: $t('sort.distance') }
+	]);
 
 	// localStorage keys
 	const STORAGE_KEYS = {
@@ -94,7 +97,7 @@
 	const f = (key: string) =>
 		hasUrlParams ? page.url.searchParams.get(key) === 'true' : savedFilters[key] === true;
 	const activeRankingLabel = $derived(
-		sortOptions.find((option) => option.value === sortBy)?.label ?? 'Overall rating'
+		sortOptions.find((option) => option.value === sortBy)?.label ?? $t('sort.overall')
 	);
 
 	// Bread
@@ -264,7 +267,7 @@
 	</div>
 	<h1 class="text-4xl font-bold text-white">Döner Rating</h1>
 	<p class="mt-2 text-lg text-orange-200/90">
-		Recommend the best Döners • <a href="/about" class="underline">About</a>
+		{$t('home.subtitle')} • <a href="/about" class="underline">{$t('nav.about')}</a>
 	</p>
 </header>
 
@@ -280,21 +283,21 @@
 						href="/admin/reviews"
 						class="btn btn-ghost btn-sm text-purple-300 hover:bg-purple-600/20 hover:text-white"
 					>
-						🛡️ Admin
+						🛡️ {$t('nav.admin')}
 					</a>
 				{/if}
 				<a
 					href={resolve('/auth/logout')}
 					class="btn btn-ghost btn-sm text-orange-100 hover:bg-orange-600/20 hover:text-white"
 				>
-					Logout
+					{$t('nav.logout')}
 				</a>
 			{:else}
 				<a
 					href={resolve('/auth/login')}
 					class="btn btn-ghost btn-sm text-orange-100 hover:bg-orange-600/20 hover:text-white"
 				>
-					Login
+					{$t('nav.login')}
 				</a>
 			{/if}
 		</div>
@@ -305,7 +308,7 @@
 				class="btn btn-sm border-0 bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-500 hover:to-red-500"
 			>
 				<FluentAdd24Regular class="size-4" />
-				Add Döner
+				{$t('nav.addRestaurant')}
 			</a>
 
 			{#if data.session && data.user}
@@ -313,7 +316,7 @@
 					href="/my-reviews"
 					class="btn btn-ghost btn-sm text-orange-100 hover:bg-orange-600/20 hover:text-white"
 				>
-					📝 My Reviews
+					📝 {$t('nav.myReviews')}
 				</a>
 			{/if}
 
@@ -321,7 +324,7 @@
 				href="/favorites"
 				class="btn btn-ghost btn-sm text-orange-100 hover:bg-orange-600/20 hover:text-white"
 			>
-				⭐ Favorites
+				⭐ {$t('nav.favorites')}
 				{#if favoritesCount > 0}
 					<span class="badge badge-sm border-0 bg-orange-600 text-white">{favoritesCount}</span>
 				{/if}
@@ -352,7 +355,7 @@
 						id="location"
 						type="text"
 						name="location"
-						placeholder="Search by city or location (e.g., Berlin, München, Kreuzberg)..."
+						placeholder={$t('search.locationPlaceholder')}
 						class="input w-full rounded-xl border-2 border-orange-500/40 bg-slate-900/50 py-4 pr-4 pl-12 text-lg text-white placeholder-orange-300/50 backdrop-blur-sm transition-all duration-200 focus:border-orange-500 focus:bg-slate-900/70 focus:ring-2 focus:ring-orange-500/50"
 						bind:value={searchTerm}
 						disabled={loading}
@@ -370,9 +373,9 @@
 					>
 						{#if gettingLocation}
 							<span class="loading loading-spinner loading-sm"></span>
-							Getting location...
+							{$t('search.gettingLocation')}
 						{:else}
-							📍 Use my location
+							📍 {$t('search.useLocation')}
 						{/if}
 					</button>
 
@@ -396,7 +399,7 @@
 			<label
 				class="flex flex-col gap-1.5 text-sm font-semibold text-orange-200 sm:flex-row sm:items-center sm:justify-between"
 			>
-				<span>Rank results by</span>
+				<span>{$t('search.rankBy')}</span>
 				<select
 					name="sortBy"
 					bind:value={sortBy}
@@ -417,7 +420,7 @@
 				class="flex w-full items-center justify-between rounded-lg bg-slate-700/30 px-3 py-2 text-left transition-colors hover:bg-slate-700/50"
 			>
 				<span class="text-sm font-semibold text-orange-200">
-					🔍 Filters
+					🔍 {$t('search.filters')}
 					{#if activeFilterCount > 0}
 						<span class="badge badge-xs ml-1 border-0 bg-orange-600 text-white"
 							>{activeFilterCount}</span
@@ -514,7 +517,7 @@
 				{:else}
 					<FluentEmojiStuffedFlatbread class="size-6" />
 				{/if}
-				<span>Find Döners</span>
+				<span>{$t('search.find')}</span>
 				<FluentArrowRight24Regular class="size-6" />
 			</button>
 		</form>
@@ -535,15 +538,19 @@
 			class="mb-5 flex flex-col gap-3 rounded-2xl bg-slate-900/45 p-4 sm:flex-row sm:items-center sm:justify-between"
 		>
 			<div>
-				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">Results</p>
+				<p class="text-[11px] font-bold tracking-[0.16em] text-orange-300 uppercase">
+					{$t('search.results')}
+				</p>
 				<h2 class="mt-1 text-2xl font-bold text-white">
-					{searchResults.length} Döner spot{searchResults.length === 1 ? '' : 's'} found
+					{$t(searchResults.length === 1 ? 'search.resultFound' : 'search.resultsFound', {
+						count: searchResults.length
+					})}
 				</h2>
 			</div>
 			<div
 				class="rounded-xl border border-orange-400/25 bg-orange-400/10 px-3 py-2 text-sm font-semibold text-orange-100"
 			>
-				Ranked by {activeRankingLabel}
+				{$t('search.rankedBy', { ranking: activeRankingLabel })}
 			</div>
 		</div>
 
@@ -562,10 +569,9 @@
 	>
 		<div class="card-body items-center justify-center gap-y-4 py-20">
 			<div class="text-8xl">😢</div>
-			<h3 class="text-3xl font-bold text-white">No döner spots found</h3>
+			<h3 class="text-3xl font-bold text-white">{$t('search.noResultsTitle')}</h3>
 			<p class="max-w-md text-center text-lg text-orange-200/90">
-				Try adjusting your search location or filters. Or be the first to review a döner spot in
-				your area!
+				{$t('search.noResultsBody')}
 			</p>
 		</div>
 	</div>

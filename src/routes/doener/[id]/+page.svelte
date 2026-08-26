@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { locale, t } from '$lib/i18n';
 	import BackButton from '$lib/components/BackButton.svelte';
 	import RadarChart from '$lib/components/RadarChart.svelte';
 	import FluentStar20Filled from '~icons/fluent/star-20-filled';
@@ -90,7 +91,7 @@
 	});
 
 	function formatDate(date: string) {
-		return new Date(date).toLocaleDateString('en-US', {
+		return new Date(date).toLocaleDateString($locale === 'de' ? 'de-DE' : 'en-US', {
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric'
@@ -109,10 +110,10 @@
 		return 'border-orange-400/40 bg-orange-400/10';
 	}
 	function scoreLabel(rating: number) {
-		if (rating >= 4.5) return 'Exceptional stop';
-		if (rating >= 3.5) return 'Strong pick';
-		if (rating >= 2.5) return 'Mixed tasting notes';
-		return 'Awaiting tasting notes';
+		if (rating >= 4.5) return $t('detail.exceptional');
+		if (rating >= 3.5) return $t('detail.strong');
+		if (rating >= 2.5) return $t('detail.mixed');
+		return $t('detail.awaiting');
 	}
 	function barWidth(value: number | null) {
 		return value != null ? `${(value / 5) * 100}%` : '0%';
@@ -126,25 +127,25 @@
 	const primaryMeatStyle = $derived(a?.topStyles?.[0]?.label ?? null);
 	const scoreCards = $derived([
 		{
-			label: 'Meat',
+			label: $t('category.meat'),
 			emoji: '🥩',
 			value: a?.avgMeat ?? null,
 			tone: 'from-red-500/20 to-orange-500/5'
 		},
 		{
-			label: 'Bread',
+			label: $t('category.bread'),
 			emoji: '🍞',
 			value: a?.avgBread ?? null,
 			tone: 'from-amber-500/20 to-orange-500/5'
 		},
 		{
-			label: 'Veggies',
+			label: $t('category.veggies'),
 			emoji: '🥬',
 			value: a?.avgVeggies ?? null,
 			tone: 'from-emerald-500/20 to-green-500/5'
 		},
 		{
-			label: 'Sauce',
+			label: $t('category.sauce'),
 			emoji: '🫗',
 			value: a?.avgSauce ?? null,
 			tone: 'from-sky-500/20 to-blue-500/5'
@@ -243,7 +244,7 @@
 				</div>
 				<div class="pb-1 text-sm text-slate-400">
 					{#if a?.avgPrice != null}<p class="mt-1 text-emerald-200">
-							Typical spend: €{a.avgPrice.toFixed(1)}
+							{$t('detail.typicalSpend', { price: `€${a.avgPrice.toFixed(1)}` })}
 						</p>{/if}
 				</div>
 			</div>
@@ -254,12 +255,13 @@
 						href="/doener/{data.restaurant.id}/review"
 						class="btn border-0 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-900/25 hover:from-orange-400 hover:to-red-400"
 					>
-						<FluentAdd24Regular class="size-4" /> Add your tasting note
+						<FluentAdd24Regular class="size-4" />
+						{$t('detail.addReview')}
 					</a>
 				{:else if data.userHasReviewed}
 					<span
 						class="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm font-semibold text-emerald-100"
-						>✓ Your tasting note is on this profile</span
+						>✓ {$t('detail.reviewAdded')}</span
 					>
 				{/if}
 				<a
@@ -267,7 +269,7 @@
 					target="_blank"
 					rel="noopener noreferrer"
 					class="btn border-slate-700/70 bg-white/5 text-slate-100 hover:border-orange-300/50 hover:bg-orange-400/10"
-					>Open directions</a
+					>{$t('detail.openDirections')}</a
 				>
 			</div>
 		</div>
@@ -278,7 +280,7 @@
 	<section class="mb-5" aria-label="Taste scorecard">
 		<div class="mb-3 flex items-end justify-between gap-4">
 			<div>
-				<h2 class="text-2xl font-bold text-white">Ratings</h2>
+				<h2 class="text-2xl font-bold text-white">{$t('detail.ratings')}</h2>
 			</div>
 		</div>
 
@@ -305,27 +307,27 @@
 		<div class="mt-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
 			<div class="rounded-2xl bg-slate-900/55 p-5">
 				<div class="mb-3 flex items-center justify-between">
-					<h3 class="font-semibold text-white">Taste breakdown</h3>
+					<h3 class="font-semibold text-white">{$t('detail.tasteBreakdown')}</h3>
 				</div>
 				<RadarChart
 					axes={[
-						{ emoji: '🥩', label: 'Meat', value: a.avgMeat },
-						{ emoji: '🍞', label: 'Bread', value: a.avgBread },
-						{ emoji: '🥬', label: 'Veggies', value: a.avgVeggies },
-						{ emoji: '🫗', label: 'Sauce', value: a.avgSauce },
-						{ emoji: '⭐', label: 'Flavor', value: a.avgFlavor },
-						{ emoji: '🧹', label: 'Hygiene', value: a.avgCleanliness }
+						{ emoji: '🥩', label: $t('category.meat'), value: a.avgMeat },
+						{ emoji: '🍞', label: $t('category.bread'), value: a.avgBread },
+						{ emoji: '🥬', label: $t('category.veggies'), value: a.avgVeggies },
+						{ emoji: '🫗', label: $t('category.sauce'), value: a.avgSauce },
+						{ emoji: '⭐', label: $t('category.flavor'), value: a.avgFlavor },
+						{ emoji: '🧹', label: $t('category.hygiene'), value: a.avgCleanliness }
 					]}
 				/>
 			</div>
 			<div class="rounded-2xl bg-slate-900/55 p-5">
 				<div class="mb-4 flex items-center justify-between">
-					<h3 class="font-semibold text-white">Details</h3>
+					<h3 class="font-semibold text-white">{$t('detail.details')}</h3>
 				</div>
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div>
 						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
-							Protein & style
+							{$t('detail.proteinAndStyle')}
 						</p>
 						<div class="mt-2 flex flex-wrap gap-1.5">
 							{#each a.topProteins as protein}<span
@@ -339,7 +341,9 @@
 						</div>
 					</div>
 					<div>
-						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">Sauces</p>
+						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
+							{$t('detail.sauces')}
+						</p>
 						<div class="mt-2 flex flex-wrap gap-1.5">
 							{#each a.topSauces as sauce}<span
 									class="rounded-full border border-sky-400/25 bg-sky-400/10 px-2 py-1 text-xs text-sky-100"
@@ -349,7 +353,7 @@
 					</div>
 					<div>
 						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
-							Veggie signals
+							{$t('detail.veggieSignals')}
 						</p>
 						<div class="mt-2 flex flex-wrap gap-1.5">
 							{#each a.topVeggies as veggie}<span
@@ -360,18 +364,18 @@
 					</div>
 					<div>
 						<p class="text-[11px] font-bold tracking-[0.12em] text-slate-500 uppercase">
-							Value & build
+							{$t('detail.valueAndBuild')}
 						</p>
 						<div class="mt-2 space-y-1 text-sm text-slate-300">
 							{#if a.avgPrice != null}<p>
-									Average €{a.avgPrice.toFixed(1)}
+									{$t('detail.average', { price: `€${a.avgPrice.toFixed(1)}` })}
 									{#if a.minPrice != null && a.maxPrice != null && a.minPrice !== a.maxPrice}<span
 											class="text-slate-500"
 											>(€{a.minPrice.toFixed(0)}–{a.maxPrice.toFixed(0)})</span
 										>{/if}
 								</p>{/if}
-							{#if (a.avgBreadCrispiness ?? 0) >= 3}<p>🔥 Often described as crisp</p>{/if}
-							{#if a.sesamePct >= 50}<p>🌰 Sesame appears frequently</p>{/if}
+							{#if (a.avgBreadCrispiness ?? 0) >= 3}<p>🔥 {$t('detail.oftenCrisp')}</p>{/if}
+							{#if a.sesamePct >= 50}<p>🌰 {$t('detail.sesameFrequent')}</p>{/if}
 						</div>
 					</div>
 				</div>
@@ -381,9 +385,9 @@
 		<div class="mt-3 grid gap-3 md:grid-cols-2">
 			<div class="rounded-2xl bg-slate-900/45 p-5">
 				<p class="text-[11px] font-bold tracking-[0.14em] text-orange-300 uppercase">
-					Texture notes
+					{$t('detail.textureNotes')}
 				</p>
-				<h3 class="mt-1 font-semibold text-white">Meat & bread</h3>
+				<h3 class="mt-1 font-semibold text-white">{$t('detail.meatAndBread')}</h3>
 				<div class="mt-4 space-y-3">
 					{#each [{ label: 'Meat juiciness', value: a.avgJuiciness }, { label: 'Meat crispiness', value: a.avgMeatCrispiness }, { label: 'Bread crispiness', value: a.avgBreadCrispiness }, { label: 'Bread fluffiness', value: a.avgFluffy }] as metric}
 						<div>
@@ -405,9 +409,9 @@
 			</div>
 			<div class="rounded-2xl bg-slate-900/45 p-5">
 				<p class="text-[11px] font-bold tracking-[0.14em] text-orange-300 uppercase">
-					Serving notes
+					{$t('detail.servingNotes')}
 				</p>
-				<h3 class="mt-1 font-semibold text-white">Portion & bread shape</h3>
+				<h3 class="mt-1 font-semibold text-white">{$t('detail.portionAndBread')}</h3>
 				<div class="mt-4 grid grid-cols-3 gap-2">
 					{#each a.sizes as size}
 						<div class="rounded-xl bg-slate-800/70 p-3 text-center">
@@ -419,7 +423,7 @@
 						</div>
 					{/each}
 					{#if a.sizes.length === 0}<p class="col-span-3 text-sm text-slate-500">
-							No portion-size notes yet.
+							{$t('detail.noPortionNotes')}
 						</p>{/if}
 				</div>
 			</div>
@@ -431,15 +435,15 @@
 	>
 		<div class="text-5xl">📝</div>
 		<p class="mt-4 text-lg font-semibold text-white">
-			This profile is waiting for its first tasting note.
+			{$t('detail.waitingFirst')}
 		</p>
 		<p class="mt-1 text-sm text-slate-400">
-			Add a review to shape the scorecard and taste profile.
+			{$t('detail.waitingFirstBody')}
 		</p>
 		{#if data.user}<a
 				href="/doener/{data.restaurant.id}/review"
 				class="btn mt-5 border-0 bg-gradient-to-r from-orange-500 to-red-500 text-white"
-				><FluentAdd24Regular class="size-4" /> Write the first review</a
+				><FluentAdd24Regular class="size-4" /> {$t('detail.writeFirstReview')}</a
 			>{/if}
 	</section>
 {/if}
@@ -451,7 +455,7 @@
 			class="flex w-full items-center justify-between gap-4 text-left"
 		>
 			<div>
-				<h2 class="text-xl font-bold text-white">Reviews</h2>
+				<h2 class="text-xl font-bold text-white">{$t('detail.reviews')}</h2>
 			</div>
 			<div class="rounded-xl bg-white/5 p-2 text-slate-300">
 				{#if showReviews}<FluentChevronUp20Regular
@@ -467,7 +471,7 @@
 				</div>
 			{:else}
 				<div class="mt-5 flex flex-wrap gap-2">
-					{#each [{ key: 'recent', label: 'Latest' }, { key: 'highest', label: 'Highest score' }, { key: 'lowest', label: 'Lowest score' }] as option}
+					{#each [{ key: 'recent', label: $t('detail.latest') }, { key: 'highest', label: $t('detail.highestScore') }, { key: 'lowest', label: $t('detail.lowestScore') }] as option}
 						<button
 							onclick={() => (sortBy = option.key as typeof sortBy)}
 							class="rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors {sortBy ===
@@ -485,7 +489,9 @@
 							<div class="flex items-start justify-between gap-3">
 								<div>
 									<p class="text-xs text-slate-500">{formatDate(review.createdAt)}</p>
-									<p class="mt-1 text-sm font-semibold text-slate-200">Community tasting note</p>
+									<p class="mt-1 text-sm font-semibold text-slate-200">
+										{$t('detail.communityNote')}
+									</p>
 								</div>
 								<div class="flex items-center gap-2">
 									<button
@@ -507,7 +513,7 @@
 							</div>
 							{#if review.reviewImageUrl}<img
 									src={review.reviewImageUrl}
-									alt="Döner review"
+									alt={$t('detail.reviewImageAlt')}
 									class="mt-4 h-48 w-full rounded-xl object-cover"
 								/>{/if}
 							<div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
