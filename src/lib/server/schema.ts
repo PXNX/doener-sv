@@ -98,19 +98,19 @@ export const doenerReviews = pgTable(
 		meatBeef: boolean('meat_beef').notNull().default(false),
 		meatLamb: boolean('meat_lamb').notNull().default(false),
 		meatStyle: varchar('meat_style', { length: 20 }), // 'minced' | 'layered'
-		meatJuiciness: integer('meat_juiciness'), // 1-4
-		meatCrispiness: integer('meat_crispiness'), // 1-4
-		meatDryFeel: integer('meat_dry_feel'), // 1-4 (dryness/salt after eating)
-		meatFatty: integer('meat_fatty'), // 1-4
-		meatRating: integer('meat_rating').notNull(), // 1-4 overall quality
+		meatJuiciness: integer('meat_juiciness'), // 1-5
+		meatCrispiness: integer('meat_crispiness'), // 1-5
+		meatDryFeel: integer('meat_dry_feel'), // 1-5 (dryness/salt after eating)
+		meatFatty: integer('meat_fatty'), // 1-5
+		meatRating: integer('meat_rating').notNull(), // 1-5 overall quality
 
 		// --- Bread ---
 		breadShape: varchar('review_bread_shape', { length: 20 }), // 'round' | 'triangle' | 'long'
-		breadThickness: integer('bread_thickness'), // 1-4
-		breadCrispiness: integer('bread_crispiness'), // 1-4
-		breadFluffy: integer('bread_fluffy'), // 1-4
+		breadThickness: integer('bread_thickness'), // 1-5
+		breadCrispiness: integer('bread_crispiness'), // 1-5
+		breadFluffy: integer('bread_fluffy'), // 1-5
 		breadSesameSeeds: boolean('bread_sesame_seeds').notNull().default(false),
-		breadRating: integer('bread_rating').notNull(), // 1-4 overall quality
+		breadRating: integer('bread_rating').notNull(), // 1-5 overall quality
 
 		// --- Veggies ---
 		hasTomatoes: boolean('has_tomatoes').notNull().default(false),
@@ -121,7 +121,7 @@ export const doenerReviews = pgTable(
 		hasRucola: boolean('has_rucola').notNull().default(false),
 		hasCorn: boolean('has_corn').notNull().default(false),
 		hasParsley: boolean('has_parsley').notNull().default(false),
-		veggiesRating: integer('veggies_rating').notNull(), // 1-4 overall quality
+		veggiesRating: integer('veggies_rating').notNull(), // 1-5 overall quality
 
 		// --- Sauces ---
 		hasHerbalSauce: boolean('has_herbal_sauce').notNull().default(false),
@@ -129,13 +129,13 @@ export const doenerReviews = pgTable(
 		hasGarlicSauce: boolean('has_garlic_sauce').notNull().default(false),
 		hasCocktailSauce: boolean('has_cocktail_sauce').notNull().default(false),
 		hasSpicySauce: boolean('has_spicy_sauce').notNull().default(false),
-		sauceRating: integer('sauce_rating').notNull(), // 1-4 overall quality
+		sauceRating: integer('sauce_rating').notNull(), // 1-5 overall quality
 
 		// --- Overall ---
-		overallFlavorRating: integer('overall_flavor_rating'), // 1-4
+		overallFlavorRating: integer('overall_flavor_rating'), // 1-5
 		doenerSize: varchar('doener_size', { length: 20 }), // 'small' | 'medium' | 'large'
 		price: doublePrecision('price'), // in euros, nullable
-		cleanlinessRating: integer('cleanliness_rating'), // 1-4
+		cleanlinessRating: integer('cleanliness_rating'), // 1-5
 
 		// Upvotes
 		upvotes: integer('upvotes').notNull().default(0),

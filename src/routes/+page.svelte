@@ -37,7 +37,7 @@
 	// localStorage keys
 	const STORAGE_KEYS = {
 		searchTerm: 'doener_search_term',
-		searchResults: 'doener_search_results',
+		searchResults: 'doener_search_results_v2',
 		filters: 'doener_search_filters',
 		favorites: 'doener_favorites'
 	};

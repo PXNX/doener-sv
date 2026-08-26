@@ -33,31 +33,31 @@
 		{ label: 'Overall', icon: '⭐', emoji: '✨' }
 	];
 
-	// Quality rating labels (1-4 = bad → excellent)
-	const qualityLabels = ['😕 Sub Average', '😐 Average', '🙂 Good', '😍 Excellent'];
-	const qualityEmojis = ['😕', '😐', '🙂', '😍'];
+	// Quality rating labels (1-5 = poor → exceptional)
+	const qualityLabels = ['😕 Poor', '😐 Fair', '🙂 Good', '😄 Great', '😍 Exceptional'];
+	const qualityEmojis = ['😕', '😐', '🙂', '😄', '😍'];
 
-	// Level labels (1-4 = low → high)
+	// Level labels (1-5 = low → high)
 	const levelLabels = [
-		['Very Low', 'Low', 'Moderate', 'High'],
-		['Very Dry', 'Slightly Dry', 'Juicy', 'Very Juicy'],
-		['Not Crispy', 'Slightly Crispy', 'Crispy', 'Very Crispy'],
-		['No Dry Feel', 'Slight', 'Noticeable', 'Very Dry/Salty'],
-		['Very Lean', 'Lean', 'Fatty', 'Very Fatty'],
-		['Very Thin', 'Thin', 'Thick', 'Very Thick'],
-		['Dense', 'Slightly Fluffy', 'Fluffy', 'Very Fluffy']
+		['Very Low', 'Low', 'Moderate', 'High', 'Very High'],
+		['Very Dry', 'Slightly Dry', 'Balanced', 'Juicy', 'Very Juicy'],
+		['Not Crispy', 'Slightly Crispy', 'Crispy', 'Very Crispy', 'Perfectly Crisp'],
+		['None', 'Slight', 'Noticeable', 'Dry', 'Very Dry/Salty'],
+		['Very Lean', 'Lean', 'Balanced', 'Fatty', 'Very Fatty'],
+		['Very Thin', 'Thin', 'Balanced', 'Thick', 'Very Thick'],
+		['Dense', 'Slightly Fluffy', 'Fluffy', 'Very Fluffy', 'Cloud-like']
 	];
 
 	function getLevelLabels(type: string): string[] {
 		const map: Record<string, string[]> = {
-			juiciness: ['Very Dry', 'Slightly Dry', 'Juicy', 'Very Juicy'],
-			crispiness: ['Not Crispy', 'Slightly', 'Crispy', 'Very Crispy'],
-			dryFeel: ['None', 'Slight', 'Noticeable', 'Very Dry'],
-			fatty: ['Very Lean', 'Lean', 'Fatty', 'Very Fatty'],
-			thickness: ['Very Thin', 'Thin', 'Thick', 'Very Thick'],
-			fluffy: ['Dense', 'Slightly', 'Fluffy', 'Very Fluffy']
+			juiciness: ['Very Dry', 'Slightly Dry', 'Balanced', 'Juicy', 'Very Juicy'],
+			crispiness: ['Not Crispy', 'Slightly', 'Crispy', 'Very Crispy', 'Perfectly Crisp'],
+			dryFeel: ['None', 'Slight', 'Noticeable', 'Dry', 'Very Dry'],
+			fatty: ['Very Lean', 'Lean', 'Balanced', 'Fatty', 'Very Fatty'],
+			thickness: ['Very Thin', 'Thin', 'Balanced', 'Thick', 'Very Thick'],
+			fluffy: ['Dense', 'Slightly', 'Fluffy', 'Very Fluffy', 'Cloud-like']
 		};
-		return map[type] || ['1', '2', '3', '4'];
+		return map[type] || ['1', '2', '3', '4', '5'];
 	}
 
 	function getLevelColor(value: number): string {
@@ -219,7 +219,8 @@
 							type="button"
 							onclick={clearImage}
 							class="btn btn-circle btn-sm absolute top-2 right-2 bg-slate-800/80 hover:bg-red-600"
-						>✕</button>
+							>✕</button
+						>
 					</div>
 				{:else}
 					<div class="grid grid-cols-2 gap-3">
@@ -340,8 +341,8 @@
 				<!-- Juiciness slider -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Juiciness</p>
-					<div class="grid grid-cols-4 gap-1.5">
-						{#each [1, 2, 3, 4] as val}
+					<div class="grid grid-cols-5 gap-1.5">
+						{#each [1, 2, 3, 4, 5] as val}
 							<button
 								type="button"
 								onclick={() => ($form.meatJuiciness = val)}
@@ -365,8 +366,8 @@
 				<!-- Crispiness -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Crispiness</p>
-					<div class="grid grid-cols-4 gap-1.5">
-						{#each [1, 2, 3, 4] as val}
+					<div class="grid grid-cols-5 gap-1.5">
+						{#each [1, 2, 3, 4, 5] as val}
 							<button
 								type="button"
 								onclick={() => ($form.meatCrispiness = val)}
@@ -392,8 +393,8 @@
 					<p class="mb-2 text-sm font-medium text-orange-200/90">
 						Dry Feel After Eating <span class="text-xs text-gray-500">(salts, additives)</span>
 					</p>
-					<div class="grid grid-cols-4 gap-1.5">
-						{#each [1, 2, 3, 4] as val}
+					<div class="grid grid-cols-5 gap-1.5">
+						{#each [1, 2, 3, 4, 5] as val}
 							<button
 								type="button"
 								onclick={() => ($form.meatDryFeel = val)}
@@ -417,8 +418,8 @@
 				<!-- Fatty -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Fattiness</p>
-					<div class="grid grid-cols-4 gap-1.5">
-						{#each [1, 2, 3, 4] as val}
+					<div class="grid grid-cols-5 gap-1.5">
+						{#each [1, 2, 3, 4, 5] as val}
 							<button
 								type="button"
 								onclick={() => ($form.meatFatty = val)}
@@ -442,8 +443,8 @@
 				<!-- Overall meat quality -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Overall Meat Quality</p>
-					<div class="grid grid-cols-4 gap-2">
-						{#each [1, 2, 3, 4] as rating}
+					<div class="grid grid-cols-5 gap-2">
+						{#each [1, 2, 3, 4, 5] as rating (rating)}
 							<button
 								type="button"
 								onclick={() => ($form.meatRating = rating)}
@@ -451,18 +452,20 @@
 								class:border-slate-600={$form.meatRating !== rating}
 								class:bg-slate-700-30={$form.meatRating !== rating}
 								style={$form.meatRating === rating
-									? rating === 4
+									? rating === 5
 										? 'border-color: #4ade80; background: rgba(74,222,128,0.2);'
-										: rating === 3
+										: rating === 4
 											? 'border-color: #60a5fa; background: rgba(96,165,250,0.2);'
-											: rating === 2
+											: rating === 3
 												? 'border-color: #facc15; background: rgba(250,204,21,0.2);'
-												: 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+												: rating === 2
+													? 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+													: 'border-color: #fb7185; background: rgba(251,113,133,0.2);'
 									: ''}
 							>
 								<span class="text-2xl">{qualityEmojis[rating - 1]}</span>
 								<span class="text-[10px] font-medium text-white"
-									>{['Sub Avg', 'Average', 'Good', 'Excellent'][rating - 1]}</span
+									>{['Poor', 'Fair', 'Good', 'Great', 'Exceptional'][rating - 1]}</span
 								>
 							</button>
 						{/each}
@@ -507,8 +510,8 @@
 				<!-- Thickness -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Thickness</p>
-					<div class="grid grid-cols-4 gap-1.5">
-						{#each [1, 2, 3, 4] as val}
+					<div class="grid grid-cols-5 gap-1.5">
+						{#each [1, 2, 3, 4, 5] as val}
 							<button
 								type="button"
 								onclick={() => ($form.breadThickness = val)}
@@ -532,8 +535,8 @@
 				<!-- Crispiness -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Crispiness</p>
-					<div class="grid grid-cols-4 gap-1.5">
-						{#each [1, 2, 3, 4] as val}
+					<div class="grid grid-cols-5 gap-1.5">
+						{#each [1, 2, 3, 4, 5] as val}
 							<button
 								type="button"
 								onclick={() => ($form.breadCrispiness = val)}
@@ -557,8 +560,8 @@
 				<!-- Fluffy -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Fluffy Inside</p>
-					<div class="grid grid-cols-4 gap-1.5">
-						{#each [1, 2, 3, 4] as val}
+					<div class="grid grid-cols-5 gap-1.5">
+						{#each [1, 2, 3, 4, 5] as val}
 							<button
 								type="button"
 								onclick={() => ($form.breadFluffy = val)}
@@ -595,8 +598,8 @@
 				<!-- Overall bread quality -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Overall Bread Quality</p>
-					<div class="grid grid-cols-4 gap-2">
-						{#each [1, 2, 3, 4] as rating}
+					<div class="grid grid-cols-5 gap-2">
+						{#each [1, 2, 3, 4, 5] as rating (rating)}
 							<button
 								type="button"
 								onclick={() => ($form.breadRating = rating)}
@@ -604,18 +607,20 @@
 								class:border-slate-600={$form.breadRating !== rating}
 								class:bg-slate-700-30={$form.breadRating !== rating}
 								style={$form.breadRating === rating
-									? rating === 4
+									? rating === 5
 										? 'border-color: #4ade80; background: rgba(74,222,128,0.2);'
-										: rating === 3
+										: rating === 4
 											? 'border-color: #60a5fa; background: rgba(96,165,250,0.2);'
-											: rating === 2
+											: rating === 3
 												? 'border-color: #facc15; background: rgba(250,204,21,0.2);'
-												: 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+												: rating === 2
+													? 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+													: 'border-color: #fb7185; background: rgba(251,113,133,0.2);'
 									: ''}
 							>
 								<span class="text-2xl">{qualityEmojis[rating - 1]}</span>
 								<span class="text-[10px] font-medium text-white"
-									>{['Sub Avg', 'Average', 'Good', 'Excellent'][rating - 1]}</span
+									>{['Poor', 'Fair', 'Good', 'Great', 'Exceptional'][rating - 1]}</span
 								>
 							</button>
 						{/each}
@@ -703,7 +708,7 @@
 				<!-- Onion type -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">🧅 Onions</p>
-					<div class="grid grid-cols-4 gap-2">
+					<div class="grid grid-cols-5 gap-2">
 						<input type="hidden" name="onionType" value={$form.onionType ?? ''} />
 						<button
 							type="button"
@@ -784,8 +789,8 @@
 				<!-- Overall veggies quality -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Overall Veggies Quality</p>
-					<div class="grid grid-cols-4 gap-2">
-						{#each [1, 2, 3, 4] as rating}
+					<div class="grid grid-cols-5 gap-2">
+						{#each [1, 2, 3, 4, 5] as rating (rating)}
 							<button
 								type="button"
 								onclick={() => ($form.veggiesRating = rating)}
@@ -793,18 +798,20 @@
 								class:border-slate-600={$form.veggiesRating !== rating}
 								class:bg-slate-700-30={$form.veggiesRating !== rating}
 								style={$form.veggiesRating === rating
-									? rating === 4
+									? rating === 5
 										? 'border-color: #4ade80; background: rgba(74,222,128,0.2);'
-										: rating === 3
+										: rating === 4
 											? 'border-color: #60a5fa; background: rgba(96,165,250,0.2);'
-											: rating === 2
+											: rating === 3
 												? 'border-color: #facc15; background: rgba(250,204,21,0.2);'
-												: 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+												: rating === 2
+													? 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+													: 'border-color: #fb7185; background: rgba(251,113,133,0.2);'
 									: ''}
 							>
 								<span class="text-2xl">{qualityEmojis[rating - 1]}</span>
 								<span class="text-[10px] font-medium text-white"
-									>{['Sub Avg', 'Average', 'Good', 'Excellent'][rating - 1]}</span
+									>{['Poor', 'Fair', 'Good', 'Great', 'Exceptional'][rating - 1]}</span
 								>
 							</button>
 						{/each}
@@ -889,8 +896,8 @@
 				<!-- Overall sauce quality -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Overall Sauce Quality</p>
-					<div class="grid grid-cols-4 gap-2">
-						{#each [1, 2, 3, 4] as rating}
+					<div class="grid grid-cols-5 gap-2">
+						{#each [1, 2, 3, 4, 5] as rating (rating)}
 							<button
 								type="button"
 								onclick={() => ($form.sauceRating = rating)}
@@ -898,18 +905,20 @@
 								class:border-slate-600={$form.sauceRating !== rating}
 								class:bg-slate-700-30={$form.sauceRating !== rating}
 								style={$form.sauceRating === rating
-									? rating === 4
+									? rating === 5
 										? 'border-color: #4ade80; background: rgba(74,222,128,0.2);'
-										: rating === 3
+										: rating === 4
 											? 'border-color: #60a5fa; background: rgba(96,165,250,0.2);'
-											: rating === 2
+											: rating === 3
 												? 'border-color: #facc15; background: rgba(250,204,21,0.2);'
-												: 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+												: rating === 2
+													? 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+													: 'border-color: #fb7185; background: rgba(251,113,133,0.2);'
 									: ''}
 							>
 								<span class="text-2xl">{qualityEmojis[rating - 1]}</span>
 								<span class="text-[10px] font-medium text-white"
-									>{['Sub Avg', 'Average', 'Good', 'Excellent'][rating - 1]}</span
+									>{['Poor', 'Fair', 'Good', 'Great', 'Exceptional'][rating - 1]}</span
 								>
 							</button>
 						{/each}
@@ -932,8 +941,8 @@
 				<!-- Overall flavor -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">Overall Flavor</p>
-					<div class="grid grid-cols-4 gap-2">
-						{#each [1, 2, 3, 4] as rating}
+					<div class="grid grid-cols-5 gap-2">
+						{#each [1, 2, 3, 4, 5] as rating (rating)}
 							<button
 								type="button"
 								onclick={() => ($form.overallFlavorRating = rating)}
@@ -941,18 +950,20 @@
 								class:border-slate-600={$form.overallFlavorRating !== rating}
 								class:bg-slate-700-30={$form.overallFlavorRating !== rating}
 								style={$form.overallFlavorRating === rating
-									? rating === 4
+									? rating === 5
 										? 'border-color: #4ade80; background: rgba(74,222,128,0.2);'
-										: rating === 3
+										: rating === 4
 											? 'border-color: #60a5fa; background: rgba(96,165,250,0.2);'
-											: rating === 2
+											: rating === 3
 												? 'border-color: #facc15; background: rgba(250,204,21,0.2);'
-												: 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+												: rating === 2
+													? 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+													: 'border-color: #fb7185; background: rgba(251,113,133,0.2);'
 									: ''}
 							>
 								<span class="text-2xl">{qualityEmojis[rating - 1]}</span>
 								<span class="text-[10px] font-medium text-white"
-									>{['Sub Avg', 'Average', 'Good', 'Excellent'][rating - 1]}</span
+									>{['Poor', 'Fair', 'Good', 'Great', 'Exceptional'][rating - 1]}</span
 								>
 							</button>
 						{/each}
@@ -999,8 +1010,8 @@
 				<!-- Cleanliness -->
 				<div>
 					<p class="mb-2 text-sm font-medium text-orange-200/90">🧹 Cleanliness / Hygiene</p>
-					<div class="grid grid-cols-4 gap-2">
-						{#each [1, 2, 3, 4] as rating}
+					<div class="grid grid-cols-5 gap-2">
+						{#each [1, 2, 3, 4, 5] as rating (rating)}
 							<button
 								type="button"
 								onclick={() => ($form.cleanlinessRating = rating)}
@@ -1008,18 +1019,20 @@
 								class:border-slate-600={$form.cleanlinessRating !== rating}
 								class:bg-slate-700-30={$form.cleanlinessRating !== rating}
 								style={$form.cleanlinessRating === rating
-									? rating === 4
+									? rating === 5
 										? 'border-color: #4ade80; background: rgba(74,222,128,0.2);'
-										: rating === 3
+										: rating === 4
 											? 'border-color: #60a5fa; background: rgba(96,165,250,0.2);'
-											: rating === 2
+											: rating === 3
 												? 'border-color: #facc15; background: rgba(250,204,21,0.2);'
-												: 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+												: rating === 2
+													? 'border-color: #fb923c; background: rgba(251,146,60,0.2);'
+													: 'border-color: #fb7185; background: rgba(251,113,133,0.2);'
 									: ''}
 							>
 								<span class="text-2xl">{qualityEmojis[rating - 1]}</span>
 								<span class="text-[10px] font-medium text-white"
-									>{['Sub Avg', 'Average', 'Good', 'Excellent'][rating - 1]}</span
+									>{['Poor', 'Fair', 'Good', 'Great', 'Exceptional'][rating - 1]}</span
 								>
 							</button>
 						{/each}

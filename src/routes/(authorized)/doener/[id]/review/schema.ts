@@ -2,11 +2,11 @@ import * as v from 'valibot';
 
 const alphanumericSentencePattern = /^[a-zA-Z0-9\s.,!?;:()\-'"äöüÄÖÜß€$£]+$/;
 
-const rating1to4 = v.pipe(
+const rating1to5 = v.pipe(
 	v.number(),
 	v.integer(),
 	v.minValue(1, 'Rating must be at least 1'),
-	v.maxValue(4, 'Rating must be at most 4')
+	v.maxValue(5, 'Rating must be at most 5')
 );
 
 export const createReviewSchema = v.object({
@@ -27,19 +27,19 @@ export const createReviewSchema = v.object({
 	meatBeef: v.optional(v.boolean(), false),
 	meatLamb: v.optional(v.boolean(), false),
 	meatStyle: v.optional(v.picklist(['minced', 'layered']), 'layered'),
-	meatJuiciness: v.optional(rating1to4, 2),
-	meatCrispiness: v.optional(rating1to4, 2),
-	meatDryFeel: v.optional(rating1to4, 1),
-	meatFatty: v.optional(rating1to4, 2),
-	meatRating: v.optional(rating1to4, 2),
+	meatJuiciness: v.optional(rating1to5, 3),
+	meatCrispiness: v.optional(rating1to5, 3),
+	meatDryFeel: v.optional(rating1to5, 2),
+	meatFatty: v.optional(rating1to5, 3),
+	meatRating: v.optional(rating1to5, 3),
 
 	// --- Bread ---
 	breadShape: v.optional(v.picklist(['round', 'triangle', 'long']), 'triangle'),
-	breadThickness: v.optional(rating1to4, 2),
-	breadCrispiness: v.optional(rating1to4, 2),
-	breadFluffy: v.optional(rating1to4, 2),
+	breadThickness: v.optional(rating1to5, 3),
+	breadCrispiness: v.optional(rating1to5, 3),
+	breadFluffy: v.optional(rating1to5, 3),
 	breadSesameSeeds: v.optional(v.boolean(), false),
-	breadRating: v.optional(rating1to4, 2),
+	breadRating: v.optional(rating1to5, 3),
 
 	// --- Veggies ---
 	hasTomatoes: v.optional(v.boolean(), false),
@@ -47,15 +47,13 @@ export const createReviewSchema = v.object({
 	redCabbageType: v.optional(v.nullable(v.picklist(['sour', 'natural'])), null),
 	hasCabbage: v.optional(v.boolean(), false),
 	saladType: v.optional(
-		v.nullable(
-			v.pipe(v.string(), v.maxLength(50, 'Salad type must be at most 50 characters'))
-		),
+		v.nullable(v.pipe(v.string(), v.maxLength(50, 'Salad type must be at most 50 characters'))),
 		null
 	),
 	hasRucola: v.optional(v.boolean(), false),
 	hasCorn: v.optional(v.boolean(), false),
 	hasParsley: v.optional(v.boolean(), false),
-	veggiesRating: v.optional(rating1to4, 2),
+	veggiesRating: v.optional(rating1to5, 3),
 
 	// --- Sauces ---
 	hasHerbalSauce: v.optional(v.boolean(), false),
@@ -63,10 +61,10 @@ export const createReviewSchema = v.object({
 	hasGarlicSauce: v.optional(v.boolean(), false),
 	hasCocktailSauce: v.optional(v.boolean(), false),
 	hasSpicySauce: v.optional(v.boolean(), false),
-	sauceRating: v.optional(rating1to4, 2),
+	sauceRating: v.optional(rating1to5, 3),
 
 	// --- Overall ---
-	overallFlavorRating: v.optional(rating1to4, 2),
+	overallFlavorRating: v.optional(rating1to5, 3),
 	doenerSize: v.optional(v.picklist(['small', 'medium', 'large']), 'medium'),
 	price: v.optional(
 		v.nullable(
@@ -78,7 +76,7 @@ export const createReviewSchema = v.object({
 		),
 		null
 	),
-	cleanlinessRating: v.optional(rating1to4, 2),
+	cleanlinessRating: v.optional(rating1to5, 3),
 	description: v.optional(
 		v.pipe(
 			v.string(),

@@ -136,17 +136,35 @@ export function getSignedDownloadUrl(
 	});
 }
 
-/**
- * Get signed URL for a file
- */
-export async function getImageUrl(fileId: string | null): Promise<string | null> {
-	if (!fileId) return null;
+export interface StoredImage {
+	stream: ReadableStream<Uint8Array<ArrayBuffer>>;
+	contentType: string;
+}
 
+/**
+ * Retrieve an existing image from B2 through the application runtime.
+ * Image file IDs are immutable, so the caller can safely cache the response.
+ */
+export async function getStoredImage(fileId: string): Promise<StoredImage | null> {
 	const file = await db.query.files.findFirst({
 		where: eq(files.id, fileId)
 	});
 
 	if (!file) return null;
 
-	return await getSignedDownloadUrl(file.key);
+	return {
+		stream: s3Client.file(file.key).stream(),
+		contentType: file.contentType || 'image/webp'
+	};
+}
+
+/**
+ * Return a stable, same-origin image path. This avoids persisting temporary
+ * signed B2 URLs in browser storage, which caused historical images to break
+ * after their signatures expired.
+ */
+export function getImageUrl(fileId: string | null): string | null {
+	if (!fileId) return null;
+	if (/^https?:\/\//.test(fileId)) return fileId;
+	return `/media/${encodeURIComponent(fileId)}`;
 }

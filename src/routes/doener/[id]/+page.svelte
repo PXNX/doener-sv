@@ -97,25 +97,25 @@
 		});
 	}
 	function rc(rating: number) {
-		if (rating >= 3.5) return 'text-emerald-300';
-		if (rating >= 2.5) return 'text-sky-300';
-		if (rating >= 1.5) return 'text-amber-300';
+		if (rating >= 4.5) return 'text-emerald-300';
+		if (rating >= 3.5) return 'text-sky-300';
+		if (rating >= 2.5) return 'text-amber-300';
 		return 'text-orange-300';
 	}
 	function rb(rating: number) {
-		if (rating >= 3.5) return 'border-emerald-400/40 bg-emerald-400/10';
-		if (rating >= 2.5) return 'border-sky-400/40 bg-sky-400/10';
-		if (rating >= 1.5) return 'border-amber-400/40 bg-amber-400/10';
+		if (rating >= 4.5) return 'border-emerald-400/40 bg-emerald-400/10';
+		if (rating >= 3.5) return 'border-sky-400/40 bg-sky-400/10';
+		if (rating >= 2.5) return 'border-amber-400/40 bg-amber-400/10';
 		return 'border-orange-400/40 bg-orange-400/10';
 	}
 	function scoreLabel(rating: number) {
-		if (rating >= 3.5) return 'Exceptional stop';
-		if (rating >= 2.5) return 'Strong pick';
-		if (rating >= 1.5) return 'Mixed tasting notes';
+		if (rating >= 4.5) return 'Exceptional stop';
+		if (rating >= 3.5) return 'Strong pick';
+		if (rating >= 2.5) return 'Mixed tasting notes';
 		return 'Awaiting tasting notes';
 	}
 	function barWidth(value: number | null) {
-		return value != null ? `${(value / 4) * 100}%` : '0%';
+		return value != null ? `${(value / 5) * 100}%` : '0%';
 	}
 
 	const a = $derived(data.aggregate);
@@ -237,7 +237,7 @@
 						<span class="text-4xl font-black leading-none {rc(overall)}"
 							>{overall > 0 ? overall.toFixed(1) : '—'}</span
 						>
-						<span class="self-end pb-0.5 text-sm font-semibold text-slate-300">/ 4</span>
+						<span class="self-end pb-0.5 text-sm font-semibold text-slate-300">/ 5</span>
 					</div>
 					<p class="mt-1 text-xs font-semibold text-slate-300">{scoreLabel(overall)}</p>
 				</div>

@@ -8,7 +8,7 @@ import { eq } from 'drizzle-orm';
 import { superValidate, message } from 'sveltekit-superforms';
 import { valibot } from 'sveltekit-superforms/adapters';
 import { createDoenerSchema } from './schema';
-import { getSignedDownloadUrl, uploadFileFromForm } from '$lib/server/backblaze';
+import { getImageUrl, uploadFileFromForm } from '$lib/server/backblaze';
 import { randomUUID } from 'crypto';
 
 export const load: PageServerLoad = async ({ params, locals, url }) => {
@@ -64,7 +64,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			name: restaurant.name,
 			city: restaurant.city,
 			country: restaurant.country,
-			currentImageUrl: restaurant.image ? await getSignedDownloadUrl(restaurant.image.key) : null
+			currentImageUrl: getImageUrl(restaurant.image?.id ?? null)
 		},
 		isAdmin: locals.user.isAdmin
 	};

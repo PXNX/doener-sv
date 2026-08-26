@@ -106,12 +106,20 @@
 							</div>
 
 							<!-- Category Ratings -->
-						<div class="mb-2 flex flex-wrap gap-1">
-							<span class="badge badge-xs bg-red-500/20 text-red-200">🥩 Meat {review.meatRating}/4</span>
-							<span class="badge badge-xs bg-amber-500/20 text-amber-200">🍞 Bread {review.breadRating}/4</span>
-							<span class="badge badge-xs bg-green-500/20 text-green-200">🥬 Veggies {review.veggiesRating}/4</span>
-							<span class="badge badge-xs bg-blue-500/20 text-blue-200">🧂 Sauce {review.sauceRating}/4</span>
-						</div>
+							<div class="mb-2 flex flex-wrap gap-1">
+								<span class="badge badge-xs bg-red-500/20 text-red-200"
+									>🥩 Meat {review.meatRating}/5</span
+								>
+								<span class="badge badge-xs bg-amber-500/20 text-amber-200"
+									>🍞 Bread {review.breadRating}/5</span
+								>
+								<span class="badge badge-xs bg-green-500/20 text-green-200"
+									>🥬 Veggies {review.veggiesRating}/5</span
+								>
+								<span class="badge badge-xs bg-blue-500/20 text-blue-200"
+									>🧂 Sauce {review.sauceRating}/5</span
+								>
+							</div>
 
 							<!-- Review Description -->
 							{#if review.description}

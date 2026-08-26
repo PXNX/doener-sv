@@ -14,9 +14,9 @@
 	const rating = $derived(restaurant.averageRating ?? 0);
 
 	function ratingColor(value: number) {
-		if (value >= 3.5) return 'text-emerald-300';
-		if (value >= 2.5) return 'text-sky-300';
-		if (value >= 1.5) return 'text-amber-300';
+		if (value >= 4.5) return 'text-emerald-300';
+		if (value >= 3.5) return 'text-sky-300';
+		if (value >= 2.5) return 'text-amber-300';
 		return 'text-orange-300';
 	}
 
