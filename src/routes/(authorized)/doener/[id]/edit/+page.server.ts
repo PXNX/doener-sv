@@ -64,7 +64,7 @@ export const load: PageServerLoad = async ({ params, locals, url }) => {
 			name: restaurant.name,
 			city: restaurant.city,
 			country: restaurant.country,
-			currentImageUrl: getImageUrl(restaurant.image?.id ?? null)
+			currentImageUrl: await getImageUrl(restaurant.image?.id ?? null)
 		},
 		isAdmin: locals.user.isAdmin
 	};

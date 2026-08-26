@@ -37,7 +37,6 @@
 	// localStorage keys
 	const STORAGE_KEYS = {
 		searchTerm: 'doener_search_term',
-		searchResults: 'doener_search_results_v2',
 		filters: 'doener_search_filters',
 		favorites: 'doener_favorites'
 	};
@@ -68,9 +67,7 @@
 
 	// Search state
 	let searchTerm = $state(urlSearchTerm || getFromStorage(STORAGE_KEYS.searchTerm, ''));
-	let searchResults: DoenerRestaurantResult[] = $state(
-		data.restaurants?.length > 0 ? data.restaurants : getFromStorage(STORAGE_KEYS.searchResults, [])
-	);
+	let searchResults: DoenerRestaurantResult[] = $state(data.restaurants ?? []);
 	let loading = $state(false);
 
 	// GPS location state
@@ -178,13 +175,6 @@
 	// Persist search term to localStorage
 	$effect(() => {
 		setToStorage(STORAGE_KEYS.searchTerm, searchTerm);
-	});
-
-	// Persist search results to localStorage
-	$effect(() => {
-		if (searchResults.length > 0) {
-			setToStorage(STORAGE_KEYS.searchResults, searchResults);
-		}
 	});
 
 	// Persist filters to localStorage

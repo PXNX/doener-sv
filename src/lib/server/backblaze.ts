@@ -136,35 +136,19 @@ export function getSignedDownloadUrl(
 	});
 }
 
-export interface StoredImage {
-	stream: ReadableStream<Uint8Array<ArrayBuffer>>;
-	contentType: string;
-}
-
 /**
- * Retrieve an existing image from B2 through the application runtime.
- * Image file IDs are immutable, so the caller can safely cache the response.
+ * Resolve an image source server-side and return the provider URL directly to
+ * the page, mirroring station-sv's proven photo flow. This keeps B2 byte
+ * streaming out of Vercel functions while preserving the storage provider's
+ * signed URL support for private buckets.
  */
-export async function getStoredImage(fileId: string): Promise<StoredImage | null> {
+export async function getImageUrl(fileId: string | null): Promise<string | null> {
+	if (!fileId) return null;
+	if (/^https?:\/\//.test(fileId)) return fileId;
+
 	const file = await db.query.files.findFirst({
 		where: eq(files.id, fileId)
 	});
 
-	if (!file) return null;
-
-	return {
-		stream: s3Client.file(file.key).stream(),
-		contentType: file.contentType || 'image/webp'
-	};
-}
-
-/**
- * Return a stable, same-origin image path. This avoids persisting temporary
- * signed B2 URLs in browser storage, which caused historical images to break
- * after their signatures expired.
- */
-export function getImageUrl(fileId: string | null): string | null {
-	if (!fileId) return null;
-	if (/^https?:\/\//.test(fileId)) return fileId;
-	return `/media/${encodeURIComponent(fileId)}`;
+	return file ? getSignedDownloadUrl(file.key) : null;
 }
